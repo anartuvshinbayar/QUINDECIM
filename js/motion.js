@@ -150,7 +150,8 @@ function initTraveler() {
 
 // ---------- rotating word ----------
 let rotTimer = null, rotSwap = null;
-function startRotator(words, before, after) {
+// colors[i] is the colour of words[i]; the word window fades smoothly into the next colour as the words swap.
+function startRotator(words, before, after, colors = []) {
   const word = $('rot-word'), win = word.parentElement;
   $('rot-before').textContent = before;
   $('rot-after').textContent = after;
@@ -165,10 +166,12 @@ function startRotator(words, before, after) {
   clearInterval(rotTimer); clearTimeout(rotSwap);
   word.classList.remove('is-leaving', 'is-entering');
   word.textContent = words[0];
+  win.style.color = colors[0] || '';
   fit();
   if (reduced) return;
   rotTimer = setInterval(() => {
     word.classList.add('is-leaving');
+    win.style.color = colors[(i + 1) % words.length] || '';   // the colour turns while the old word leaves
     rotSwap = setTimeout(() => {
       i = (i + 1) % words.length;
       word.classList.remove('is-leaving');

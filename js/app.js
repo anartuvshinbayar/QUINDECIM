@@ -89,9 +89,7 @@ function lockSizes() {
   const items = [];
   const add = (box, dim, set) => box && items.push({ box, dim, set });
   const i18nText = el => l => { el.textContent = STRINGS[l][el.dataset.i18n]; };
-  document.querySelectorAll('.main-nav [data-i18n], .year-label').forEach(el => add(el, 'width', i18nText(el)));
-  const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
-  if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
+  document.querySelectorAll('.main-nav [data-i18n], .year-label, .hero-sub').forEach(el => add(el, 'width', i18nText(el)));
   // Question tabs: each tab is as wide as its longer name, and the row as tall as its taller language (phones wrap).
   const tabNames = l => document.querySelectorAll('.q-tab').forEach(b => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; });
   document.querySelectorAll('.q-tab').forEach(b => add(b, 'width', l => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; }));
@@ -142,42 +140,55 @@ const SHAPES = {
   temp_winter: { shape: 'circle', bg: '#D9DDE6', fg: '#15213B', icon: 'snow', a: 126, bd: '-3.3s' },
   first_frost: { shape: 'square', bg: '#EFE2C4', fg: '#8A5A1C', icon: 'frost', a: 198, bd: '-.7s', tilt: '-9deg' },
 };
+// Colour of each rotating headline word, in the order of rotWords (same in both languages), taken from the
+// question shapes: greener = green, drier = dry earth, hotter = clay, colder = winter navy.
+const ROT_COLORS = ['#2E7A57', '#8A5A1C', '#B9431C', '#15213B'];
 const iconSvg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 const paint = (el, sh) => { el.style.setProperty('--bg', sh.bg); el.style.setProperty('--fg', sh.fg); };
 
 function renderQuestions() {
   const vars = VARIABLES.filter(v => DATA.series[v.id]);
-  $('orbit-ring').replaceChildren(...vars.map(v => {
-    const sh = SHAPES[v.id];
-    const b = make('button', { type: 'button', className: 'orbit-item', title: `${tr(v.question)} ${tr(v.season)}` });
-    b.dataset.var = v.id;
-    b.setAttribute('role', 'radio');
-    b.style.setProperty('--a', sh.a + 'deg');
-    const inner = make('span', { className: 'orbit-inner' });
-    const shape = make('span', { className: `orbit-shape shape-${sh.shape}` });
-    paint(shape, sh);
-    shape.style.setProperty('--bd', sh.bd);
-    if (sh.tilt) shape.style.setProperty('--tilt', sh.tilt);
-    shape.innerHTML = iconSvg(sh.icon);
-    shape.append(make('span', { className: 'orbit-label', textContent: tr(v.name) }));
-    inner.append(shape);
-    b.append(inner);
-    // Pick a question, then go to the map.
-    b.addEventListener('click', () => { selectVariable(v.id); $('tool').scrollIntoView({ behavior: 'smooth' }); });
-    return b;
-  }));
-  // The same five questions as tabs on top of the map: always visible, one tap switches.
-  $('q-tabs').replaceChildren(...vars.map(v => {
-    const b = make('button', { type: 'button', className: 'q-tab', title: `${tr(v.question)} ${tr(v.season)}` });
-    b.setAttribute('role', 'radio');
-    b.dataset.var = v.id;
-    const ic = make('span', { className: 'q-icon' });
-    paint(ic, SHAPES[v.id]);
-    ic.innerHTML = iconSvg(SHAPES[v.id].icon);
-    b.append(ic, make('span', { className: 'q-tab-name', textContent: tr(v.short) }));
-    b.addEventListener('click', () => selectVariable(v.id));
-    return b;
-  }));
+  // Built once. Rebuilding on a language switch restarted each label's counter-spin while the ring kept
+  // turning, which left the labels tilted (90 degrees after 45 seconds). A switch now only changes the text.
+  if (!$('orbit-ring').children.length) {
+    $('orbit-ring').replaceChildren(...vars.map(v => {
+      const sh = SHAPES[v.id];
+      const b = make('button', { type: 'button', className: 'orbit-item' });
+      b.dataset.var = v.id;
+      b.setAttribute('role', 'radio');
+      b.style.setProperty('--a', sh.a + 'deg');
+      const inner = make('span', { className: 'orbit-inner' });
+      const shape = make('span', { className: `orbit-shape shape-${sh.shape}` });
+      paint(shape, sh);
+      shape.style.setProperty('--bd', sh.bd);
+      if (sh.tilt) shape.style.setProperty('--tilt', sh.tilt);
+      shape.innerHTML = iconSvg(sh.icon);
+      shape.append(make('span', { className: 'orbit-label' }));
+      inner.append(shape);
+      b.append(inner);
+      // Pick a question, then go to the map.
+      b.addEventListener('click', () => { selectVariable(v.id); $('tool').scrollIntoView({ behavior: 'smooth' }); });
+      return b;
+    }));
+    // The same five questions as tabs on top of the map: always visible, one tap switches.
+    $('q-tabs').replaceChildren(...vars.map(v => {
+      const b = make('button', { type: 'button', className: 'q-tab' });
+      b.setAttribute('role', 'radio');
+      b.dataset.var = v.id;
+      const ic = make('span', { className: 'q-icon' });
+      paint(ic, SHAPES[v.id]);
+      ic.innerHTML = iconSvg(SHAPES[v.id].icon);
+      b.append(ic, make('span', { className: 'q-tab-name' }));
+      b.addEventListener('click', () => selectVariable(v.id));
+      return b;
+    }));
+  }
+  // Names in the current language (the same short names in the ring and the tabs); the full question on hover.
+  document.querySelectorAll('.orbit-item, .q-tab').forEach(b => {
+    const v = byId[b.dataset.var];
+    b.title = `${tr(v.question)} ${tr(v.season)}`;
+    b.querySelector('.orbit-label, .q-tab-name').textContent = tr(v.short);
+  });
 }
 function showCurrentQuestion() {
   const id = state.varId;
@@ -201,11 +212,8 @@ function renderGlossary() {
   }));
   showDef(glossaryIndex, state.lang);
 }
-// The meaning card: the term as a heading, its meaning below.
-function showDef(i, l) {
-  const [term, def] = GLOSSARY[i][l];
-  $('glossary-def').replaceChildren(make('b', { textContent: term }), make('span', { textContent: def }));
-}
+// The meaning card shows only the meaning: the chosen term is already highlighted next to it.
+function showDef(i, l) { $('glossary-def').textContent = GLOSSARY[i][l][1]; }
 
 // ---------- rendering ----------
 
@@ -230,7 +238,7 @@ function renderStatic() {
 
   renderQuestions();
 
-  motion.startRotator(t('rotWords'), t('rotBefore'), t('rotAfter'));
+  motion.startRotator(t('rotWords'), t('rotBefore'), t('rotAfter'), ROT_COLORS);
   motion.refresh();
   lockSizes();
   lastResultKey = '';
@@ -396,6 +404,11 @@ function wire() {
 
 
   $('map-back').addEventListener('click', goOverview);
+  // Back to top: scroll the page itself (the header is pinned, so jumping to it would not move anything).
+  document.querySelectorAll('a[href="#top"]').forEach(link => link.addEventListener('click', e => {
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }));
   addEventListener('keydown', e => {
     if (e.key === 'Escape' && state.aimag) goOverview();
   });
