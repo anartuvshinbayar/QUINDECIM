@@ -34,7 +34,7 @@ visitors' browsers load the new files instead of an old cached copy.
 | `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |
 | `js/i18n.js` | All text in Mongolian and English, plus the glossary |
-| `assets/brand/`, `assets/tiles/` | nyd's logo and ornament tiles (originals in `design/nyd/`) |
+| `assets/brand/`, `assets/tiles/` | The Quindecim logo (mark and header lockup, traced to SVG from the new logo) and nyd's ornament tiles (originals in `design/nyd/`) |
 | `favicon.svg`, `favicon.ico` | Site icon |
 | `robots.txt`, `llms.txt` | Crawler rules and a plain-text summary for AI assistants |
 | `data/soums.geojson` | Real soum boundaries (FAO GAUL 2025, 337 soums) |
