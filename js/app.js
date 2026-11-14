@@ -468,6 +468,7 @@ function wire() {
   wire();
   render();
   map.layout(false);   // the question tabs made the bar taller: fit the map under it right away
+  addEventListener('q:panel-settled', () => map.layout(false));   // the glass panel has risen into place: re-fit the map
   motion.init();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockSizes);
   let lockT;

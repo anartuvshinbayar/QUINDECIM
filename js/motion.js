@@ -114,11 +114,12 @@ function shuffle(cells) {
 
 // ---------- the logo's scroll story (in the style of loopsii.com) ----------
 // Scrolling down: the logo leaves the centre of the tile grid and holds in the middle of the screen, so on the page it
-// travels straight down, and grows. Where the rising tool reaches it, it vanishes in a quick puff, and the page glides
-// on to the tool by itself, stopping with the tool's bar (questions, years, search) just under the header.
-// Scrolling up: the logo never flies back up. It leaves the middle at once and blooms back in its own tile, glued to
-// the tiles, and the page glides back to the top, so the empty stretch between the tiles and the tool is never a place
-// to stop. Back at the very top the trip is ready to play again.
+// travels straight down, and grows. It then holds alone for a moment, and the glass map panel rises over it with the
+// scroll while the logo, pinned behind the glass, blurs and dims. The hold and the rise follow the scroll exactly and
+// play backwards when scrolling up.
+// Scrolling up above the hold: the logo never flies back up. It leaves the middle at once and blooms back in its own
+// tile, glued to the tiles, and the page glides back to the top, so the stretch between the tiles and the hold is never
+// a place to stop. Back at the very top the trip is ready to play again.
 // The trip and the tool's rise follow the scroll softly (each frame closes part of the gap, like loopsii's smooth
 // scrolling), so fast scrolling never makes anything jump.
 function initTraveler() {
@@ -134,15 +135,20 @@ function initTraveler() {
   // shorter once you scroll, so its current height is part of the sum.)
   const toolRest = () => Math.max(0, pageTop(stage) - (header ? header.offsetHeight : 0) - 12);
 
+  // The reveal after the trip: the logo holds alone (HOLD x screen height), then the glass map panel (the stage) rises
+  // over it with the page's own scroll, from its top at the bottom edge of the screen (riseStart) to its resting place
+  // (riseEnd). Meanwhile the logo stays pinned behind it, blurring and dimming. All of it follows the scroll position.
+  const HOLD = 0.4, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map itself fades in over the last 40% of the rise
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
     const r = slot.getBoundingClientRect(), vh = innerHeight, vw = innerWidth;
-    const y0 = r.top + scrollY + r.height / 2, mid = vh / 2, toolTop = pageTop(tool);
-    const big = Math.min(vw * 0.46, vh * 0.46, 440);                  // its size just before it vanishes
-    return { x: r.left + r.width / 2, y0, size0: r.width, vh, mid, toolTop, big,
-      leave: Math.max(vh * 0.25, 2 * (y0 - mid)),                     // leaves the grid at the page's speed, then holds at the middle
-      vanish: toolTop - mid - big / 2 };                              // where the rising tool reaches the logo's bottom edge
+    const y0 = r.top + scrollY + r.height / 2, mid = vh / 2;
+    const big = Math.min(vw * 0.46, vh * 0.46, 440);                  // its size once it is alone in the middle
+    const leave = Math.max(vh * 0.25, 2 * (y0 - mid));                // leaves the grid at the page's speed, then holds at the middle
+    const riseStart = pageTop(stage) - vh, riseEnd = Math.max(riseStart + 1, toolRest());
+    return { x: r.left + r.width / 2, y0, size0: r.width, vh, mid, big, leave, riseStart, riseEnd,
+      holdStart: Math.max(leave, riseStart - vh * HOLD) };             // the logo is alone and full size from here on
   }
 
   // 'trip': plays the story; 'gone': after the puff; 'home': rests in its tile and scrolls with the page.
@@ -153,6 +159,24 @@ function initTraveler() {
     t.style.transform = `translate3d(${(cx - big * k / 2).toFixed(1)}px, ${(cy - big * k / 2).toFixed(1)}px, 0) scale(${k.toFixed(4)})`;
   }
 
+  // Logo blur and dim (the logo element only), the map fading in, and the map ignoring input until the panel is in place.
+  let veiled = false, settled = null;
+  function reveal(p) {
+    const on = p > 0;
+    if (on || veiled) {
+      disc.style.filter = on ? `blur(${(BLUR * smooth(p)).toFixed(2)}px)` : '';
+      disc.style.opacity = on ? (1 - (1 - DIM) * smooth(p)).toFixed(3) : '';
+    }
+    t.classList.toggle('is-veiled', on);   // no CSS transition on filter/opacity while they follow the scroll
+    veiled = on;
+    stage.style.setProperty('--map-in', clamp((p - MAP_IN) / (1 - MAP_IN)).toFixed(3));
+    const now = p >= 1;
+    if (now === settled) return;
+    settled = now;
+    stage.classList.toggle('is-rising', !now);
+    if (now) dispatchEvent(new Event('q:panel-settled'));   // js/app.js re-fits the map
+  }
+
   function draw(s) {
     const g = geo();
     if (!g) return;
@@ -161,17 +185,16 @@ function initTraveler() {
       setLogo(g.x + scrollX, g.y0, g.size0, g.big);
     } else {
       t.classList.remove('is-home');       // position: fixed, held on screen while the page scrolls under it
-      const y = g.y0 + (g.mid - g.y0) * easeOut(clamp(s / g.leave));
-      const size = g.size0 + (g.big - g.size0) * smooth(clamp((s - g.leave * 0.4) / (g.vanish - g.leave * 0.4)));
+      // Once the panel has settled, the logo stays behind its middle and scrolls away with it.
+      const y = g.y0 + (g.mid - g.y0) * easeOut(clamp(s / g.leave)) - Math.max(0, s - g.riseEnd);
+      const size = g.size0 + (g.big - g.size0) * smooth(clamp((s - g.leave * 0.4) / (g.holdStart - g.leave * 0.4)));
       setLogo(g.x, y, size, g.big);
-      if (mode === 'trip' && s >= g.vanish) mode = 'gone';
-      t.classList.toggle('is-gone', mode === 'gone');   // CSS plays the quick puff
     }
-    if (reduced) return;
-    // The tool rises into place: from its top at the bottom edge of the screen to just over the middle.
-    const rise = clamp((s - (g.toolTop - g.vh)) / (g.vh * 0.55));
-    tool.style.opacity = rise >= 1 ? '' : (0.15 + 0.85 * smooth(rise)).toFixed(3);
-    tool.style.transform = rise >= 1 ? '' : `translateY(${((1 - easeOut(rise)) * 90).toFixed(1)}px)`;
+    if (reduced) {   // no reveal: the panel simply crossfades in once it is well into the screen
+      stage.classList.toggle('is-faded', s < g.riseStart + g.vh * 0.2);
+      return;
+    }
+    reveal(mode === 'home' ? 0 : clamp((s - g.riseStart) / (g.riseEnd - g.riseStart)));
   }
 
   // Where the trip draws the logo (centre y on screen) for scroll position q.
@@ -224,30 +247,31 @@ function initTraveler() {
   addEventListener('touchcancel', lift, { passive: true });
   addEventListener('keydown', takeOver);
 
-  // Follow the scroll softly; a long jump (a link, a reload) snaps. The stretch between the tiles and the tool is
-  // only ever passed through, never a place to stop: going down past the vanishing point glides to the tool, and
-  // going up anywhere in it glides back to the top.
-  let target = scrollY, shown = scrollY, raf = 0, lastY = scrollY, snapArmed = true;
+  // Follow the scroll softly; a long jump (a link, a reload) snaps. The stretch between the tiles and the hold is
+  // only ever passed through, never a place to stop: stopping in it going down glides on to the hold, and going up
+  // anywhere in it glides back to the top.
+  let target = scrollY, shown = scrollY, raf = 0, lastY = scrollY;
   const tick = () => {
     const gap = target - shown;
     shown = Math.abs(gap) < 0.5 || Math.abs(gap) > innerHeight * 1.5 ? target : shown + gap * 0.14;
     draw(shown);
     raf = shown === target ? 0 : requestAnimationFrame(tick);
   };
-  // Two places to stop: the top (the hero) and the tool. Scrolling the stretch between them always ends at one of them.
+  // Two places to stop above the hold: the top (the hero) and the hold. The stretch between them always ends at one.
   let idleT = 0, lastDir = 1;
   function settleGap() {
     if (gliding || touching || pending != null || reduced) return;
-    const y = scrollY, g = geo(), rest = toolRest();
-    if (!g || y <= g.leave || y >= rest - 2) return;           // in the hero, or at / below the tool: fine to stop
-    glide(rest - y < 40 || lastDir > 0 ? rest : 0);            // just above the tool, or going down: the tool; else the top
+    const y = scrollY, g = geo();
+    if (!g || y <= g.leave || y >= g.holdStart - 2) return;    // in the hero, or in the hold / reveal: fine to stop
+    glide(g.holdStart - y < 40 || lastDir > 0 ? g.holdStart : 0);   // going down: the logo alone; else the top
   }
   const follow = () => {
     const y = scrollY, g = geo();
     if (g && !reduced) {
       const up = y < lastY - 1, down = y > lastY;
       if (up) lastDir = -1; else if (down) lastDir = 1;
-      if (up && !gliding && mode !== 'home') switchTo('home', g);                 // no trip back up
+      // No trip back up, except through the hold and the reveal, which play backwards with the scroll.
+      if (up && !gliding && mode !== 'home' && y < g.holdStart) switchTo('home', g);
       if (down && mode === 'home' && !gliding) {
         // Going down from its tile: pick the trip up exactly where the logo is (or bloom in if the tile is already past
         // the middle of the screen), so it never just scrolls away with the tiles.
@@ -256,11 +280,7 @@ function initTraveler() {
         else { shown = y; switchTo('trip', g); }
       }
       if (y <= 2 && mode !== 'trip') { mode = 'trip'; shown = target = y; }       // back at the top: ready again (and visible)
-      if (y < g.vanish - 40) snapArmed = true;
-      if (!gliding && pending == null) {
-        if (down && snapArmed && y >= g.vanish) { snapArmed = false; glide(toolRest()); }
-        else if (up && y > g.leave && y < toolRest() - 40) glide(0);
-      }
+      if (!gliding && pending == null && up && y > g.leave && y < g.holdStart - 2) glide(0);
     }
     lastY = y;
     target = y;

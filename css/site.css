@@ -158,10 +158,12 @@ main > section { position: relative; z-index: 1; }
 /* Resting in its tile (after scrolling back up): glued to the page instead of the screen. */
 .travel-logo.is-home { position: absolute; }
 .travel-logo.no-anim .travel-disc { transition: none; }
+/* Behind the rising glass panel js/motion.js blurs and dims the disc frame by frame, so no transition may smooth it. */
+.travel-logo.is-veiled .travel-disc { transition: transform .45s var(--ease); }
 .travel-disc img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
 body.logo-in .travel-logo { opacity: 1; }
 body.logo-in .travel-disc img { transform: none; }
-/* Empty scroll room under the hero for the logo's trip. The tool then rises over the spot where the logo dissolved. */
+/* Scroll room under the hero for the logo's trip and its short hold alone; the glass map panel then rises over it. */
 .logo-run { height: 95svh; }
 main > .tool { z-index: 5; }
 
@@ -179,14 +181,24 @@ main > .tool { z-index: 5; }
 .sample-banner { padding: 10px 14px; border: 2px dashed var(--clay); color: var(--clay); font-weight: 700; }
 .load-error { padding: 10px 14px; border: 2px solid var(--clay); }
 
-/* The stage: the map fills it; the result panel slides in from the right. */
-.stage { --bar-h: 58px; position: relative; height: clamp(460px, calc(100svh - 86px), 1000px); border: 1px solid var(--line); background: #FBF8F2; overflow: hidden; }
+/* The stage: the map fills it; the result panel slides in from the right.
+   It is the glass panel that rises over the blurred logo (js/motion.js): a see-through milk fill, backdrop blur,
+   a 1px light border, a soft shadow and round corners. Every piece of chrome on it is the same glass. */
+.stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .62); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
+  position: relative; height: clamp(460px, calc(100svh - 86px), 1000px); overflow: hidden;
+  border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
+.stage-bar, .map-legend, .map-back, .result-panel { -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+/* While the panel rises the map is still fading in and takes no clicks, so nothing can catch the scroll. */
+.map-svg { opacity: var(--map-in, 1); }
+.stage.is-rising .map-svg { pointer-events: none; }
 
 /* Slim bar across the top of the map: questions, years, search. */
-.stage-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 9px 12px; background: rgba(246, 241, 231, .94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+.stage-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 9px 12px; background: var(--glass); border-bottom: 1px solid var(--glass-edge); box-shadow: 0 8px 24px -18px rgba(21, 33, 59, .35); }
 /* The five questions as tabs across the top of the bar: always visible, one tap switches the map. */
 .q-tabs { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; }
-.q-tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-weight: 600; font-size: .88rem; white-space: nowrap; transition: background .25s, color .25s, border-color .2s; }
+.q-tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--glass-edge); border-radius: 999px; background: rgba(246, 241, 231, .55); box-shadow: 0 2px 8px -4px rgba(21, 33, 59, .25); font-weight: 600; font-size: .88rem; white-space: nowrap; transition: background .25s, color .25s, border-color .2s; }
 .q-tab:hover { border-color: var(--blue); }
 .q-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .q-tab[aria-checked="true"] { background: var(--ink); border-color: var(--ink); color: var(--milk); }
@@ -194,7 +206,7 @@ main > .tool { z-index: 5; }
 .q-icon svg { width: 15px; height: 15px; fill: none; stroke: var(--fg, var(--ink)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 /* Year pickers: tap the arrows for one year, or tap the year to choose from the list. No dragging. */
 .years { display: flex; align-items: center; gap: 6px; }
-.year-pick { display: flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); transition: border-color .2s; }
+.year-pick { display: flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px; border: 1px solid var(--glass-edge); border-radius: 999px; background: rgba(246, 241, 231, .55); box-shadow: 0 2px 8px -4px rgba(21, 33, 59, .25); transition: border-color .2s; }
 .year-pick:hover, .year-pick:focus-within { border-color: var(--blue); }
 .year-label { font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
 .year-step { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--blue); transition: background .2s, color .2s; }
@@ -205,7 +217,7 @@ main > .tool { z-index: 5; }
 .year-select:hover { background: var(--line-soft); }
 .year-select:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
 .year-dash { color: var(--muted); font-weight: 600; }
-.search-box { display: flex; align-items: center; gap: 8px; width: 230px; border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; background: #FBF8F2; transition: border-color .2s; }
+.search-box { display: flex; align-items: center; gap: 8px; width: 230px; border: 1px solid var(--glass-edge); border-radius: 999px; padding: 0 14px; background: rgba(251, 248, 242, .6); box-shadow: 0 2px 8px -4px rgba(21, 33, 59, .25); transition: border-color .2s; }
 .search-box:focus-within { border-color: var(--blue); }
 .search-box svg { width: 16px; height: 16px; color: var(--blue); flex: none; }
 .search-box input { flex: 1; border: 0; background: transparent; padding: 7px 0; outline: none; min-width: 0; font-size: .88rem; }
@@ -253,17 +265,18 @@ main > .tool { z-index: 5; }
 .result-panel[data-dir="down"] { --trend: var(--down-deep); }
 
 /* Small back arrow, a shade darker than the background. */
-.map-back { position: absolute; top: calc(var(--bar-h) + 14px); left: 14px; z-index: 4; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #EAE3D6; color: var(--ink); opacity: 0; transform: translateX(-8px); transition: opacity .4s .5s var(--ease), transform .4s .5s var(--ease), background .2s; }
+.map-back { position: absolute; top: calc(var(--bar-h) + 14px); left: 14px; z-index: 4; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--glass-edge); border-radius: 50%; background: var(--glass); box-shadow: var(--glass-shadow); color: var(--ink); opacity: 0; transform: translateX(-8px); transition: opacity .4s .5s var(--ease), transform .4s .5s var(--ease), background .2s; }
 .map-back svg { width: 18px; height: 18px; }
-.map-back:hover { background: #DFD7C8; }
+.map-back:hover { background: rgba(223, 215, 200, .8); }
 .stage.is-zoomed .map-back { opacity: 1; transform: none; }
 .map-hint { position: absolute; top: calc(var(--bar-h) + 12px); left: 16px; z-index: 3; margin: 0; font-size: .85rem; color: var(--muted); transition: opacity .3s; }
 .stage.is-zoomed .map-hint { opacity: 0; }
-.map-legend { position: absolute; left: 14px; bottom: 12px; z-index: 3; background: rgba(251, 248, 242, .9); padding: 8px 10px; border-radius: 10px; }
+.map-legend { position: absolute; left: 14px; bottom: 12px; z-index: 3; background: var(--glass); padding: 8px 10px; border: 1px solid var(--glass-edge); border-radius: 14px; box-shadow: var(--glass-shadow); }
 .map-legend ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: .76rem; }
 .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 1px solid #BDB6A8; border-radius: 3px; background: var(--v); transition: background .5s; }
 
-.result-panel { position: absolute; top: var(--bar-h); right: 0; bottom: 0; width: 46%; z-index: 5; background: var(--milk); border-left: 1px solid var(--line); padding: 18px 22px; overflow-y: auto; transform: translateX(104%); transition: transform .8s .15s var(--ease); }
+/* The result panel is a glass card inset in the stage; denser milk than the other chrome so the chart and text stay crisp. */
+.result-panel { position: absolute; top: calc(var(--bar-h) + 10px); right: 10px; bottom: 10px; width: calc(46% - 10px); z-index: 5; background: rgba(246, 241, 231, .8); border: 1px solid var(--glass-edge); border-radius: 18px; box-shadow: 0 20px 50px -24px rgba(21, 33, 59, .4); padding: 18px 22px; overflow-y: auto; transform: translateX(calc(100% + 24px)); transition: transform .8s .15s var(--ease); }
 .stage.has-panel .result-panel { transform: none; }
 .breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 6px; font-size: .8rem; color: var(--muted); }
 .breadcrumb li + li::before { content: "›"; margin-right: 6px; }
@@ -358,14 +371,14 @@ main > .tool { z-index: 5; }
   .hero-sub { max-width: none; }
   .hero-art { width: calc(var(--tile) * 5); }
   .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
-  .logo-run { height: 75svh; }
+  .logo-run { height: 95svh; }   /* room for the trip and the hold before the panel rises */
   .frame { padding-top: 64px; padding-bottom: 64px; }
   .glossary { grid-template-columns: minmax(0, 1fr); }
   .glossary-terms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .glossary-term:last-child:nth-child(odd) { grid-column: 1 / -1; }
   /* Phones: the bar sits above the map, and the result appears below the map instead of beside it. */
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
-  .stage-bar { position: relative; }
+  .stage-bar { position: relative; border-radius: 21px 21px 0 0; }
   .search-box { width: 100%; }
   /* Question tabs: a two-column grid, all five visible; long names take two lines. */
   .q-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
@@ -380,9 +393,9 @@ main > .tool { z-index: 5; }
   .year-step { width: 22px; height: 22px; }
   .map-svg { position: relative; height: clamp(260px, 92vw, 52svh); }
   /* No empty space under the map until an aimag is chosen; then the result rises in. */
-  .result-panel { display: none; position: relative; width: auto; transform: none; border-left: 0; border-top: 1px solid var(--line); overflow: visible; transition: none; }
+  .result-panel { display: none; position: relative; inset: auto; width: auto; margin: 0 8px 8px; transform: none; overflow: visible; transition: none; }
   .stage.has-panel .result-panel { display: block; animation: panel-up .6s .25s var(--ease) both; }
-  .map-legend { bottom: auto; top: auto; position: relative; left: auto; margin: 6px 12px; background: none; padding: 0; }
+  .map-legend { bottom: auto; top: auto; position: relative; left: auto; margin: 6px 12px; background: none; padding: 0; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .map-legend ul { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   .stage-bar { order: 0; } .map-hint { order: 1; } .map-back { order: 2; } .map-svg { order: 3; } .map-legend { order: 4; } .result-panel { order: 5; }
   .map-back { position: relative; top: auto; left: 12px; margin: 8px 0 -46px; }
@@ -400,4 +413,7 @@ main > .tool { z-index: 5; }
   .travel-logo, .travel-disc img { opacity: 1 !important; }
   .chart-band { opacity: .55 !important; }
   .chart-trend.draw { stroke-dashoffset: 0 !important; }
+  /* Instead of the rising panel: a short, simple crossfade once the panel is well into the screen (js/motion.js). */
+  .stage { transition: opacity .4s ease !important; }
+  .stage.is-faded { opacity: 0; }
 }
