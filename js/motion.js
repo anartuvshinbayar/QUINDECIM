@@ -34,19 +34,21 @@ function runLoader(done) {
 }
 
 // ---------- hero tiles ----------
-// Each cell is empty, a solid colour block, one of nyd's ornament tiles, or the logo slot ('L', the centre).
+// Each cell is empty (_), a solid colour block, one of the ornament tiles, or the logo slot (L, the centre).
+// No tile looks like the logo (no mountain with a spiral), so the logo is never mistaken for an ornament.
 const T = name => ({ img: `assets/tiles/${name}.svg` });
 const S = c => ({ solid: c });
-const POOL = [T('uulen-blue'), T('ever-quarter'), T('uul-line'), T('seal-hooks'), T('alkhan-square'), T('uulen-red'),
-  T('ever-pair'), T('uul-fill'), T('seal-hammer'), T('alkhan-band'),
-  S('#3A68BD'), S('#15213B'), S('#2E7A57'), S('#B9431C'), S('#D2DBCF'), S('#D7DAE0'), S('#EDD3C6')];
+const POOL = {
+  crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'), ring: T('seal-hammer'),
+  meander: T('alkhan-square'), keyband: T('alkhan-band'),
+  blue: S('#3A68BD'), ink: S('#15213B'), green: S('#2E7A57'), clay: S('#B9431C'), sage: S('#D2DBCF'), grey: S('#D7DAE0'), pink: S('#EDD3C6'),
+};
 // 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
 const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
-const LAYOUT = [
-  0, 16, 1, null, 2, 15, 3, 9, null, 6, 1,
-  14, 4, null, 13, 5, 'L', 7, 10, 8, null, 15,
-  null, 10, 14, 4, 16, 12, null, 11, 13, 14, 2,
-];
+const LAYOUT = `
+  crest  pink    quarter _      seal  grey  ring   keyband _     horns  quarter
+  sage   meander _       clay   quarter L   green  blue    seal  _      grey
+  _      blue    sage    meander pink green _     ink     clay  sage   crest`.trim().split(/\s+/).map(k => (k === '_' ? null : k));
 let gridCols = COLS;
 
 // Each block grows from small to full out of one of its corners, in a diagonal wave (loopsii-style).

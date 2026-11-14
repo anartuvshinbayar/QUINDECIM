@@ -93,8 +93,10 @@ html:has(> body.is-loading), body.is-loading { overflow: hidden; }
 .lang-button.is-active { background: var(--ink); color: var(--milk); }
 .lang-button:not(.is-active):hover { color: var(--ink); background: var(--line-soft); }
 
-.band { height: 14px; background: url("../assets/tiles/band-alkhan.svg") repeat-x left center / 35px 14px; animation: band 30s linear infinite; }
-@keyframes band { to { background-position: 350px center; } }
+/* The Alkhan border under the header and above the footer: one 60 x 36 tile repeated, drifting slowly (24px tall on phones). */
+.band { height: 36px; background: url("../assets/tiles/alkhan-border.svg") repeat-x left center / 60px 36px; animation: band 40s linear infinite; }
+@keyframes band { to { background-position: 600px center; } }
+@keyframes band-s { to { background-position: 400px center; } }
 
 /* ---------- frame (thin guide lines with corner squares, from the mockup) ---------- */
 .frame { position: relative; max-width: var(--wrap); margin: 0 auto; padding: 96px var(--gutter); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
@@ -111,11 +113,11 @@ main::before { content: ""; position: absolute; top: 0; bottom: 0; z-index: 0; p
 main > section { position: relative; z-index: 1; }
 
 /* ---------- hero: big headline top left (loopsii-style), tiles below with the logo in the centre ----------
-   Everything scales with the window's width and height so the hero fits one screen. 90px = header + band. */
+   Everything scales with the window's width and height so the hero fits one screen. 112px = header (76) + band (36); phones 84px. */
 .hero {
   --tile: min(calc((min(100vw, 1400px) - 2 * var(--gutter)) / 11), 12.6svh);
   max-width: 1400px; margin: 0 auto; padding: 3svh var(--gutter) 4svh;
-  min-height: calc(100svh - 90px); display: flex; flex-direction: column; justify-content: center; gap: 3.5svh;
+  min-height: calc(100svh - 112px); display: flex; flex-direction: column; justify-content: center; gap: 3.5svh;
 }
 .hero-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 32px; padding: 0 clamp(14px, 2.2vw, 36px); }
 /* The headline is the rotating question, on two lines in both languages (so switching MN/EN moves nothing).
@@ -346,7 +348,8 @@ main > .tool { z-index: 5; }
 }
 @media (max-width: 760px) {
   /* Phones: 5 columns by 3 rows of tiles (logo in the middle); headline and button stacked above. */
-  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 74px); gap: 3svh; }
+  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 84px); gap: 3svh; }
+  .band { height: 24px; background-size: 40px 24px; animation-name: band-s; }
   .header-inner { min-height: 60px; }
   .hero-copy { grid-template-columns: 1fr; padding: 0 6px; }
   .hero-title { font-size: clamp(2rem, min(12.5vw, 7.5svh), 3.6rem); }
