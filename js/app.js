@@ -89,7 +89,7 @@ function lockSizes() {
   const items = [];
   const add = (box, dim, set) => box && items.push({ box, dim, set });
   const i18nText = el => l => { el.textContent = STRINGS[l][el.dataset.i18n]; };
-  document.querySelectorAll('.main-nav [data-i18n], .header-cta, .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
+  document.querySelectorAll('.main-nav [data-i18n], .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
   const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
   if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
   document.querySelectorAll('.variable-button').forEach(el => add(el, 'width', l => { el.textContent = byId[el.dataset.var].name[l]; }));

@@ -79,15 +79,12 @@ body.is-loading { overflow: hidden; }
 .main-nav a { text-decoration: none; position: relative; white-space: nowrap; }
 .main-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 2px; background: var(--blue); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
 .main-nav a:hover::after { transform: scaleX(1); }
-.header-cta { padding: 10px 20px; white-space: nowrap; }
 /* Loopsii-style: after scrolling, the header becomes a floating pill. */
 .site-header.is-scrolled { padding-top: 10px; }
-.site-header.is-scrolled .header-inner { min-height: 50px; padding: 0 6px 0 18px; border-radius: 999px; box-shadow: 0 6px 30px rgba(21, 33, 59, .12); max-width: 1080px; }
+.site-header.is-scrolled .header-inner { min-height: 50px; padding: 0 8px 0 18px; border-radius: 999px; box-shadow: 0 6px 30px rgba(21, 33, 59, .12); max-width: 1080px; }
 .site-header.is-scrolled .brand img { height: 30px; }
-.site-header.is-scrolled .header-cta { padding: 7px 16px; font-size: .9rem; }
 .site-header.is-scrolled .lang-button { padding: 5px 10px; }
 .brand img { transition: height .4s var(--ease); }
-.site-header.is-scrolled .header-cta { border-radius: 999px; }
 
 .lang-switch { display: flex; border: 1.5px solid var(--line); }
 .lang-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; background: transparent; color: var(--muted); font-weight: 600; transition: background .25s var(--ease), color .25s var(--ease); }
@@ -303,7 +300,6 @@ body.is-loading { overflow: hidden; }
   .header-inner { justify-content: space-between; }
 }
 @media (max-width: 760px) {
-  .header-cta { display: none; }
   /* Phones: 6 columns by 3 rows of tiles; the medallion sits below the question labels. */
   .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 6), 5.4svh); min-height: calc(100svh - 74px); }
   .hero-q { font-size: clamp(.6rem, 1.45svh, .72rem); padding: .9svh 0; }
