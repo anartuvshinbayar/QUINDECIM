@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611142236">
+  <link rel="stylesheet" href="css/site.css?v=202611142254">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -91,20 +91,32 @@
   <div class="band" aria-hidden="true"></div>
 
   <main>
-    <section class="hero frame" aria-labelledby="hero-title">
-      <div class="hero-art">
-        <button type="button" class="hero-q q-tl" data-pick="ndvi_summer"></button>
-        <button type="button" class="hero-q q-tr" data-pick="temp_summer"></button>
-        <div id="hero-tiles" class="hero-tiles" aria-hidden="true"></div>
-        <div class="hero-mark" aria-hidden="true"><img src="assets/brand/quindecim-mark-small.svg" alt="" width="160" height="160"></div>
-        <button type="button" class="hero-q q-bl" data-pick="rain_summer"></button>
-        <button type="button" class="hero-q q-br" data-pick="temp_winter"></button>
-      </div>
+    <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <h1 id="hero-title" class="hero-title" data-i18n="heroTitle" data-split></h1>
-        <p class="hero-rotator" aria-live="off"><span id="rot-before"></span> <span class="rot-window"><span id="rot-word" class="rot-word"></span></span> <span id="rot-after"></span></p>
-        <p class="hero-sub" data-i18n="heroSub" data-reveal></p>
-        <a class="button button-primary button-big" href="#tool" data-reveal><span data-i18n="cta"></span> <span class="arrow" aria-hidden="true">→</span></a>
+        <div class="hero-head">
+          <h1 id="hero-title" class="hero-title" data-i18n="heroTitle" data-split></h1>
+          <p class="hero-rotator" aria-live="off"><span id="rot-before"></span> <span class="rot-window"><span id="rot-word" class="rot-word"></span></span> <span id="rot-after"></span></p>
+        </div>
+        <div class="hero-side">
+          <p class="hero-sub" data-i18n="heroSub" data-reveal></p>
+          <a class="button button-primary button-big" href="#questions" data-reveal><span data-i18n="cta"></span> <span class="arrow" aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div id="hero-tiles" class="hero-tiles" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- The logo from the middle of the tiles travels here as you scroll; the five questions circle around it. -->
+    <section id="questions" class="questions" aria-labelledby="questions-title">
+      <div class="questions-copy">
+        <p class="kicker" data-i18n="questionsKicker" data-reveal></p>
+        <h2 id="questions-title" class="questions-title" data-i18n="cta" data-split></h2>
+        <p class="questions-lead" data-i18n="questionsLead" data-reveal></p>
+      </div>
+      <div class="orbit" id="orbit">
+        <div class="orbit-slot" id="orbit-slot" aria-hidden="true"></div>
+        <div class="orbit-ring" id="orbit-ring" role="radiogroup" aria-labelledby="questions-title"></div>
       </div>
     </section>
 
@@ -115,7 +127,14 @@
 
       <div id="stage" class="stage">
         <div id="stage-bar" class="stage-bar">
-          <div id="variable-buttons" class="variable-buttons" role="radiogroup" aria-labelledby="tool-title"></div>
+          <div class="q-switch">
+            <button type="button" id="q-current" class="q-current" aria-haspopup="listbox" aria-expanded="false">
+              <span id="q-current-icon" class="q-icon" aria-hidden="true"></span>
+              <span id="q-current-name" class="q-name"></span>
+              <svg class="q-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 7.5 9 4.5"/></svg>
+            </button>
+            <ul id="q-menu" class="q-menu" role="listbox" aria-labelledby="tool-title" hidden></ul>
+          </div>
           <div class="years" role="group" aria-label="Years">
             <div class="year-pick">
               <span class="year-label" data-i18n="from"></span>
@@ -214,15 +233,17 @@
     </div>
   </footer>
 
+  <div id="travel-logo" class="travel-logo" aria-hidden="true"><img src="assets/brand/quindecim-mark-small.svg" alt=""></div>
+
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="data/data.js?v=202611142236"></script>
-  <script src="js/stats.js?v=202611142236"></script>
-  <script src="js/variables.js?v=202611142236"></script>
-  <script src="js/i18n.js?v=202611142236"></script>
-  <script src="js/data.js?v=202611142236"></script>
-  <script src="js/map.js?v=202611142236"></script>
-  <script src="js/chart.js?v=202611142236"></script>
-  <script src="js/motion.js?v=202611142236"></script>
-  <script src="js/app.js?v=202611142236"></script>
+  <script src="data/data.js?v=202611142254"></script>
+  <script src="js/stats.js?v=202611142254"></script>
+  <script src="js/variables.js?v=202611142254"></script>
+  <script src="js/i18n.js?v=202611142254"></script>
+  <script src="js/data.js?v=202611142254"></script>
+  <script src="js/map.js?v=202611142254"></script>
+  <script src="js/chart.js?v=202611142254"></script>
+  <script src="js/motion.js?v=202611142254"></script>
+  <script src="js/app.js?v=202611142254"></script>
 </body>
 </html>

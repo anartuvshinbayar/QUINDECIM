@@ -101,48 +101,80 @@ body.is-loading { overflow: hidden; }
 .kicker { margin: 0 0 12px; font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 .section-title { font-size: clamp(1.9rem, 4vw, 3.2rem); font-weight: 700; color: var(--blue); max-width: 900px; }
 
-/* ---------- hero ----------
-   The whole hero fits one screen: tile size and type scale with both the width and the height
-   of the window (svh = visible screen height). 90px = header (76) + pattern band (14). */
+/* ---------- page rails: two thin lines down the page, on the map box's left and right edges ---------- */
+main { position: relative; }
+main::before { content: ""; position: absolute; top: 0; bottom: 0; z-index: 0; pointer-events: none;
+  left: calc(max(0px, (100% - 1400px) / 2) + var(--gutter)); right: calc(max(0px, (100% - 1400px) / 2) + var(--gutter));
+  border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+main > section { position: relative; z-index: 1; }
+
+/* ---------- hero: big headline top left (loopsii-style), tiles below with the logo in the centre ----------
+   Everything scales with the window's width and height so the hero fits one screen. 90px = header + band. */
 .hero {
-  --tile: min(calc((min(100vw, var(--wrap)) - 2 * var(--gutter)) / 12), 7.6svh);
-  min-height: calc(100svh - 90px); display: flex; flex-direction: column; justify-content: center;
-  padding-top: 1.5svh; padding-bottom: 3svh; text-align: center;
+  --tile: min(calc((min(100vw, 1400px) - 2 * var(--gutter)) / 11), 12.6svh);
+  max-width: 1400px; margin: 0 auto; padding: 3svh var(--gutter) 4svh;
+  min-height: calc(100svh - 90px); display: flex; flex-direction: column; justify-content: center; gap: 3.5svh;
 }
-.hero-art { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: calc(var(--tile) * 12); margin: 0 auto; }
-.hero-q { position: relative; z-index: 2; background: none; border: 0; padding: 1.3svh 0; font-size: clamp(.68rem, 1.5svh, .82rem); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; text-align: left; transition: color .2s; }
-.hero-q:hover { color: var(--blue); }
-.q-tr, .q-br { text-align: right; }
-/* Bottom labels stop short of the medallion so long Mongolian labels never run under it. */
-.q-bl { padding-right: calc(var(--tile) * 1); }
-.q-br { padding-left: calc(var(--tile) * 1); }
-.hero-tiles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, var(--tile)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
-.hero-tiles > .corner { z-index: 2; }
-.tile { aspect-ratio: 1; position: relative; perspective: 600px; }
-.tile-face { position: absolute; inset: 0; transform: scale(0); opacity: 0; transition: transform .7s var(--ease), opacity .4s; transition-delay: var(--d, 0s); }
-.tile-face img { width: 100%; height: 100%; }
-.tile-face.solid { background: var(--c); }
-.hero-tiles.is-in .tile-face { transform: scale(1); opacity: 1; }
-.tile-face.is-out { transform: scale(0) rotate(90deg) !important; opacity: 0 !important; transition-delay: 0s; }
-.hero-mark { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 42%) scale(.4); opacity: 0; z-index: 3; width: calc(var(--tile) * 1.55); aspect-ratio: 1; border-radius: 50%; background: var(--milk); padding: calc(var(--tile) * .1); transition: transform 1s .6s var(--ease), opacity .6s .6s; }
-.hero-mark img { width: 100%; height: 100%; }
-.hero-tiles.is-in ~ .hero-mark { transform: translate(-50%, 42%) scale(1); opacity: 1; }
-.hero-copy { padding-top: calc(var(--tile) * .75 + 1.5svh); }
-.hero-title { font-size: clamp(2.6rem, min(9vw, 10.5svh), 7rem); line-height: 1.02; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
+.hero-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 32px; padding: 0 clamp(14px, 2.2vw, 36px); }
+.hero-title { font-size: clamp(3.4rem, min(13.5vw, 17.5svh), 12.5rem); line-height: .92; font-weight: 700; color: var(--blue); letter-spacing: -.035em; }
 /* Every piece of the rotating line shares one line box, so the moving word sits on the same baseline. */
-.hero-rotator { margin: 1.2svh 0 0; font-size: clamp(1.05rem, min(2.4vw, 3.2svh), 1.8rem); line-height: 1.3; font-weight: 600; color: var(--clay); display: flex; justify-content: center; align-items: flex-start; gap: .3em; flex-wrap: wrap; }
+.hero-rotator { margin: 1.4svh 0 0; font-size: clamp(1.15rem, min(2.6vw, 3.6svh), 2.1rem); line-height: 1.3; font-weight: 600; color: var(--clay); display: flex; justify-content: flex-start; align-items: flex-start; gap: .3em; flex-wrap: wrap; }
 .hero-rotator > span { line-height: 1.3; }
 .rot-window { display: block; overflow: hidden; height: 1.3em; white-space: nowrap; transition: width .5s var(--ease); }
 .rot-word { display: inline-block; vertical-align: top; white-space: nowrap; line-height: 1.3; transition: transform .5s var(--ease), opacity .5s; }
 .rot-word.is-leaving { transform: translateY(-110%); opacity: 0; }
 .rot-word.is-entering { transform: translateY(110%); opacity: 0; transition: none; }
-.hero-sub { margin: 1.2svh 0 3.2svh; font-size: clamp(1.05rem, min(2.2vw, 3svh), 1.7rem); font-weight: 600; }
-.hero .button-big { padding: clamp(10px, 1.7svh, 18px) 36px; font-size: clamp(1rem, 2svh, 1.15rem); align-self: center; }
+.hero-side { display: grid; justify-items: end; gap: 2svh; text-align: right; padding-bottom: .6svh; }
+.hero-sub { margin: 0; max-width: 18ch; text-wrap: balance; font-size: clamp(1.05rem, min(2vw, 2.9svh), 1.6rem); line-height: 1.3; font-weight: 600; }
+.hero .button-big { padding: clamp(10px, 1.6svh, 18px) 30px; font-size: clamp(.95rem, 1.9svh, 1.1rem); }
+
+.hero-art { position: relative; width: calc(var(--tile) * 11); margin: 0 auto; }
+.hero-tiles { display: grid; grid-template-columns: repeat(11, var(--tile)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
+.hero-tiles > .corner { z-index: 2; }
+.tile { aspect-ratio: 1; position: relative; }
+/* Intro: each block grows from small to full out of one of its corners, in a diagonal wave. */
+.tile-face { position: absolute; inset: 0; transform: scale(.08); opacity: 0; transform-origin: var(--ox, 50%) var(--oy, 50%);
+  transition: transform .75s cubic-bezier(.34, 1.56, .64, 1), opacity .3s; transition-delay: var(--d, 0s); }
+.tile-face img { width: 100%; height: 100%; }
+.tile-face.solid { background: var(--c); }
+.hero-tiles.is-in .tile-face { transform: none; opacity: 1; }
+.tile-face.is-out { transform: scale(.08) !important; opacity: 0 !important; transition: transform .45s var(--ease), opacity .3s .15s; transition-delay: 0s; }
+
+/* The travelling logo (positioned by js/motion.js). */
+.travel-logo { position: absolute; left: 0; top: 0; z-index: 4; display: grid; place-items: center; border-radius: 50%; background: var(--milk); pointer-events: none; opacity: 0; transition: opacity .5s; will-change: transform; }
+.travel-logo img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
+body.logo-in .travel-logo { opacity: 1; }
+body.logo-in .travel-logo img { transform: none; }
+
+/* ---------- five questions circling the logo ---------- */
+.questions { max-width: 1400px; margin: 0 auto; min-height: 100svh; padding: 8svh calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: 32px; }
+.questions-copy { order: 2; }
+.questions-title { font-size: clamp(2rem, 4.4vw, 4rem); line-height: 1.02; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
+.questions-lead { margin: 18px 0 0; max-width: 36ch; font-size: 1.1rem; color: #2A3550; }
+.orbit { --o: min(600px, 86vw, 80svh); position: relative; width: var(--o); height: var(--o); margin: 0 auto; }
+.orbit-slot { position: absolute; left: 50%; top: 50%; width: calc(var(--o) * .27); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; }
+.orbit-ring { position: absolute; inset: 0; animation: orbit-spin 120s linear infinite; }
+.orbit:hover .orbit-ring, .orbit:focus-within .orbit-ring, .orbit:hover .orbit-inner, .orbit:focus-within .orbit-inner, .orbit:hover .orbit-shape, .orbit:focus-within .orbit-shape { animation-play-state: paused; }
+@keyframes orbit-spin { to { transform: rotate(360deg); } }
+@keyframes orbit-unspin { to { transform: rotate(-360deg); } }
+.orbit-item { --size: calc(var(--o) * .27); position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  transform: rotate(var(--a)) translate(calc(var(--o) * .37)) rotate(calc(-1 * var(--a))); padding: 0; border: 0; background: none; color: var(--ink); }
+.orbit-inner { display: block; width: 100%; height: 100%; animation: orbit-unspin 120s linear infinite; }
+.orbit-shape { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 100%; padding: 14%;
+  text-align: center; font-weight: 700; font-size: clamp(.68rem, calc(var(--o) * .025), .95rem); line-height: 1.2; animation: bob 5.5s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); }
+.orbit-shape::before { content: ""; position: absolute; inset: var(--inset, 0); z-index: -1; background: var(--bg); border-radius: var(--r, 0); transform: rotate(var(--tilt, 0deg)); transition: box-shadow .25s, filter .25s; }
+.orbit-shape svg { width: 30%; height: 30%; fill: none; stroke: var(--fg); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.orbit-item:hover .orbit-shape::before { filter: brightness(.96); }
+.orbit-item[aria-checked="true"] .orbit-shape::before { box-shadow: 0 0 0 3px var(--ink); }
+.shape-circle { --r: 50%; }
+.shape-square { --r: 10px; --inset: 6%; }
+.shape-diamond { --r: 10px; --inset: 15%; --tilt: 45deg; }
+@keyframes bob { from { transform: translateY(-6px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
 
 /* ---------- reveal on scroll ---------- */
 [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--d, 0s); }
 [data-reveal].is-in { opacity: 1; transform: none; }
-.word { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; }
+.word { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }   /* room for descenders, no extra height */
 .word > span { display: inline-block; transform: translateY(105%); transition: transform .9s var(--ease); transition-delay: var(--d, 0s); }
 [data-split].is-in .word > span { transform: none; }
 
@@ -157,10 +189,19 @@ body.is-loading { overflow: hidden; }
 
 /* Slim bar across the top of the map: questions, years, search. */
 .stage-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 9px 12px; background: rgba(246, 241, 231, .94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
-.variable-buttons { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; }
-.variable-button { padding: 7px 12px; border: 1px solid var(--line); background: var(--milk); font-weight: 600; font-size: .84rem; white-space: nowrap; transition: background .3s var(--ease), color .3s var(--ease), border-color .3s; }
-.variable-button:hover { border-color: var(--blue); color: var(--blue); }
-.variable-button.is-selected { background: var(--blue); color: var(--milk); border-color: var(--blue); }
+/* Question switcher in the map bar: one pill that opens the five questions. */
+.q-switch { position: relative; }
+.q-current { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-weight: 600; font-size: .88rem; white-space: nowrap; transition: border-color .2s; }
+.q-current:hover, .q-current[aria-expanded="true"] { border-color: var(--blue); }
+.q-icon { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--bg, var(--line-soft)); }
+.q-icon svg { width: 15px; height: 15px; fill: none; stroke: var(--fg, var(--ink)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.q-chev { width: 12px; height: 12px; margin-left: auto; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .25s var(--ease); }
+.q-current[aria-expanded="true"] .q-chev { transform: rotate(180deg); }
+.q-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; min-width: 270px; list-style: none; margin: 0; padding: 6px; background: var(--milk); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 34px rgba(21, 33, 59, .14); animation: menu-in .22s var(--ease); }
+@keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
+.q-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px 7px 6px; border: 0; border-radius: 8px; background: none; text-align: left; font-weight: 600; font-size: .9rem; }
+.q-option:hover, .q-option:focus-visible { background: var(--line-soft); outline: none; }
+.q-option[aria-selected="true"] { color: var(--blue); }
 /* Year pickers: tap the arrows for one year, or tap the year to choose from the list. No dragging. */
 .years { display: flex; align-items: center; gap: 6px; }
 .year-pick { display: flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); transition: border-color .2s; }
@@ -300,18 +341,21 @@ body.is-loading { overflow: hidden; }
   .header-inner { justify-content: space-between; }
 }
 @media (max-width: 760px) {
-  /* Phones: 6 columns by 3 rows of tiles; the medallion sits below the question labels. */
-  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 6), 5.4svh); min-height: calc(100svh - 74px); }
-  .hero-q { font-size: clamp(.6rem, 1.45svh, .72rem); padding: .9svh 0; }
-  .q-bl, .q-br { padding-left: 0; padding-right: 0; }
+  /* Phones: 5 columns by 3 rows of tiles (logo in the middle); headline and button stacked above. */
+  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 74px); gap: 3svh; }
   .header-inner { min-height: 60px; }
-  .hero-tiles { grid-template-columns: repeat(6, var(--tile)); }
-  .hero-art { width: calc(var(--tile) * 6); min-width: min(100%, 340px); }
-  .hero-tiles { justify-self: center; }
-  .hero-mark { position: relative; left: auto; bottom: auto; grid-column: 1 / -1; order: 5; margin: .5svh auto 0; width: calc(var(--tile) * 1.4); transform: scale(.4); }
-  .hero-tiles.is-in ~ .hero-mark { transform: scale(1); }
-  .hero-copy { padding-top: 1.5svh; }
-  .hero-title { font-size: clamp(2.4rem, min(12vw, 7svh), 3.4rem); }
+  .hero-copy { grid-template-columns: 1fr; padding: 0 6px; }
+  .hero-title { font-size: clamp(2.8rem, min(17vw, 10svh), 4.6rem); }
+  .hero-side { justify-items: start; text-align: left; }
+  .hero-sub { max-width: none; }
+  .hero-art { width: calc(var(--tile) * 5); }
+  .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
+  .questions { grid-template-columns: minmax(0, 1fr); padding-top: 6svh; padding-bottom: 6svh; min-height: auto; }
+  .questions-copy { order: 0; }
+  /* The shapes reach about half the ring size past the centre: keep the whole ring inside the rails. */
+  .orbit { --o: min(76vw, 62svh); }
+  .orbit-item { --size: calc(var(--o) * .3); }
+  .orbit-shape { font-size: clamp(.6rem, 2.7vw, .78rem); padding: 12%; gap: 3px; }
   .frame { padding-top: 64px; padding-bottom: 64px; }
   .glossary { grid-template-columns: 1fr; }
   .glossary-def { grid-column: 1; }
@@ -319,9 +363,11 @@ body.is-loading { overflow: hidden; }
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
   .stage-bar { position: relative; }
   .search-box { width: 100%; }
-  .years { width: 100%; justify-content: space-between; }
-  .year-pick { flex: 1; justify-content: space-between; }
-  .variable-buttons { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+  .years { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .year-dash { display: none; }
+  .year-pick { min-width: 0; justify-content: space-between; padding-left: 8px; }
+  .year-label { font-size: .6rem; letter-spacing: .02em; margin-right: 0; }
+  .year-step { width: 22px; height: 22px; }
   .map-svg { position: relative; height: clamp(260px, 92vw, 52svh); }
   /* No empty space under the map until an aimag is chosen; then the result rises in. */
   .result-panel { display: none; position: relative; width: auto; transform: none; border-left: 0; border-top: 1px solid var(--line); overflow: visible; transition: none; }
@@ -341,7 +387,8 @@ body.is-loading { overflow: hidden; }
   html { scroll-behavior: auto; }
   /* Nothing waits for a scroll reveal. */
   [data-reveal], .word > span, .tile-face, .chart-band, .chart-dots circle { opacity: 1 !important; transform: none !important; }
-  .hero-mark { opacity: 1 !important; }
+  .orbit-ring, .orbit-inner, .orbit-shape { animation: none !important; }
+  .travel-logo, .travel-logo img { opacity: 1 !important; transform-origin: center; }
   .chart-band { opacity: .55 !important; }
   .chart-trend.draw { stroke-dashoffset: 0 !important; }
 }

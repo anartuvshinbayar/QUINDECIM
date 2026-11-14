@@ -92,10 +92,15 @@ function lockSizes() {
   document.querySelectorAll('.main-nav [data-i18n], .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
   const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
   if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
-  document.querySelectorAll('.variable-button').forEach(el => add(el, 'width', l => { el.textContent = byId[el.dataset.var].name[l]; }));
+  const qc = $('q-current'), qn = $('q-current-name');
+  if (qc) {
+    const names = VARIABLES.flatMap(v => LANGS.map(l => v.name[l]));
+    // Measure every question name in both languages, so switching question or language never changes its width.
+    for (const name of names) add(qc, 'width', () => { qn.textContent = name; });
+    items.push({ box: qc, dim: 'width', set: () => { qn.textContent = byId[state.varId].name[state.lang]; } });
+  }
   document.querySelectorAll('.glossary-term').forEach(el => add(el, 'width', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
-  document.querySelectorAll('[data-pick]').forEach(el => add(el, 'height', l => { el.textContent = byId[el.dataset.pick].question[l]; }));
-  document.querySelectorAll('.hero-sub, .hero-title, #map-hint').forEach(el => add(el, 'height', i18nText(el)));
+  document.querySelectorAll('.hero-sub, .hero-title, #map-hint, #questions [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
   add($('glossary-def'), 'height', l => { const [term, def] = GLOSSARY[glossaryIndex][l]; $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def); });
   const legendSet = l => { for (const [id, text] of Object.entries(legendTexts(l))) $(id).textContent = text; };
   add($('map-legend'), 'width', legendSet);
@@ -121,6 +126,71 @@ function lockSizes() {
   // The hero title and other split headings rise word by word: split them again after measuring.
   motion.refresh();
 }
+
+// ---------- the five questions as shapes (orbit) and in the map-bar switcher ----------
+const ICONS = {
+  leaf: '<path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14z"/><path d="M5 19l7-7"/>',
+  drop: '<path d="M12 3c3.5 4.5 6 7.6 6 10.5a6 6 0 0 1-12 0C6 10.6 8.5 7.5 12 3z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+  snow: '<path d="M12 2.5v19M3.8 7.2l16.4 9.6M3.8 16.8l16.4-9.6M9 4.3l3 2 3-2M9 19.7l3-2 3 2"/>',
+  frost: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 17.5v-6"/><path d="M18 4l2 2M20 4l-2 2"/>',
+};
+const SHAPES = {
+  ndvi_summer: { shape: 'circle', bg: '#CFDCCB', fg: '#2E7A57', icon: 'leaf', a: -90, bd: '0s' },
+  rain_summer: { shape: 'square', bg: '#CFE0F2', fg: '#3A68BD', icon: 'drop', a: -18, bd: '-1.4s', tilt: '10deg' },
+  temp_summer: { shape: 'diamond', bg: '#F1D6C8', fg: '#B9431C', icon: 'sun', a: 54, bd: '-2.6s' },
+  temp_winter: { shape: 'circle', bg: '#D9DDE6', fg: '#15213B', icon: 'snow', a: 126, bd: '-3.3s' },
+  first_frost: { shape: 'square', bg: '#EFE2C4', fg: '#8A5A1C', icon: 'frost', a: 198, bd: '-.7s', tilt: '-9deg' },
+};
+const iconSvg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+const paint = (el, sh) => { el.style.setProperty('--bg', sh.bg); el.style.setProperty('--fg', sh.fg); };
+
+function renderQuestions() {
+  const vars = VARIABLES.filter(v => DATA.series[v.id]);
+  $('orbit-ring').replaceChildren(...vars.map(v => {
+    const sh = SHAPES[v.id];
+    const b = make('button', { type: 'button', className: 'orbit-item', title: `${tr(v.question)} ${tr(v.season)}` });
+    b.dataset.var = v.id;
+    b.setAttribute('role', 'radio');
+    b.style.setProperty('--a', sh.a + 'deg');
+    const inner = make('span', { className: 'orbit-inner' });
+    const shape = make('span', { className: `orbit-shape shape-${sh.shape}` });
+    paint(shape, sh);
+    shape.style.setProperty('--bd', sh.bd);
+    if (sh.tilt) shape.style.setProperty('--tilt', sh.tilt);
+    shape.innerHTML = iconSvg(sh.icon);
+    shape.append(make('span', { className: 'orbit-label', textContent: tr(v.name) }));
+    inner.append(shape);
+    b.append(inner);
+    // Pick a question, then go to the map.
+    b.addEventListener('click', () => { selectVariable(v.id); $('tool').scrollIntoView({ behavior: 'smooth' }); });
+    return b;
+  }));
+  $('q-menu').replaceChildren(...vars.map(v => {
+    const li = make('li');
+    const b = make('button', { type: 'button', className: 'q-option' });
+    b.setAttribute('role', 'option');
+    b.dataset.var = v.id;
+    const ic = make('span', { className: 'q-icon' });
+    paint(ic, SHAPES[v.id]);
+    ic.innerHTML = iconSvg(SHAPES[v.id].icon);
+    b.append(ic, make('span', { textContent: tr(v.name) }));
+    b.addEventListener('click', () => { closeMenu(); selectVariable(v.id); $('q-current').focus(); });
+    li.append(b);
+    return li;
+  }));
+}
+function showCurrentQuestion() {
+  const v = byId[state.varId], sh = SHAPES[v.id];
+  $('q-current-name').textContent = tr(v.name);
+  $('q-current').title = `${tr(v.question)} ${tr(v.season)}`;
+  paint($('q-current-icon'), sh);
+  $('q-current-icon').innerHTML = iconSvg(sh.icon);
+  document.querySelectorAll('.orbit-item').forEach(b => b.setAttribute('aria-checked', b.dataset.var === v.id));
+  document.querySelectorAll('.q-option').forEach(b => b.setAttribute('aria-selected', b.dataset.var === v.id));
+}
+function openMenu() { $('q-menu').hidden = false; $('q-current').setAttribute('aria-expanded', 'true'); const sel = $('q-menu').querySelector('[aria-selected="true"]'); (sel || $('q-menu').querySelector('button')).focus(); }
+function closeMenu() { $('q-menu').hidden = true; $('q-current').setAttribute('aria-expanded', 'false'); }
 
 // ---------- glossary: a row of terms, one meaning shown at a time ----------
 let glossaryIndex = 0;
@@ -148,7 +218,6 @@ function renderStatic() {
     b.classList.toggle('is-active', on);
     b.setAttribute('aria-pressed', on);
   });
-  document.querySelectorAll('[data-pick]').forEach(b => { b.textContent = tr(byId[b.dataset.pick].question); });
   $('soum-search').placeholder = t('searchSoum');
   $('map-back').setAttribute('aria-label', t('back'));
   $('map-back').title = t('back');
@@ -158,13 +227,7 @@ function renderStatic() {
     ...DATA.aimags.map(a => make('option', { value: aimagName(a.name) })),
     ...DATA.soums.map(s => make('option', { value: soumLabel(s) })));
 
-  $('variable-buttons').replaceChildren(...VARIABLES.filter(v => DATA.series[v.id]).map(v => {
-    const b = make('button', { type: 'button', className: 'variable-button', title: `${tr(v.question)} ${tr(v.season)}`, textContent: tr(v.name) });
-    b.dataset.var = v.id;
-    b.setAttribute('role', 'radio');
-    b.addEventListener('click', () => selectVariable(v.id));
-    return b;
-  }));
+  renderQuestions();
 
   motion.startRotator(t('rotWords'), t('rotBefore'), t('rotAfter'));
   motion.refresh();
@@ -174,11 +237,7 @@ function renderStatic() {
 
 function render() {
   const v = byId[state.varId];
-  document.querySelectorAll('.variable-button').forEach(b => {
-    const on = b.dataset.var === state.varId;
-    b.classList.toggle('is-selected', on);
-    b.setAttribute('aria-checked', on);
-  });
+  showCurrentQuestion();
 
   const [lo, hi] = DATA.yearRange[v.id];
   // Year pickers: a list of every year of this question's record, plus one-year arrows.
@@ -334,14 +393,23 @@ function wire() {
     renderStatic(); render();
   }));
 
-  // The four questions around the hero art jump straight into the tool.
-  document.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
-    selectVariable(b.dataset.pick);
-    $('tool').scrollIntoView({ behavior: 'smooth' });
-  }));
 
   $('map-back').addEventListener('click', goOverview);
-  addEventListener('keydown', e => { if (e.key === 'Escape' && state.aimag) goOverview(); });
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!$('q-menu').hidden) { closeMenu(); $('q-current').focus(); return; }
+    if (state.aimag) goOverview();
+  });
+
+  // Question switcher in the map bar.
+  $('q-current').addEventListener('click', () => ($('q-menu').hidden ? openMenu() : closeMenu()));
+  document.addEventListener('click', e => { if (!$('q-menu').hidden && !e.target.closest('.q-switch')) closeMenu(); });
+  $('q-menu').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const opts = [...$('q-menu').querySelectorAll('button')], i = opts.indexOf(document.activeElement);
+    opts[(i + (e.key === 'ArrowDown' ? 1 : opts.length - 1)) % opts.length].focus();
+  });
 
   $('soum-search').addEventListener('change', e => {
     const q = e.target.value.trim().toLowerCase();

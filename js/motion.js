@@ -34,47 +34,67 @@ function runLoader(done) {
 }
 
 // ---------- hero tiles ----------
-// Each cell is empty, a solid colour block, or one of nyd's ornament tiles.
+// Each cell is empty, a solid colour block, one of nyd's ornament tiles, or the logo slot ('L', the centre).
 const T = name => ({ img: `assets/tiles/${name}.svg` });
 const S = c => ({ solid: c });
 const POOL = [T('uulen-blue'), T('ever-quarter'), T('uul-line'), T('seal-hooks'), T('alkhan-square'), T('uulen-red'),
   T('ever-pair'), T('uul-fill'), T('seal-hammer'), T('alkhan-band'),
   S('#3A68BD'), S('#15213B'), S('#2E7A57'), S('#B9431C'), S('#D2DBCF'), S('#D7DAE0'), S('#EDD3C6')];
-// 12 x 3 layout from the mockup (null = empty cell, number = index in POOL).
+// 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
+const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
 const LAYOUT = [
-  null, 0, 1, 16, 2, null, 3, 9, 9, null, 6, 1,
-  1, 15, 4, null, 5, 12, null, 7, 13, 8, null, 15,
-  14, null, 10, 4, null, 16, null, 11, 13, null, 14, null,
+  0, 16, 1, null, 2, 15, 3, 9, null, 6, 1,
+  14, 4, null, 13, 5, 'L', 7, 10, 8, null, 15,
+  null, 10, 14, 4, 16, 12, null, 11, 13, 14, 2,
 ];
+let gridCols = COLS;
 
-function face(item, delay) {
+// Each block grows from small to full out of one of its corners, in a diagonal wave (loopsii-style).
+const CORNERS = [['0%', '0%'], ['100%', '0%'], ['0%', '100%'], ['100%', '100%']];
+function face(item) {
   const f = document.createElement('div');
   f.className = 'tile-face' + (item.solid ? ' solid' : '');
   if (item.solid) f.style.setProperty('--c', item.solid);
   else { const im = document.createElement('img'); im.src = item.img; im.alt = ''; im.loading = 'eager'; f.appendChild(im); }
-  f.style.setProperty('--d', delay + 's');
+  const [ox, oy] = CORNERS[Math.floor(Math.random() * 4)];
+  f.style.setProperty('--ox', ox); f.style.setProperty('--oy', oy);
   return f;
 }
 
+let tileCells = [];
 function buildTiles() {
   const grid = $('hero-tiles');
   if (!grid) return;
   const narrow = matchMedia('(max-width: 760px)').matches;
-  const layout = narrow ? LAYOUT.filter((_, i) => i % 12 < 6) : LAYOUT;   // phones: 6 x 3
+  const layout = narrow ? LAYOUT.filter((_, i) => i % COLS >= PHONE_FIRST && i % COLS < PHONE_FIRST + PHONE_COLS) : LAYOUT;
+  gridCols = narrow ? PHONE_COLS : COLS;
   grid.replaceChildren();
-  const cells = layout.map((idx, i) => {
+  tileCells = layout.map((idx, i) => {
     const cell = document.createElement('div');
     cell.className = 'tile';
-    if (idx != null) cell.appendChild(face(POOL[idx], reduced ? 0 : (Math.random() * 0.9).toFixed(2)));
+    if (idx === 'L') { cell.id = 'hero-logo-slot'; cell.classList.add('logo-slot'); }
+    else if (idx != null) {
+      const f = face(POOL[idx]);
+      const col = i % gridCols, row = Math.floor(i / gridCols);
+      f.style.setProperty('--d', reduced ? '0s' : ((col + row) * 0.055 + Math.random() * 0.08).toFixed(3) + 's');
+      cell.appendChild(f);
+    }
     grid.appendChild(cell);
     return cell;
   });
   for (const c of ['tl', 'tr', 'bl', 'br']) { const s = document.createElement('span'); s.className = 'corner ' + c; grid.appendChild(s); }
-  later(() => grid.classList.add('is-in'));
-  if (!reduced) setInterval(() => shuffle(cells), 2200);
+}
+// Called once the loading screen has gone, so the wave is seen.
+let shuffleTimer = null;
+function startTiles() {
+  const grid = $('hero-tiles');
+  if (!grid) return;
+  grid.classList.add('is-in');
+  clearInterval(shuffleTimer);
+  if (!reduced) shuffleTimer = setInterval(() => shuffle(tileCells.filter(c => !c.classList.contains('logo-slot'))), 2400);
 }
 
-// Swap a filled cell with a random other cell, like the loopsii hero.
+// Swap a filled cell with another cell: both shrink into a corner, change places, grow back.
 function shuffle(cells) {
   if (document.hidden) return;
   const filled = cells.filter(c => c.firstChild);
@@ -82,12 +102,46 @@ function shuffle(cells) {
   const b = cells[Math.floor(Math.random() * cells.length)];
   if (!a || a === b) return;
   const fa = a.firstChild, fb = b.firstChild;
-  [fa, fb].forEach(f => f && f.classList.add('is-out'));
+  [fa, fb].forEach(f => { if (f) { f.style.setProperty('--d', '0s'); f.classList.add('is-out'); } });
   setTimeout(() => {
-    if (fa) { fa.style.setProperty('--d', '0s'); b.appendChild(fa); }
-    if (fb) { fb.style.setProperty('--d', '0s'); a.appendChild(fb); }
+    if (fa) b.appendChild(fa);
+    if (fb) a.appendChild(fb);
     later(() => [fa, fb].forEach(f => f && f.classList.remove('is-out')));
-  }, 550);
+  }, 600);
+}
+
+// ---------- travelling logo ----------
+// One logo: it starts in the centre of the tile grid, follows the page as you scroll (turning once),
+// and lands in the centre of the questions ring. Before and after the trip it scrolls with the page.
+function initTraveler() {
+  const t = $('travel-logo'), from = () => $('hero-logo-slot'), to = $('orbit-slot');
+  if (!t || !to) return;
+  const docRect = el => { const r = el.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, s: r.width }; };
+  const ease = p => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  function place() {
+    const fs = from();
+    if (!fs) return;
+    const A = docRect(fs), B = docRect(to);
+    const end = Math.max(1, B.y + B.s / 2 - innerHeight / 2);        // scroll position where the ring is centred
+    const p = Math.min(1, Math.max(0, scrollY / end)), e = ease(p);
+    let x, y, s;
+    if (p <= 0) ({ x, y, s } = A);
+    else if (p >= 1) ({ x, y, s } = B);
+    else {
+      // Screen position moves from where the slot starts to the centre of the screen; the page scrolls under it.
+      s = A.s + (B.s - A.s) * e;
+      x = A.x + (B.x - A.x) * e;
+      const yScreen = A.y + ((B.y - end) - A.y) * e;
+      y = yScreen + scrollY;
+    }
+    t.style.width = t.style.height = s.toFixed(1) + 'px';
+    t.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${(e * 360).toFixed(1)}deg)`;
+  }
+  addEventListener('scroll', place, { passive: true });
+  addEventListener('resize', place);
+  if ('ResizeObserver' in window) new ResizeObserver(place).observe(document.body);
+  place();
+  return place;
 }
 
 // ---------- rotating word ----------
@@ -195,11 +249,21 @@ function countUp(span) {
 function init(onReady) {
   header();
   buildTiles();
+  const place = initTraveler();
+  // Rebuild the grid only when switching between the phone and desktop layouts.
+  let rt, wasNarrow = matchMedia('(max-width: 760px)').matches;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => {
+    const narrow = matchMedia('(max-width: 760px)').matches;
+    if (narrow !== wasNarrow) { wasNarrow = narrow; buildTiles(); if (started) startTiles(); }
+    place && place();
+  }, 250); });
   runLoader(() => {
     started = true; observe(); onReady && onReady();
+    // The tile wave and the logo start once the loading screen has slid away.
+    setTimeout(() => { startTiles(); document.body.classList.add('logo-in'); }, reduced ? 0 : 450);
     // Layout can still settle (fonts, sizes) just after loading: check again so nothing on screen stays hidden.
-    [250, 700, 1500, 3000].forEach(ms => setTimeout(check, ms));
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(check, 50));
+    [250, 700, 1500, 3000].forEach(ms => setTimeout(() => { check(); place && place(); }, ms));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => { check(); place && place(); }, 50));
   });
 }
 
