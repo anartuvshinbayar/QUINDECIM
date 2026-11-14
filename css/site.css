@@ -237,19 +237,20 @@ main > .tool { z-index: 5; }
 [data-verdict="possible-down"] { --v: var(--verdict-possible-down); }
 [data-verdict="real-down"] { --v: var(--verdict-real-down); }
 .aimag[data-verdict="not-proven"], .soum[data-verdict="not-proven"] { fill: #EFE9DD; }
-/* Colours per question: each direction gets a colour that means it (greener = green, browner = dry earth, wetter = blue,
-   drier = sand, hotter = clay, cooler = blue, milder winters = warm orange, colder = winter blue, later frost = amber,
+/* Colours per question: each direction gets a colour that means it (greener = green, browner/yellowing = dry straw, wetter = blue,
+   drier = dry orange, hotter = clay, cooler = blue, milder winters = warm orange, colder = winter blue, later frost = amber,
    earlier frost = ice blue). The map, the legend, the verdict badge, the trend line and the rate all use them. */
 .tool { --up: var(--blue); --up-soft: var(--blue-soft); --down: var(--clay); --down-soft: var(--clay-soft);
+  --down-deep: var(--down); --on-down: var(--milk);   /* deep: text and lines in that colour; on-down: text on its fill */
   --verdict-real-up: var(--up); --verdict-possible-up: var(--up-soft); --verdict-real-down: var(--down); --verdict-possible-down: var(--down-soft); }
-.tool[data-var="ndvi_summer"] { --up: #2E7A57; --up-soft: #B9D5C3; --down: #8A5A1C; --down-soft: #E3CFA9; }
-.tool[data-var="rain_summer"] { --up: #3A68BD; --up-soft: #B8C9E7; --down: #A0691C; --down-soft: #EBD6AE; }
+.tool[data-var="ndvi_summer"] { --up: #2E7A57; --up-soft: #B9D5C3; --down: #DDA032; --down-soft: #F3E0B6; --down-deep: #A0700F; --on-down: var(--ink); }
+.tool[data-var="rain_summer"] { --up: #3A68BD; --up-soft: #B8C9E7; --down: #E3802F; --down-soft: #F6D6B4; --down-deep: #B5561A; --on-down: var(--ink); }
 .tool[data-var="temp_summer"] { --up: #B9431C; --up-soft: #EDBFAB; --down: #3A68BD; --down-soft: #B8C9E7; }
 .tool[data-var="temp_winter"] { --up: #C46A28; --up-soft: #F0CFB2; --down: #24427E; --down-soft: #B3C2DE; }
 .tool[data-var="first_frost"] { --up: #B7791F; --up-soft: #EED8AC; --down: #3F7FB5; --down-soft: #BDD6EA; }
 .result-panel { --trend: var(--clay); }
 .result-panel[data-dir="up"] { --trend: var(--up); }
-.result-panel[data-dir="down"] { --trend: var(--down); }
+.result-panel[data-dir="down"] { --trend: var(--down-deep); }
 
 /* Small back arrow, a shade darker than the background. */
 .map-back { position: absolute; top: calc(var(--bar-h) + 14px); left: 14px; z-index: 4; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #EAE3D6; color: var(--ink); opacity: 0; transform: translateX(-8px); transition: opacity .4s .5s var(--ease), transform .4s .5s var(--ease), background .2s; }
@@ -274,8 +275,8 @@ main > .tool { z-index: 5; }
 .pill-real { background: var(--up); border-color: var(--up); color: var(--milk); }
 .pill-possible { background: var(--milk); border-color: var(--up); color: var(--up); }
 .pill-not-proven { background: var(--milk); color: var(--ink); border: 2px dashed var(--ink); }
-.pill-real-down { background: var(--down); border-color: var(--down); color: var(--milk); }
-.pill-possible-down { background: var(--milk); border-color: var(--down); color: var(--down); }
+.pill-real-down { background: var(--down); border-color: var(--down); color: var(--on-down); }
+.pill-possible-down { background: var(--milk); border-color: var(--down); color: var(--down-deep); }
 #verdict-badge { animation: badge-in .6s var(--ease); }
 @keyframes badge-in { from { transform: translateY(-8px) scale(.9); opacity: 0; } }
 
