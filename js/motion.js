@@ -14,7 +14,7 @@ const later = fn => setTimeout(fn, 34);
 function runLoader(done) {
   const num = $('loader-num');
   // Timer based (not requestAnimationFrame) so it always finishes, even in a background tab.
-  const start = Date.now(), duration = reduced ? 100 : 1700;
+  const start = Date.now(), duration = reduced ? 100 : 1000;
   let finished = false;
   const finish = () => {
     if (finished) return;
@@ -28,9 +28,9 @@ function runLoader(done) {
   const timer = setInterval(() => {
     const p = Math.min(1, (Date.now() - start) / duration);
     num.textContent = String(Math.round((1 - Math.pow(1 - p, 3)) * 100)).padStart(3, '0');
-    if (p >= 1) setTimeout(finish, reduced ? 0 : 250);
+    if (p >= 1) setTimeout(finish, reduced ? 0 : 120);
   }, 30);
-  setTimeout(finish, duration + 1500);   // safety net
+  setTimeout(finish, duration + 1200);   // safety net
 }
 
 // ---------- hero tiles ----------
@@ -150,9 +150,9 @@ function initTraveler() {
 
 // ---------- rotating word ----------
 let rotTimer = null, rotSwap = null;
-// colors[i] is the colour of words[i]; the word window fades smoothly into the next colour as the words swap.
+// colors[i] is the colour of words[i]; the whole headline fades smoothly into the next colour as the words swap.
 function startRotator(words, before, after, colors = []) {
-  const word = $('rot-word'), win = word.parentElement;
+  const word = $('rot-word'), win = word.parentElement, title = $('hero-title');
   $('rot-before').textContent = before;
   $('rot-after').textContent = after;
   // Two lines in both languages: English "Is it getting / greener?" ("?" sticks to the word);
@@ -166,12 +166,12 @@ function startRotator(words, before, after, colors = []) {
   clearInterval(rotTimer); clearTimeout(rotSwap);
   word.classList.remove('is-leaving', 'is-entering');
   word.textContent = words[0];
-  win.style.color = colors[0] || '';
+  title.style.color = colors[0] || '';
   fit();
   if (reduced) return;
   rotTimer = setInterval(() => {
     word.classList.add('is-leaving');
-    win.style.color = colors[(i + 1) % words.length] || '';   // the colour turns while the old word leaves
+    title.style.color = colors[(i + 1) % words.length] || '';   // the colour turns while the old word leaves
     rotSwap = setTimeout(() => {
       i = (i + 1) % words.length;
       word.classList.remove('is-leaving');
@@ -271,7 +271,7 @@ function init(onReady) {
   runLoader(() => {
     started = true; observe(); onReady && onReady();
     // The tile wave and the logo start once the loading screen has slid away.
-    setTimeout(() => { startTiles(); document.body.classList.add('logo-in'); }, reduced ? 0 : 450);
+    setTimeout(() => { startTiles(); document.body.classList.add('logo-in'); }, reduced ? 0 : 300);
     // Layout can still settle (fonts, sizes) just after loading: check again so nothing on screen stays hidden.
     [250, 700, 1500, 3000].forEach(ms => setTimeout(() => { check(); place && place(); }, ms));
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => { check(); place && place(); }, 50));

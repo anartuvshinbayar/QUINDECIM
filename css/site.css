@@ -52,20 +52,23 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.15; }
 
 
 /* ---------- loader ---------- */
-.loader { position: fixed; inset: 0; z-index: 90; background: #CFE0F2; display: grid; place-items: center; transition: clip-path .9s var(--ease), opacity .4s .7s; clip-path: inset(0 0 0 0); }
+.loader { position: fixed; inset: 0; z-index: 90; background: #CFE0F2; display: grid; place-items: center; transition: clip-path .6s var(--ease), opacity .3s .45s; clip-path: inset(0 0 0 0); }
 .loader-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--blue-soft) 1px, transparent 1px), linear-gradient(90deg, var(--blue-soft) 1px, transparent 1px); background-size: calc(100% / 3) calc(100% / 3); background-position: center; opacity: .6; }
 .loader-box { position: relative; width: min(38vw, 300px); aspect-ratio: 1; border: 1.5px solid var(--ink); display: grid; place-items: center; }
 .loader-mark { width: 44%; }
-.loader-mark .draw { stroke-dasharray: 140; stroke-dashoffset: 140; transform: rotate(-90deg); transform-origin: 24px 24px; animation: draw 1.2s var(--ease) forwards; }
-.loader-mark .rise { opacity: 0; transform: translateY(6px); animation: rise .8s .55s var(--ease) forwards; }
-.loader-mark .pop { transform-origin: 34.8px 13.4px; transform: scale(0); animation: pop .5s 1.15s var(--ease) forwards; }
+.loader-mark .draw { stroke-dasharray: 140; stroke-dashoffset: 140; transform: rotate(-90deg); transform-origin: 24px 24px; animation: draw .75s var(--ease) forwards; }
+.loader-mark .rise { opacity: 0; transform: translateY(6px); animation: rise .5s .3s var(--ease) forwards; }
+.loader-mark .pop { transform-origin: 34.8px 13.4px; transform: scale(0); animation: pop .35s .65s var(--ease) forwards; }
 @keyframes rise { to { opacity: 1; transform: none; } }
 .loader-count { position: absolute; bottom: 10vh; margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .08em; }
 .corner { position: absolute; width: 8px; height: 8px; background: var(--ink); }
 .corner.tl { top: -4px; left: -4px; } .corner.tr { top: -4px; right: -4px; }
 .corner.bl { bottom: -4px; left: -4px; } .corner.br { bottom: -4px; right: -4px; }
 body.is-loaded .loader { clip-path: inset(0 0 100% 0); opacity: 0; pointer-events: none; }
-body.is-loading { overflow: hidden; }
+/* No scrolling while the loading screen is up. The page scrolls on <html>, so it is locked there; the gutter keeps the
+   page from shifting sideways when a scrollbar appears afterwards. */
+html { scrollbar-gutter: stable; }
+html:has(> body.is-loading), body.is-loading { overflow: hidden; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes pop { to { transform: scale(1); } }
 
@@ -122,7 +125,9 @@ main > section { position: relative; z-index: 1; }
 .rot-line { display: flex; flex-wrap: wrap; align-items: flex-start; }
 .rot-after { white-space: nowrap; }
 .rot-after.is-line { flex-basis: 100%; }
-.rot-window { display: block; overflow: hidden; height: calc(1em * var(--lh)); white-space: nowrap; transition: width .5s var(--ease), color .9s ease; }
+.rot-window { display: block; overflow: hidden; height: calc(1em * var(--lh)); white-space: nowrap; transition: width .5s var(--ease); }
+/* The whole headline takes the colour of the current word (set on the h1 by js/motion.js) and fades between them. */
+.rot-before, .rot-line { transition: color .9s ease; }
 .rot-word { display: inline-block; vertical-align: top; white-space: nowrap; transition: transform .5s var(--ease), opacity .5s; }
 .rot-word.is-leaving { transform: translateY(-110%); opacity: 0; }
 .rot-word.is-entering { transform: translateY(110%); opacity: 0; transition: none; }
