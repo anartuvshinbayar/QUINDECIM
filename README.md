@@ -92,8 +92,3 @@ python3 tools/power_frost.py
 - FLDAS winter temperatures look 3 to 4 °C milder than station records in cold basins, probably because the model misses
   winter cold-air inversions. Trends need checking against station data before quoting absolute winter values.
 - A trend is not a cause.
-
-## Use of AI
-
-Code in this repository was written with Claude (Anthropic) under the team's direction. The team chose the questions,
-the datasets and the statistical rules, and checks the results.
