@@ -189,19 +189,14 @@ body.logo-in .travel-logo img { transform: none; }
 
 /* Slim bar across the top of the map: questions, years, search. */
 .stage-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 9px 12px; background: rgba(246, 241, 231, .94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
-/* Question switcher in the map bar: one pill that opens the five questions. */
-.q-switch { position: relative; }
-.q-current { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-weight: 600; font-size: .88rem; white-space: nowrap; transition: border-color .2s; }
-.q-current:hover, .q-current[aria-expanded="true"] { border-color: var(--blue); }
+/* The five questions as tabs across the top of the bar: always visible, one tap switches the map. */
+.q-tabs { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.q-tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-weight: 600; font-size: .88rem; white-space: nowrap; transition: background .25s, color .25s, border-color .2s; }
+.q-tab:hover { border-color: var(--blue); }
+.q-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.q-tab[aria-checked="true"] { background: var(--ink); border-color: var(--ink); color: var(--milk); }
 .q-icon { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--bg, var(--line-soft)); }
 .q-icon svg { width: 15px; height: 15px; fill: none; stroke: var(--fg, var(--ink)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.q-chev { width: 12px; height: 12px; margin-left: auto; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .25s var(--ease); }
-.q-current[aria-expanded="true"] .q-chev { transform: rotate(180deg); }
-.q-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; min-width: 270px; list-style: none; margin: 0; padding: 6px; background: var(--milk); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 34px rgba(21, 33, 59, .14); animation: menu-in .22s var(--ease); }
-@keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
-.q-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px 7px 6px; border: 0; border-radius: 8px; background: none; text-align: left; font-weight: 600; font-size: .9rem; }
-.q-option:hover, .q-option:focus-visible { background: var(--line-soft); outline: none; }
-.q-option[aria-selected="true"] { color: var(--blue); }
 /* Year pickers: tap the arrows for one year, or tap the year to choose from the list. No dragging. */
 .years { display: flex; align-items: center; gap: 6px; }
 .year-pick { display: flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); transition: border-color .2s; }
@@ -225,15 +220,17 @@ body.logo-in .travel-logo img { transform: none; }
 .aimag, .soum { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; cursor: pointer; transition: fill .5s var(--ease), stroke .2s, opacity .6s var(--ease); }
 .aimag { fill: var(--v, var(--verdict-no-data)); stroke: var(--milk); stroke-width: 1.6; }
 .aimag:focus, .soum:focus, .map-svg:focus { outline: none; }   /* the keyboard focus style is the dark outline below */
-.aimag:hover, .aimag:focus-visible { stroke: var(--ink); stroke-width: 2.2; outline: none; }
 .aimag.is-away { opacity: 0; pointer-events: none; }
 /* Under its soums, the open aimag takes the border colour, so the soft corners leave no coloured specks. */
 .aimag.is-open { pointer-events: none; fill: var(--milk); stroke: var(--milk); transition-delay: .45s; }
 .soum-group { opacity: 0; pointer-events: none; transition: opacity .5s var(--ease); }
 .soum-group.is-active { opacity: 1; pointer-events: auto; transition-delay: .45s; }
 .soum { fill: var(--v, var(--verdict-no-data)); stroke: var(--milk); stroke-width: 1; }
-.soum:hover, .soum:focus-visible { stroke: var(--ink); stroke-width: 1.8; outline: none; }
-.soum.is-selected { stroke: var(--ink); stroke-width: 3; }
+/* Hover and selection outlines: separate lines above all shapes (js/map.js), so neighbours never cover half of them. */
+.ring { fill: none; stroke: var(--ink); vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; pointer-events: none; opacity: 0; transition: opacity .15s; }
+.ring.is-on { opacity: 1; }
+.ring-hover { stroke-width: 2; }
+.ring-selected { stroke-width: 3; }
 .layer-labels { pointer-events: none; transition: opacity .4s; }
 .aimag-label.is-tiny, .soum-label.is-hidden { display: none; }
 .soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; }
@@ -363,6 +360,12 @@ body.logo-in .travel-logo img { transform: none; }
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
   .stage-bar { position: relative; }
   .search-box { width: 100%; }
+  /* Question tabs: a two-column grid, all five visible; long names take two lines. */
+  .q-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .q-tab { min-width: 0 !important; justify-content: flex-start; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 16px; font-size: .76rem; line-height: 1.2; white-space: normal; text-align: left; }
+  .q-tab:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .q-tab .q-icon { width: 22px; height: 22px; }
+  .q-tab .q-icon svg { width: 13px; height: 13px; }
   .years { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .year-dash { display: none; }
   .year-pick { min-width: 0; justify-content: space-between; padding-left: 8px; }

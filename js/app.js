@@ -92,13 +92,10 @@ function lockSizes() {
   document.querySelectorAll('.main-nav [data-i18n], .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
   const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
   if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
-  const qc = $('q-current'), qn = $('q-current-name');
-  if (qc) {
-    const names = VARIABLES.flatMap(v => LANGS.map(l => v.name[l]));
-    // Measure every question name in both languages, so switching question or language never changes its width.
-    for (const name of names) add(qc, 'width', () => { qn.textContent = name; });
-    items.push({ box: qc, dim: 'width', set: () => { qn.textContent = byId[state.varId].name[state.lang]; } });
-  }
+  // Question tabs: each tab is as wide as its longer name, and the row as tall as its taller language (phones wrap).
+  const tabNames = l => document.querySelectorAll('.q-tab').forEach(b => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; });
+  document.querySelectorAll('.q-tab').forEach(b => add(b, 'width', l => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; }));
+  add($('q-tabs'), 'height', tabNames);
   document.querySelectorAll('.glossary-term').forEach(el => add(el, 'width', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
   document.querySelectorAll('.hero-sub, .hero-title, #map-hint, #questions [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
   add($('glossary-def'), 'height', l => { const [term, def] = GLOSSARY[glossaryIndex][l]; $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def); });
@@ -166,31 +163,27 @@ function renderQuestions() {
     b.addEventListener('click', () => { selectVariable(v.id); $('tool').scrollIntoView({ behavior: 'smooth' }); });
     return b;
   }));
-  $('q-menu').replaceChildren(...vars.map(v => {
-    const li = make('li');
-    const b = make('button', { type: 'button', className: 'q-option' });
-    b.setAttribute('role', 'option');
+  // The same five questions as tabs on top of the map: always visible, one tap switches.
+  $('q-tabs').replaceChildren(...vars.map(v => {
+    const b = make('button', { type: 'button', className: 'q-tab', title: `${tr(v.question)} ${tr(v.season)}` });
+    b.setAttribute('role', 'radio');
     b.dataset.var = v.id;
     const ic = make('span', { className: 'q-icon' });
     paint(ic, SHAPES[v.id]);
     ic.innerHTML = iconSvg(SHAPES[v.id].icon);
-    b.append(ic, make('span', { textContent: tr(v.name) }));
-    b.addEventListener('click', () => { closeMenu(); selectVariable(v.id); $('q-current').focus(); });
-    li.append(b);
-    return li;
+    b.append(ic, make('span', { className: 'q-tab-name', textContent: tr(v.short) }));
+    b.addEventListener('click', () => selectVariable(v.id));
+    return b;
   }));
 }
 function showCurrentQuestion() {
-  const v = byId[state.varId], sh = SHAPES[v.id];
-  $('q-current-name').textContent = tr(v.name);
-  $('q-current').title = `${tr(v.question)} ${tr(v.season)}`;
-  paint($('q-current-icon'), sh);
-  $('q-current-icon').innerHTML = iconSvg(sh.icon);
-  document.querySelectorAll('.orbit-item').forEach(b => b.setAttribute('aria-checked', b.dataset.var === v.id));
-  document.querySelectorAll('.q-option').forEach(b => b.setAttribute('aria-selected', b.dataset.var === v.id));
+  const id = state.varId;
+  document.querySelectorAll('.orbit-item').forEach(b => b.setAttribute('aria-checked', b.dataset.var === id));
+  document.querySelectorAll('.q-tab').forEach(b => {
+    b.setAttribute('aria-checked', b.dataset.var === id);
+    b.tabIndex = b.dataset.var === id ? 0 : -1;   // one tab stop; arrow keys move between questions
+  });
 }
-function openMenu() { $('q-menu').hidden = false; $('q-current').setAttribute('aria-expanded', 'true'); const sel = $('q-menu').querySelector('[aria-selected="true"]'); (sel || $('q-menu').querySelector('button')).focus(); }
-function closeMenu() { $('q-menu').hidden = true; $('q-current').setAttribute('aria-expanded', 'false'); }
 
 // ---------- glossary: a row of terms, one meaning shown at a time ----------
 let glossaryIndex = 0;
@@ -396,19 +389,18 @@ function wire() {
 
   $('map-back').addEventListener('click', goOverview);
   addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    if (!$('q-menu').hidden) { closeMenu(); $('q-current').focus(); return; }
-    if (state.aimag) goOverview();
+    if (e.key === 'Escape' && state.aimag) goOverview();
   });
 
-  // Question switcher in the map bar.
-  $('q-current').addEventListener('click', () => ($('q-menu').hidden ? openMenu() : closeMenu()));
-  document.addEventListener('click', e => { if (!$('q-menu').hidden && !e.target.closest('.q-switch')) closeMenu(); });
-  $('q-menu').addEventListener('keydown', e => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  // Question tabs: arrow keys pick the next or previous question, like any radio group.
+  $('q-tabs').addEventListener('keydown', e => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
     e.preventDefault();
-    const opts = [...$('q-menu').querySelectorAll('button')], i = opts.indexOf(document.activeElement);
-    opts[(i + (e.key === 'ArrowDown' ? 1 : opts.length - 1)) % opts.length].focus();
+    const tabs = [...$('q-tabs').querySelectorAll('.q-tab')], i = tabs.findIndex(b => b.dataset.var === state.varId);
+    const next = tabs[(i + step + tabs.length) % tabs.length];
+    selectVariable(next.dataset.var);
+    next.focus();
   });
 
   $('soum-search').addEventListener('change', e => {
@@ -466,6 +458,7 @@ function wire() {
   renderStatic();
   wire();
   render();
+  map.layout(false);   // the question tabs made the bar taller: fit the map under it right away
   motion.init();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockSizes);
   let lockT;

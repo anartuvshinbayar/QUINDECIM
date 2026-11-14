@@ -77,11 +77,23 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
   const aPaths = {}, aBoxes = {}, aGroups = {}, sPaths = {}, labels = {}, sLabels = {};
   const keyActivate = fn => e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
 
+  // Hover and selection outlines are separate lines drawn above all shapes (below the names). Drawn on the
+  // shape itself, half of the line would hide under the neighbouring shapes and look patchy.
+  const ring = cls => el('path', { class: 'ring ' + cls, 'aria-hidden': 'true' });
+  const aHover = ring('ring-hover'), sHover = ring('ring-hover'), sSel = ring('ring-selected');
+  const showRing = (r, p) => { if (p) r.setAttribute('d', p.getAttribute('d')); r.classList.toggle('is-on', Boolean(p)); };
+  const hoverable = (p, r) => {
+    const on = () => showRing(r, p), off = () => { if (r.getAttribute('d') === p.getAttribute('d')) showRing(r, null); };
+    p.addEventListener('pointerenter', on); p.addEventListener('focus', on);
+    p.addEventListener('pointerleave', off); p.addEventListener('blur', off);
+  };
+
   for (const a of aimags) {
     const p = el('path', { d: pathOf(a.geometry), class: 'aimag', tabindex: '0', role: 'button', 'data-aimag': a.name });
     p.appendChild(el('title'));
     p.addEventListener('click', () => onAimag(a.name));
     p.addEventListener('keydown', keyActivate(() => onAimag(a.name)));
+    hoverable(p, aHover);
     gAimags.appendChild(p);
     aPaths[a.name] = p;
     aBoxes[a.name] = bboxOf(a.geometry);
@@ -101,14 +113,20 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     p.appendChild(el('title'));
     p.addEventListener('click', () => onSoum(s.id));
     p.addEventListener('keydown', keyActivate(() => onSoum(s.id)));
+    hoverable(p, sHover);
     (aGroups[s.aimag] || gSoums).appendChild(p);
     sPaths[s.id] = p;
     const lp = labelPoint(worldRings(s.geometry));
     const t = el('text', { class: 'soum-label', x: lp.x.toFixed(2), y: lp.y.toFixed(2), 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'aria-hidden': 'true' });
     sLabels[s.id] = { el: t, room: lp.room, aimag: s.aimag };
   }
-  // Soum labels go on top of all soum shapes of their aimag.
-  for (const s of soums) (aGroups[s.aimag] || gSoums).appendChild(sLabels[s.id].el);
+  // Soum labels go on top of all soum shapes of their aimag. firstLabel marks where the shapes end.
+  const firstLabel = {};
+  for (const s of soums) {
+    (aGroups[s.aimag] || gSoums).appendChild(sLabels[s.id].el);
+    if (!firstLabel[s.aimag]) firstLabel[s.aimag] = sLabels[s.id].el;
+  }
+  gAimags.appendChild(aHover);   // after every aimag shape; aimag names are in a later layer
 
   let current = { aimag: null, panel: false };
   let scale = 1;
@@ -171,9 +189,14 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
         p.firstChild.textContent = soumLabel(id);
         sLabels[id].el.textContent = soumLabel(id);
       }
-      // The selected soum's outline is drawn last so it sits on top (it does not move or grow).
-      if (soumId && sPaths[soumId]) aGroups[aimag].appendChild(sPaths[soumId]);
+      // The outlines live in the open aimag's group: above its soums, below their names.
+      if (changed) {
+        aGroups[aimag].insertBefore(sSel, firstLabel[aimag] || null);
+        aGroups[aimag].insertBefore(sHover, firstLabel[aimag] || null);
+      }
     }
+    if (changed) { showRing(aHover, null); showRing(sHover, null); }
+    showRing(sSel, aimag && soumId ? sPaths[soumId] : null);
     for (const s of soums) if (s.aimag !== aimag) sPaths[s.id].setAttribute('tabindex', '-1');
     if (changed) layout(true);
   }
