@@ -153,13 +153,13 @@ body.logo-in .travel-logo img { transform: none; }
 .questions-lead { margin: 18px 0 0; max-width: 36ch; font-size: 1.1rem; color: #2A3550; }
 .orbit { --o: min(600px, 86vw, 80svh); position: relative; width: var(--o); height: var(--o); margin: 0 auto; }
 .orbit-slot { position: absolute; left: 50%; top: 50%; width: calc(var(--o) * .27); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; }
-.orbit-ring { position: absolute; inset: 0; animation: orbit-spin 120s linear infinite; }
+.orbit-ring { position: absolute; inset: 0; animation: orbit-spin 180s linear infinite; }
 .orbit:hover .orbit-ring, .orbit:focus-within .orbit-ring, .orbit:hover .orbit-inner, .orbit:focus-within .orbit-inner, .orbit:hover .orbit-shape, .orbit:focus-within .orbit-shape { animation-play-state: paused; }
 @keyframes orbit-spin { to { transform: rotate(360deg); } }
 @keyframes orbit-unspin { to { transform: rotate(-360deg); } }
 .orbit-item { --size: calc(var(--o) * .27); position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
   transform: rotate(var(--a)) translate(calc(var(--o) * .37)) rotate(calc(-1 * var(--a))); padding: 0; border: 0; background: none; color: var(--ink); }
-.orbit-inner { display: block; width: 100%; height: 100%; animation: orbit-unspin 120s linear infinite; }
+.orbit-inner { display: block; width: 100%; height: 100%; animation: orbit-unspin 180s linear infinite; }
 .orbit-shape { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 100%; padding: 14%;
   text-align: center; font-weight: 700; font-size: clamp(.68rem, calc(var(--o) * .025), .95rem); line-height: 1.2; animation: bob 5.5s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); }
 .orbit-shape::before { content: ""; position: absolute; inset: var(--inset, 0); z-index: -1; background: var(--bg); border-radius: var(--r, 0); transform: rotate(var(--tilt, 0deg)); transition: box-shadow .25s, filter .25s; }

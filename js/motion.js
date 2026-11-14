@@ -111,18 +111,20 @@ function shuffle(cells) {
 }
 
 // ---------- travelling logo ----------
-// One logo: it starts in the centre of the tile grid, follows the page as you scroll (turning once),
+// One logo: it starts in the centre of the tile grid, follows the page as you scroll (shaking a little),
 // and lands in the centre of the questions ring. Before and after the trip it scrolls with the page.
 function initTraveler() {
   const t = $('travel-logo'), from = () => $('hero-logo-slot'), to = $('orbit-slot');
   if (!t || !to) return;
   const docRect = el => { const r = el.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, s: r.width }; };
-  const ease = p => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  // Ease-out: most of the trip happens early in the scroll, then the logo settles into the ring.
+  const ease = p => 1 - Math.pow(1 - p, 3);
   function place() {
     const fs = from();
     if (!fs) return;
     const A = docRect(fs), B = docRect(to);
-    const end = Math.max(1, B.y + B.s / 2 - innerHeight / 2);        // scroll position where the ring is centred
+    // It lands when the ring's centre is 60% of the way down the screen, before the ring is fully in view.
+    const end = Math.max(1, B.y + B.s / 2 - innerHeight * 0.6);
     const p = Math.min(1, Math.max(0, scrollY / end)), e = ease(p);
     let x, y, s;
     if (p <= 0) ({ x, y, s } = A);
@@ -134,8 +136,10 @@ function initTraveler() {
       const yScreen = A.y + ((B.y - end) - A.y) * e;
       y = yScreen + scrollY;
     }
+    // No spin: a small side-to-side shake on the way, strongest mid-trip and still at both ends.
+    const shake = reduced ? 0 : 6 * Math.sin(p * Math.PI * 6) * Math.sin(p * Math.PI);
     t.style.width = t.style.height = s.toFixed(1) + 'px';
-    t.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${(e * 360).toFixed(1)}deg)`;
+    t.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${shake.toFixed(2)}deg)`;
   }
   addEventListener('scroll', place, { passive: true });
   addEventListener('resize', place);
