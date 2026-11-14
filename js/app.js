@@ -252,7 +252,11 @@ function showResultOnPhone() {
   }, 900);
 }
 function selectAimag(name) { state.aimag = name; state.soumId = null; render(); }
-function selectSoum(id) { state.aimag = DATA.soumById[id].aimag; state.soumId = id; render(); showResultOnPhone(); }
+function selectSoum(id) {
+  // Clicking the selected soum again unselects it and shows the aimag's result.
+  if (state.soumId === id) { selectAimag(state.aimag); return; }
+  state.aimag = DATA.soumById[id].aimag; state.soumId = id; render(); showResultOnPhone();
+}
 function goOverview() { state.aimag = null; state.soumId = null; render(); }
 
 function wire() {
