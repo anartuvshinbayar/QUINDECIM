@@ -153,6 +153,9 @@ main > section { position: relative; z-index: 1; }
   transition: opacity .35s ease, filter .4s ease, transform .45s var(--ease); }
 /* Past the vanishing point the logo goes in a quick puff: it swells a little, blurs and fades; scroll back and it returns. */
 .travel-logo.is-gone .travel-disc { opacity: 0; filter: blur(14px); transform: scale(1.3); }
+/* Resting in its tile (after scrolling back up): glued to the page instead of the screen. */
+.travel-logo.is-home { position: absolute; }
+.travel-logo.no-anim .travel-disc { transition: none; }
 .travel-disc img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
 body.logo-in .travel-logo { opacity: 1; }
 body.logo-in .travel-disc img { transform: none; }

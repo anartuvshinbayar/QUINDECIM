@@ -383,12 +383,10 @@ function wire() {
 
 
   $('map-back').addEventListener('click', goOverview);
-  // Links to the tool: scroll to where it rests (while it rises in on scroll it is drawn a little lower).
+  // Links to the tool: glide to where it rests (while it rises in on scroll it is drawn a little lower).
   document.querySelectorAll('a[href="#tool"]').forEach(link => link.addEventListener('click', e => {
     e.preventDefault();
-    let y = 0;
-    for (let el = $('tool'); el; el = el.offsetParent) y += el.offsetTop;
-    scrollTo({ top: y - 64, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    motion.toTool();   // the same quick glide as after the logo vanishes, ending with the tool's bar under the header
     const tab = document.querySelector('.q-tab[aria-checked="true"]');
     if (tab) tab.focus({ preventScroll: true });
   }));

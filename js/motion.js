@@ -111,65 +111,130 @@ function shuffle(cells) {
 }
 
 // ---------- the logo's scroll story (in the style of loopsii.com) ----------
-// The logo starts in the centre of the tile grid. As you scroll it leaves the grid and holds in the middle of the
-// screen, so on the page it travels straight down, and grows. The moment you scroll past the point where the rising
-// tool reaches it, it vanishes in a quick puff (a short timed fade, not tied to the scroll); scroll back and it returns.
-// The trip and the growth follow the scroll and run backwards when you scroll up. The motion trails
-// the scroll slightly and settles, like loopsii's smooth scrolling, so fast scrolling never makes anything jump.
+// Scrolling down: the logo leaves the centre of the tile grid and holds in the middle of the screen, so on the page it
+// travels straight down, and grows. Where the rising tool reaches it, it vanishes in a quick puff, and the page glides
+// on to the tool by itself, stopping with the tool's bar (questions, years, search) just under the header.
+// Scrolling up: the logo never flies back up. It leaves the middle at once and blooms back in its own tile, glued to
+// the tiles. Back at the very top the trip is ready to play again.
+// The trip and the tool's rise follow the scroll softly (each frame closes part of the gap, like loopsii's smooth
+// scrolling), so fast scrolling never makes anything jump.
 function initTraveler() {
-  const t = $('travel-logo'), disc = t && t.firstElementChild, tool = $('tool');
+  const t = $('travel-logo'), disc = t && t.firstElementChild, tool = $('tool'), stage = $('stage') || tool;
+  const header = document.querySelector('.site-header');
   if (!t || !disc || !tool) return {};
   const clamp = v => Math.min(1, Math.max(0, v));
   const smooth = p => p * p * (3 - 2 * p);
   const easeOut = p => 1 - (1 - p) * (1 - p);
   const pageTop = el => { let y = 0; for (let e = el; e; e = e.offsetParent) y += e.offsetTop; return y; };   // ignores transforms
 
-  // Draw everything for a (smoothed) scroll position s.
-  function draw(s) {
+  // Where the tool rests: the top of the map box 12px under the slim header. (The header is in the page flow and gets
+  // shorter once you scroll, so its current height is part of the sum.)
+  const toolRest = () => Math.max(0, pageTop(stage) - (header ? header.offsetHeight : 0) - 12);
+
+  function geo() {
     const slot = $('hero-logo-slot');
-    if (!slot) return;
+    if (!slot) return null;
     const r = slot.getBoundingClientRect(), vh = innerHeight, vw = innerWidth;
-    const x = r.left + r.width / 2, y0 = r.top + scrollY + r.height / 2, size0 = r.width;   // the slot, at scroll 0
-    const toolTop = pageTop(tool);
-    const mid = vh / 2;
-    const leave = Math.max(vh * 0.25, 2 * (y0 - mid));   // leaves the grid at the page's speed, then slows to a hold at the middle
-    const big = Math.min(vw * 0.46, vh * 0.46, 440);     // its size just before it vanishes
-    const vanish = toolTop - mid - big / 2;              // the scroll point where the rising tool reaches the logo's bottom edge
+    const y0 = r.top + scrollY + r.height / 2, mid = vh / 2, toolTop = pageTop(tool);
+    const big = Math.min(vw * 0.46, vh * 0.46, 440);                  // its size just before it vanishes
+    return { x: r.left + r.width / 2, y0, size0: r.width, vh, mid, toolTop, big,
+      leave: Math.max(vh * 0.25, 2 * (y0 - mid)),                     // leaves the grid at the page's speed, then holds at the middle
+      vanish: toolTop - mid - big / 2 };                              // where the rising tool reaches the logo's bottom edge
+  }
 
-    let y, size;
-    if (reduced) { y = y0 - s; size = size0; }           // no trip: it simply scrolls away with the tiles
-    else {
-      y = y0 + (mid - y0) * easeOut(clamp(s / leave));
-      size = size0 + (big - size0) * smooth(clamp((s - leave * 0.4) / (vanish - leave * 0.4)));
-    }
-    // The element is drawn at its largest size and scaled down, so it stays sharp and only the transform changes.
+  // 'trip': plays the story; 'gone': after the puff; 'home': rests in its tile and scrolls with the page.
+  let mode = reduced ? 'home' : 'trip';
+  function setLogo(cx, cy, size, big) {   // the element is drawn at its largest size and scaled, so it stays sharp
+    const k = size / big;
     t.style.width = t.style.height = big.toFixed(1) + 'px';
-    const scale = size / big;
-    t.style.transform = `translate3d(${(x - big * scale / 2).toFixed(1)}px, ${(y - big * scale / 2).toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
-    t.classList.toggle('is-gone', !reduced && s >= vanish);   // CSS plays the quick puff (and its reverse)
+    t.style.transform = `translate3d(${(cx - big * k / 2).toFixed(1)}px, ${(cy - big * k / 2).toFixed(1)}px, 0) scale(${k.toFixed(4)})`;
+  }
 
-    // The tool rises into place around that moment: from its top at the bottom edge to just over the middle.
+  function draw(s) {
+    const g = geo();
+    if (!g) return;
+    if (mode === 'home') {
+      t.classList.add('is-home');          // position: absolute, so it moves exactly with its tile
+      setLogo(g.x + scrollX, g.y0, g.size0, g.big);
+    } else {
+      t.classList.remove('is-home');       // position: fixed, held on screen while the page scrolls under it
+      const y = g.y0 + (g.mid - g.y0) * easeOut(clamp(s / g.leave));
+      const size = g.size0 + (g.big - g.size0) * smooth(clamp((s - g.leave * 0.4) / (g.vanish - g.leave * 0.4)));
+      setLogo(g.x, y, size, g.big);
+      if (mode === 'trip' && s >= g.vanish) mode = 'gone';
+      t.classList.toggle('is-gone', mode === 'gone');   // CSS plays the quick puff
+    }
     if (reduced) return;
-    const rise = clamp((s - (toolTop - vh)) / (vh * 0.55));
+    // The tool rises into place: from its top at the bottom edge of the screen to just over the middle.
+    const rise = clamp((s - (g.toolTop - g.vh)) / (g.vh * 0.55));
     tool.style.opacity = rise >= 1 ? '' : (0.15 + 0.85 * smooth(rise)).toFixed(3);
     tool.style.transform = rise >= 1 ? '' : `translateY(${((1 - easeOut(rise)) * 90).toFixed(1)}px)`;
   }
 
-  // Follow the scroll softly: each frame closes a part of the gap; a long jump (a link, a reload) snaps.
-  let target = scrollY, shown = scrollY, raf = 0;
+  // Scrolling up during the trip: hide the logo where it is, put it back in its tile, and let it bloom in there.
+  function goHome() {
+    t.classList.add('no-anim', 'is-gone');
+    getComputedStyle(disc).opacity;        // apply the instant hide before moving
+    mode = 'home';
+    draw(shown);
+    getComputedStyle(t).transform;
+    t.classList.remove('no-anim', 'is-gone');   // the puff in reverse
+  }
+
+  // Glide: a quick, smooth scroll to y. A new gesture (a touch, a key, or the wheel turned upward) takes over; the
+  // rest of a downward trackpad flick is held back, so it cannot push the tool past its resting place.
+  let gliding = false, hold = false, holdT = 0;
+  const settle = () => { clearTimeout(holdT); holdT = setTimeout(() => { hold = false; }, 180); };
+  const takeOver = () => { gliding = false; hold = false; };
+  function glide(y) {
+    if (reduced) { scrollTo({ top: y, behavior: 'instant' }); return; }
+    const from = scrollY, dist = y - from;
+    if (Math.abs(dist) < 2) return;
+    const start = performance.now(), ms = Math.min(900, 380 + Math.abs(dist) * 0.25);
+    gliding = hold = true;
+    const step = now => {
+      if (!gliding) return;
+      const p = Math.min(1, (now - start) / ms);
+      scrollTo({ top: from + dist * (1 - Math.pow(1 - p, 3)), behavior: 'instant' });
+      if (p < 1) requestAnimationFrame(step); else { gliding = false; settle(); }
+    };
+    requestAnimationFrame(step);
+  }
+  addEventListener('wheel', e => {
+    if (!gliding && !hold) return;
+    if (e.deltaY < 0) { takeOver(); return; }
+    e.preventDefault();
+    if (!gliding) settle();
+  }, { passive: false });
+  addEventListener('touchstart', takeOver, { passive: true });
+  addEventListener('keydown', takeOver);
+
+  // Follow the scroll softly; a long jump (a link, a reload) snaps.
+  let target = scrollY, shown = scrollY, raf = 0, lastY = scrollY, snapArmed = true;
   const tick = () => {
     const gap = target - shown;
     shown = Math.abs(gap) < 0.5 || Math.abs(gap) > innerHeight * 1.5 ? target : shown + gap * 0.14;
     draw(shown);
     raf = shown === target ? 0 : requestAnimationFrame(tick);
   };
-  const follow = () => { target = scrollY; if (!raf) raf = requestAnimationFrame(tick); };
-  const refresh = () => { target = shown = scrollY; draw(shown); };
+  const follow = () => {
+    const y = scrollY, g = geo();
+    if (g && !reduced) {
+      if (y < lastY - 1 && !gliding && mode !== 'home') goHome();                 // no trip back up
+      if (mode === 'home' && y <= 2) { mode = 'trip'; shown = target = y; }       // back at the top: ready again
+      if (y < g.vanish - 40) snapArmed = true;
+      if (snapArmed && !gliding && y > lastY && y >= g.vanish) { snapArmed = false; glide(toolRest()); }
+    }
+    lastY = y;
+    target = y;
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  const refresh = () => { target = shown = lastY = scrollY; draw(shown); };
   addEventListener('scroll', follow, { passive: true });
   addEventListener('resize', refresh);
   if ('ResizeObserver' in window) new ResizeObserver(refresh).observe(document.body);
   refresh();
-  return { refresh, drawAt: draw };
+  return { refresh, drawAt: draw, toTool: () => glide(toolRest()) };
 }
 
 // ---------- rotating word ----------
@@ -281,12 +346,12 @@ function countUp(span) {
   }, 30);
 }
 
-let logoDraw = null;   // for checking the logo at any scroll position from the console
+let logoDraw = null, logoToTool = null;   // logoAt: draw the logo for any scroll position (for checks); toTool: glide to the tool
 function init(onReady) {
   header();
   buildTiles();
   const logo = initTraveler(), place = logo.refresh;
-  logoDraw = logo.drawAt;
+  logoDraw = logo.drawAt; logoToTool = logo.toTool;
   // Rebuild the grid only when switching between the phone and desktop layouts.
   let rt, wasNarrow = matchMedia('(max-width: 760px)').matches;
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => {
@@ -304,5 +369,5 @@ function init(onReady) {
   });
 }
 
-Q.motion = { init, refresh, startRotator, countUp, observe, logoAt: s => logoDraw && logoDraw(s) };
+Q.motion = { init, refresh, startRotator, countUp, observe, logoAt: s => logoDraw && logoDraw(s), toTool: () => logoToTool && logoToTool() };
 })(globalThis.Q = globalThis.Q || {});
