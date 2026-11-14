@@ -259,6 +259,7 @@ body.is-loading { overflow: hidden; }
 .verdict-grid > div:nth-child(2) { border-right: 0; animation-delay: .08s; }
 .verdict-grid > div.wide { grid-column: 1 / -1; border-right: 0; border-bottom: 0; animation-delay: .16s; }
 @keyframes cell-in { to { opacity: 1; transform: none; } }
+@keyframes panel-up { from { opacity: 0; transform: translateY(24px); } }
 .verdict-grid dt { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
 .verdict-grid dd { margin: 0; font-size: .95rem; }
 .num { color: var(--clay); font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -275,11 +276,15 @@ body.is-loading { overflow: hidden; }
 .stats-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 3px 14px 3px 0; vertical-align: top; }
 .limits-list { margin: 4px 0 8px; padding-left: 18px; font-size: .82rem; color: var(--muted); }
 
-/* ---------- glossary ---------- */
-.glossary-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 40px 0 0; border-top: 1px solid var(--line); }
-.glossary-list > div { padding: 18px 0; border-bottom: 1px solid var(--line); padding-right: 24px; }
-.glossary-list dt { font-weight: 700; color: var(--blue); margin-bottom: 4px; }
-.glossary-list dd { margin: 0; font-size: .95rem; }
+/* ---------- glossary: one slim band; tap a term to see its meaning ---------- */
+.glossary { max-width: 1400px; margin: 0 auto; padding: 22px var(--gutter) 28px; display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; align-items: center; scroll-margin-top: 70px; }
+.glossary-title { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.glossary-terms { display: flex; flex-wrap: wrap; gap: 6px; }
+.glossary-term { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-size: .84rem; font-weight: 600; color: var(--ink); transition: background .2s, color .2s, border-color .2s; }
+.glossary-term:hover { border-color: var(--blue); color: var(--blue); }
+.glossary-term[aria-selected="true"] { background: var(--blue); border-color: var(--blue); color: var(--milk); }
+.glossary-def { grid-column: 2; margin: 0; font-size: .95rem; color: #2A3550; }
+.glossary-def b { color: var(--blue); }
 
 /* ---------- footer ---------- */
 .site-footer { background: var(--blue); color: var(--milk); padding: 56px var(--gutter); }
@@ -295,7 +300,6 @@ body.is-loading { overflow: hidden; }
 @media (max-width: 1000px) {
   .main-nav { display: none; }
   .header-inner { justify-content: space-between; }
-  .glossary-list { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 }
 @media (max-width: 760px) {
   .header-cta { display: none; }
@@ -312,6 +316,8 @@ body.is-loading { overflow: hidden; }
   .hero-copy { padding-top: 1.5svh; }
   .hero-title { font-size: clamp(2.4rem, min(12vw, 7svh), 3.4rem); }
   .frame { padding-top: 64px; padding-bottom: 64px; }
+  .glossary { grid-template-columns: 1fr; }
+  .glossary-def { grid-column: 1; }
   /* Phones: the bar sits above the map, and the result appears below the map instead of beside it. */
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
   .stage-bar { position: relative; }
@@ -320,8 +326,9 @@ body.is-loading { overflow: hidden; }
   .year-pick { flex: 1; justify-content: space-between; }
   .variable-buttons { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .map-svg { position: relative; height: clamp(260px, 92vw, 52svh); }
-  .result-panel { position: relative; width: auto; transform: translateY(24px); opacity: 0; border-left: 0; border-top: 1px solid var(--line); overflow: visible; transition: transform .6s .3s var(--ease), opacity .6s .3s; }
-  .stage.has-panel .result-panel { transform: none; opacity: 1; }
+  /* No empty space under the map until an aimag is chosen; then the result rises in. */
+  .result-panel { display: none; position: relative; width: auto; transform: none; border-left: 0; border-top: 1px solid var(--line); overflow: visible; transition: none; }
+  .stage.has-panel .result-panel { display: block; animation: panel-up .6s .25s var(--ease) both; }
   .map-legend { bottom: auto; top: auto; position: relative; left: auto; margin: 6px 12px; background: none; padding: 0; }
   .map-legend ul { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   .stage-bar { order: 0; } .map-hint { order: 1; } .map-back { order: 2; } .map-svg { order: 3; } .map-legend { order: 4; } .result-panel { order: 5; }

@@ -79,38 +79,62 @@ const resultFor = s => { const part = slice(s, state.from, state.to); return ana
 // Every piece of text that changes with the language gets room for its longer version (width for
 // buttons and labels, height for text that can wrap), so nothing moves when you press MN or EN.
 const LANGS = ['mn', 'en'];
+function legendTexts(l) {
+  const v = byId[state.varId], S = STRINGS[l];
+  return { 'legend-real-up': `${S.real}: ${v.up[l]}`, 'legend-possible-up': `${S.possibleShort}: ${v.up[l]}`, 'legend-not-proven': S.notProven,
+    'legend-possible-down': `${S.possibleShort}: ${v.down[l]}`, 'legend-real-down': `${S.real}: ${v.down[l]}` };
+}
 function lockSizes() {
+  // Each item: the box to size, which dimension, and how to write its text in a given language.
   const items = [];
-  const add = (box, holder, texts, dim) => items.push({ box, holder: holder || box, texts, dim });
-  document.querySelectorAll('.main-nav [data-i18n], .header-cta, .year-label').forEach(el =>
-    add(el, el, LANGS.map(l => STRINGS[l][el.dataset.i18n]), 'width'));
-  const big = document.querySelector('.hero .button-big');
-  if (big) add(big, big.querySelector('[data-i18n]'), LANGS.map(l => STRINGS[l].cta), 'width');
-  if (big) add(big, big.querySelector('[data-i18n]'), LANGS.map(l => STRINGS[l].cta), 'height');   // it can wrap on small phones
-  document.querySelectorAll('.variable-button').forEach(el => add(el, el, LANGS.map(l => byId[el.dataset.var].name[l]), 'width'));
-  document.querySelectorAll('[data-pick]').forEach(el => add(el, el, LANGS.map(l => byId[el.dataset.pick].question[l]), 'height'));
-  document.querySelectorAll('.hero-sub, .hero-title, #map-hint').forEach(el => add(el, el, LANGS.map(l => STRINGS[l][el.dataset.i18n]), 'height'));
+  const add = (box, dim, set) => box && items.push({ box, dim, set });
+  const i18nText = el => l => { el.textContent = STRINGS[l][el.dataset.i18n]; };
+  document.querySelectorAll('.main-nav [data-i18n], .header-cta, .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
+  const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
+  if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
+  document.querySelectorAll('.variable-button').forEach(el => add(el, 'width', l => { el.textContent = byId[el.dataset.var].name[l]; }));
+  document.querySelectorAll('.glossary-term').forEach(el => add(el, 'width', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
+  document.querySelectorAll('[data-pick]').forEach(el => add(el, 'height', l => { el.textContent = byId[el.dataset.pick].question[l]; }));
+  document.querySelectorAll('.hero-sub, .hero-title, #map-hint').forEach(el => add(el, 'height', i18nText(el)));
+  add($('glossary-def'), 'height', l => { const [term, def] = GLOSSARY[glossaryIndex][l]; $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def); });
+  const legendSet = l => { for (const [id, text] of Object.entries(legendTexts(l))) $(id).textContent = text; };
+  add($('map-legend'), 'width', legendSet);
+  add($('map-legend'), 'height', legendSet);
+  document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
-  // Widths first (they decide how text wraps), then heights.
+  // Widths first (they decide how text wraps), then heights. Each item ends back in the current language.
   for (const dim of ['width', 'height']) {
     const prop = dim === 'width' ? 'minWidth' : 'minHeight';
     const group = items.filter(i => i.dim === dim);
     group.forEach(i => { i.box.style[prop] = ''; });
     for (const i of group) {
-      const keep = i.holder.textContent, keepLabel = i.holder.getAttribute('aria-label');
       let max = 0;
-      for (const text of i.texts) {
-        i.holder.textContent = text;
+      for (const l of LANGS) {
+        i.set(l);
         const r = i.box.getBoundingClientRect();
         max = Math.max(max, dim === 'width' ? r.width : r.height);
       }
-      i.holder.textContent = keep;
-      if (keepLabel != null) i.holder.setAttribute('aria-label', keepLabel);
+      i.set(state.lang);
       i.box.style[prop] = Math.ceil(max) + 'px';
     }
   }
-  // The hero title is split into rising words; split it again after measuring.
+  // The hero title and other split headings rise word by word: split them again after measuring.
   motion.refresh();
+}
+
+// ---------- glossary: a row of terms, one meaning shown at a time ----------
+let glossaryIndex = 0;
+function renderGlossary() {
+  $('glossary-terms').replaceChildren(...GLOSSARY.map((g, i) => {
+    const b = make('button', { type: 'button', className: 'glossary-term', textContent: g[state.lang][0] });
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', i === glossaryIndex);
+    b.dataset.i = i;
+    b.addEventListener('click', () => { glossaryIndex = i; renderGlossary(); lockSizes(); });
+    return b;
+  }));
+  const [term, def] = GLOSSARY[glossaryIndex][state.lang];
+  $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def);
 }
 
 // ---------- rendering ----------
@@ -129,12 +153,7 @@ function renderStatic() {
   $('map-back').setAttribute('aria-label', t('back'));
   $('map-back').title = t('back');
   $('limits-list').replaceChildren(...t('limits').map(s => make('li', { textContent: s })));
-  $('glossary-list').replaceChildren(...GLOSSARY.map(g => {
-    const [term, def] = g[state.lang];
-    const row = make('div');
-    row.append(make('dt', { textContent: term }), make('dd', { textContent: def }));
-    return row;
-  }));
+  renderGlossary();
   $('soum-list').replaceChildren(
     ...DATA.aimags.map(a => make('option', { value: aimagName(a.name) })),
     ...DATA.soums.map(s => make('option', { value: soumLabel(s) })));
@@ -190,11 +209,7 @@ function render() {
   $('result-panel').inert = !panel;
   $('result-extras').hidden = !panel;
 
-  $('legend-real-up').textContent = `${t('real')}: ${tr(v.up)}`;
-  $('legend-possible-up').textContent = `${t('possibleShort')}: ${tr(v.up)}`;
-  $('legend-not-proven').textContent = t('notProven');
-  $('legend-possible-down').textContent = `${t('possibleShort')}: ${tr(v.down)}`;
-  $('legend-real-down').textContent = `${t('real')}: ${tr(v.down)}`;
+  for (const [id, text] of Object.entries(legendTexts(state.lang))) $(id).textContent = text;
 
   if (panel) renderResult(v);
   if (!$('soum-search').matches(':focus')) {
@@ -294,6 +309,7 @@ function downloadCsv(v, soum, r) {
 function selectVariable(id) {
   if (state.varId !== id) { state.varId = id; [state.from, state.to] = DATA.yearRange[id]; }
   render();
+  lockSizes();
 }
 // On phones the result appears under the map, so bring it into view after the zoom.
 function showResultOnPhone() {
