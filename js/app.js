@@ -251,6 +251,7 @@ function render() {
   const panel = Boolean(state.aimag);
   map.update({ aimag: state.aimag, soumId: state.soumId, panel, aimagVerdicts, soumVerdicts });
   $('stage').classList.toggle('has-panel', panel);
+  $('tool').dataset.var = v.id;   // the map, legend and badge take this question's colours (css: .tool[data-var])
   $('map-back').hidden = false;
   $('result-panel').hidden = false;
   $('result-panel').inert = !panel;
@@ -284,6 +285,7 @@ function renderResult(v) {
   }));
   $('result-title').textContent = soum ? soumName(soum) : aimagName(state.aimag);
 
+  $('result-panel').dataset.dir = r.ok ? r.direction : '';   // trend line and rate in the direction's colour
   const badge = $('verdict-badge');
   $('too-short').hidden = r.ok;
   $('result-body').hidden = !r.ok;
