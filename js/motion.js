@@ -115,7 +115,8 @@ function shuffle(cells) {
 // travels straight down, and grows. Where the rising tool reaches it, it vanishes in a quick puff, and the page glides
 // on to the tool by itself, stopping with the tool's bar (questions, years, search) just under the header.
 // Scrolling up: the logo never flies back up. It leaves the middle at once and blooms back in its own tile, glued to
-// the tiles. Back at the very top the trip is ready to play again.
+// the tiles, and the page glides back to the top, so the empty stretch between the tiles and the tool is never a place
+// to stop. Back at the very top the trip is ready to play again.
 // The trip and the tool's rise follow the scroll softly (each frame closes part of the gap, like loopsii's smooth
 // scrolling), so fast scrolling never makes anything jump.
 function initTraveler() {
@@ -181,17 +182,19 @@ function initTraveler() {
     t.classList.remove('no-anim', 'is-gone');   // the puff in reverse
   }
 
-  // Glide: a quick, smooth scroll to y. A new gesture (a touch, a key, or the wheel turned upward) takes over; the
-  // rest of a downward trackpad flick is held back, so it cannot push the tool past its resting place.
-  let gliding = false, hold = false, holdT = 0;
+  // Glide: a quick, smooth scroll to y. Wheel or trackpad movement in the same direction is held back during the
+  // glide and until the flick has died out, so it cannot push past the resting place; movement the other way, a key,
+  // or a new touch takes over. A glide asked for while a finger is still on the screen starts when it lifts.
+  let gliding = false, glideDir = 0, hold = false, holdT = 0, touching = false, pending = null;
   const settle = () => { clearTimeout(holdT); holdT = setTimeout(() => { hold = false; }, 180); };
   const takeOver = () => { gliding = false; hold = false; };
   function glide(y) {
+    if (touching) { pending = y; return; }
     if (reduced) { scrollTo({ top: y, behavior: 'instant' }); return; }
     const from = scrollY, dist = y - from;
     if (Math.abs(dist) < 2) return;
     const start = performance.now(), ms = Math.min(900, 380 + Math.abs(dist) * 0.25);
-    gliding = hold = true;
+    gliding = hold = true; glideDir = Math.sign(dist);
     const step = now => {
       if (!gliding) return;
       const p = Math.min(1, (now - start) / ms);
@@ -202,14 +205,19 @@ function initTraveler() {
   }
   addEventListener('wheel', e => {
     if (!gliding && !hold) return;
-    if (e.deltaY < 0) { takeOver(); return; }
+    if (Math.sign(e.deltaY) !== glideDir) { takeOver(); return; }
     e.preventDefault();
     if (!gliding) settle();
   }, { passive: false });
-  addEventListener('touchstart', takeOver, { passive: true });
+  addEventListener('touchstart', () => { touching = true; takeOver(); }, { passive: true });
+  const lift = () => { touching = false; if (pending != null) { const y = pending; pending = null; glide(y); } };
+  addEventListener('touchend', lift, { passive: true });
+  addEventListener('touchcancel', lift, { passive: true });
   addEventListener('keydown', takeOver);
 
-  // Follow the scroll softly; a long jump (a link, a reload) snaps.
+  // Follow the scroll softly; a long jump (a link, a reload) snaps. The stretch between the tiles and the tool is
+  // only ever passed through, never a place to stop: going down past the vanishing point glides to the tool, and
+  // going up anywhere in it glides back to the top.
   let target = scrollY, shown = scrollY, raf = 0, lastY = scrollY, snapArmed = true;
   const tick = () => {
     const gap = target - shown;
@@ -220,10 +228,14 @@ function initTraveler() {
   const follow = () => {
     const y = scrollY, g = geo();
     if (g && !reduced) {
-      if (y < lastY - 1 && !gliding && mode !== 'home') goHome();                 // no trip back up
+      const up = y < lastY - 1, down = y > lastY;
+      if (up && !gliding && mode !== 'home') goHome();                            // no trip back up
       if (mode === 'home' && y <= 2) { mode = 'trip'; shown = target = y; }       // back at the top: ready again
       if (y < g.vanish - 40) snapArmed = true;
-      if (snapArmed && !gliding && y > lastY && y >= g.vanish) { snapArmed = false; glide(toolRest()); }
+      if (!gliding && pending == null) {
+        if (down && snapArmed && y >= g.vanish) { snapArmed = false; glide(toolRest()); }
+        else if (up && y > g.leave && y < toolRest() - 40) glide(0);
+      }
     }
     lastY = y;
     target = y;
