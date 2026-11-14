@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is it real? · Quindecim</title>
+  <link rel="stylesheet" href="css/base.css">
+</head>
+<body>
+  <!--
+    Structure only. Every block has a class and an id so a design can be applied in CSS
+    (css/base.css) without touching the JavaScript. Text comes from js/i18n.js.
+  -->
+  <header class="site-header">
+    <h1 id="title" data-i18n="title"></h1>
+    <button id="lang-toggle" class="lang-toggle" type="button"></button>
+  </header>
+
+  <p id="sample-banner" class="sample-banner" data-i18n="sample" hidden></p>
+  <p id="load-error" class="load-error" hidden></p>
+
+  <main class="layout">
+    <section class="step step-variable" aria-labelledby="h-step1">
+      <h2 id="h-step1" data-i18n="step1"></h2>
+      <div id="variable-buttons" class="variable-buttons" role="radiogroup"></div>
+    </section>
+
+    <section class="step step-place" aria-labelledby="h-step2">
+      <h2 id="h-step2" data-i18n="step2"></h2>
+      <label class="soum-search">
+        <span data-i18n="searchSoum"></span>
+        <input id="soum-search" type="search" list="soum-list" autocomplete="off">
+        <datalist id="soum-list"></datalist>
+      </label>
+      <p class="hint" data-i18n="mapHint"></p>
+      <div id="map" class="map"></div>
+      <div id="map-legend" class="map-legend" hidden>
+        <p data-i18n="mapLegend"></p>
+        <ul>
+          <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
+          <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
+          <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
+          <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
+          <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step step-years" aria-labelledby="h-step3">
+      <h2 id="h-step3" data-i18n="step3"></h2>
+      <label class="year-range"><span data-i18n="from"></span>
+        <input id="year-from" type="range" step="1"><output id="year-from-out"></output></label>
+      <label class="year-range"><span data-i18n="to"></span>
+        <input id="year-to" type="range" step="1"><output id="year-to-out"></output></label>
+    </section>
+
+    <section id="guess" class="step step-guess" aria-labelledby="h-step4" hidden>
+      <h2 id="h-step4" data-i18n="step4"></h2>
+      <p data-i18n="guessPrompt"></p>
+      <div class="guess-buttons">
+        <button type="button" data-guess="up" id="guess-up"></button>
+        <button type="button" data-guess="down" id="guess-down"></button>
+        <button type="button" data-guess="flat" data-i18n="guessFlat"></button>
+      </div>
+      <button type="button" class="link-button" data-guess="skip" data-i18n="skipGuess"></button>
+    </section>
+
+    <p id="pick-first" class="hint" data-i18n="pickFirst"></p>
+
+    <section id="result" class="result" aria-labelledby="h-result" hidden>
+      <h2 id="h-result" data-i18n="resultTitle"></h2>
+      <p id="guess-feedback" class="guess-feedback"></p>
+
+      <div id="too-short" class="too-short" hidden></div>
+
+      <div id="result-body">
+        <figure class="chart">
+          <div id="chart"></div>
+          <figcaption class="chart-legend">
+            <span class="key key-trend" data-i18n="chartLegendSen"></span>
+            <span class="key key-linear" data-i18n="chartLegendLin"></span>
+            <span class="key key-mean" data-i18n="chartLegendAvg"></span>
+          </figcaption>
+        </figure>
+
+        <dl id="verdict" class="verdict-card">
+          <dt data-i18n="whatChanged"></dt><dd id="v-what"></dd>
+          <dt data-i18n="speed"></dt><dd id="v-speed"></dd>
+          <dt data-i18n="isReal"></dt><dd id="v-real"></dd>
+          <dt data-i18n="meaning"></dt><dd id="v-meaning"></dd>
+        </dl>
+
+        <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
+        <p id="level-note" class="note"></p>
+
+        <details class="stats-details">
+          <summary data-i18n="details"></summary>
+          <table class="stats-table"><tbody id="stats-rows"></tbody></table>
+        </details>
+
+        <div class="result-actions">
+          <button id="download" type="button" data-i18n="download"></button>
+          <button id="share" type="button" data-i18n="share"></button>
+        </div>
+
+        <aside class="limits">
+          <h3 data-i18n="limitsTitle"></h3>
+          <ul id="limits-list"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="glossary" aria-labelledby="h-glossary">
+      <h2 id="h-glossary" data-i18n="glossaryTitle"></h2>
+      <dl id="glossary-list"></dl>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
