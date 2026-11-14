@@ -149,23 +149,27 @@ function initTraveler() {
 }
 
 // ---------- rotating word ----------
-let rotTimer = null;
+let rotTimer = null, rotSwap = null;
 function startRotator(words, before, after) {
   const word = $('rot-word'), win = word.parentElement;
   $('rot-before').textContent = before;
   $('rot-after').textContent = after;
-  // English ends with "?" right after the word; Mongolian has "байна уу?" as its own word.
-  $('rot-after').style.marginLeft = /^[?!.]/.test(after) ? '-0.3em' : '';
+  // Two lines in both languages: English "Is it getting / greener?" ("?" sticks to the word);
+  // Mongolian "Ногоорч / байна уу?" ("байна уу?" is its own line).
+  $('rot-after').classList.toggle('is-line', !/^[?!.]/.test(after));
   $('rot-before').hidden = !before;
   let i = 0;
   const fit = () => { win.style.width = word.offsetWidth + 'px'; };
+  // Stop the old rotation completely (also a word swap already on its way), or after a language switch
+  // a word from the other language could still slide in.
+  clearInterval(rotTimer); clearTimeout(rotSwap);
+  word.classList.remove('is-leaving', 'is-entering');
   word.textContent = words[0];
   fit();
-  clearInterval(rotTimer);
   if (reduced) return;
   rotTimer = setInterval(() => {
     word.classList.add('is-leaving');
-    setTimeout(() => {
+    rotSwap = setTimeout(() => {
       i = (i + 1) % words.length;
       word.classList.remove('is-leaving');
       word.classList.add('is-entering');

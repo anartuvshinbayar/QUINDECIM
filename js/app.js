@@ -89,16 +89,19 @@ function lockSizes() {
   const items = [];
   const add = (box, dim, set) => box && items.push({ box, dim, set });
   const i18nText = el => l => { el.textContent = STRINGS[l][el.dataset.i18n]; };
-  document.querySelectorAll('.main-nav [data-i18n], .year-label, .glossary-title').forEach(el => add(el, 'width', i18nText(el)));
+  document.querySelectorAll('.main-nav [data-i18n], .year-label').forEach(el => add(el, 'width', i18nText(el)));
   const big = document.querySelector('.hero .button-big'), bigText = big && big.querySelector('[data-i18n]');
   if (big) { add(big, 'width', i18nText(bigText)); add(big, 'height', i18nText(bigText)); }   // it can wrap on small phones
   // Question tabs: each tab is as wide as its longer name, and the row as tall as its taller language (phones wrap).
   const tabNames = l => document.querySelectorAll('.q-tab').forEach(b => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; });
   document.querySelectorAll('.q-tab').forEach(b => add(b, 'width', l => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; }));
   add($('q-tabs'), 'height', tabNames);
-  document.querySelectorAll('.glossary-term').forEach(el => add(el, 'width', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
-  document.querySelectorAll('.hero-sub, .hero-title, #map-hint, #questions [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
-  add($('glossary-def'), 'height', l => { const [term, def] = GLOSSARY[glossaryIndex][l]; $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def); });
+  // Words: the term cells share one width (CSS grid), so only their height is held; the meaning card is held at
+  // the tallest meaning of all terms in both languages, so picking a term moves nothing either.
+  document.querySelectorAll('.glossary-term').forEach(el => add(el, 'height', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
+  GLOSSARY.forEach((_, i) => add($('glossary-def'), 'height', l => showDef(i, l)));
+  add($('glossary-def'), 'height', () => showDef(glossaryIndex, state.lang));
+  document.querySelectorAll('.hero-sub, #map-hint, #questions [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
   const legendSet = l => { for (const [id, text] of Object.entries(legendTexts(l))) $(id).textContent = text; };
   add($('map-legend'), 'width', legendSet);
   add($('map-legend'), 'height', legendSet);
@@ -196,8 +199,12 @@ function renderGlossary() {
     b.addEventListener('click', () => { glossaryIndex = i; renderGlossary(); lockSizes(); });
     return b;
   }));
-  const [term, def] = GLOSSARY[glossaryIndex][state.lang];
-  $('glossary-def').replaceChildren(make('b', { textContent: term }), ': ' + def);
+  showDef(glossaryIndex, state.lang);
+}
+// The meaning card: the term as a heading, its meaning below.
+function showDef(i, l) {
+  const [term, def] = GLOSSARY[i][l];
+  $('glossary-def').replaceChildren(make('b', { textContent: term }), make('span', { textContent: def }));
 }
 
 // ---------- rendering ----------
@@ -205,6 +212,7 @@ function renderGlossary() {
 function renderStatic() {
   document.documentElement.lang = state.lang;
   document.title = t('docTitle');
+  $('hero-title').setAttribute('aria-label', t('heroAria'));   // the visible headline rotates; this is its steady name
   document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
   document.querySelectorAll('.lang-button').forEach(b => {
     const on = b.dataset.lang === state.lang;

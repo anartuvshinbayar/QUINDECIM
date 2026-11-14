@@ -116,12 +116,15 @@ main > section { position: relative; z-index: 1; }
   min-height: calc(100svh - 90px); display: flex; flex-direction: column; justify-content: center; gap: 3.5svh;
 }
 .hero-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 32px; padding: 0 clamp(14px, 2.2vw, 36px); }
-.hero-title { font-size: clamp(3.4rem, min(13.5vw, 17.5svh), 12.5rem); line-height: .92; font-weight: 700; color: var(--blue); letter-spacing: -.035em; }
-/* Every piece of the rotating line shares one line box, so the moving word sits on the same baseline. */
-.hero-rotator { margin: 1.4svh 0 0; font-size: clamp(1.15rem, min(2.6vw, 3.6svh), 2.1rem); line-height: 1.3; font-weight: 600; color: var(--clay); display: flex; justify-content: flex-start; align-items: flex-start; gap: .3em; flex-wrap: wrap; }
-.hero-rotator > span { line-height: 1.3; }
-.rot-window { display: block; overflow: hidden; height: 1.3em; white-space: nowrap; transition: width .5s var(--ease); }
-.rot-word { display: inline-block; vertical-align: top; white-space: nowrap; line-height: 1.3; transition: transform .5s var(--ease), opacity .5s; }
+/* The headline is the rotating question, on two lines in both languages (so switching MN/EN moves nothing).
+   Every piece shares one line height, and the word window clips exactly one line while the word slides. */
+.hero-title { --lh: 1.15; font-size: clamp(2.6rem, min(8.2vw, 12.5svh), 8rem); line-height: var(--lh); min-height: calc(2em * var(--lh)); font-weight: 700; color: var(--blue); letter-spacing: -.03em; }
+.rot-before { display: block; white-space: nowrap; }
+.rot-line { display: flex; flex-wrap: wrap; align-items: flex-start; }
+.rot-after { white-space: nowrap; }
+.rot-after.is-line { flex-basis: 100%; }
+.rot-window { display: block; overflow: hidden; height: calc(1em * var(--lh)); white-space: nowrap; transition: width .5s var(--ease); }
+.rot-word { display: inline-block; vertical-align: top; white-space: nowrap; transition: transform .5s var(--ease), opacity .5s; }
 .rot-word.is-leaving { transform: translateY(-110%); opacity: 0; }
 .rot-word.is-entering { transform: translateY(110%); opacity: 0; transition: none; }
 .hero-side { display: grid; justify-items: end; gap: 2svh; text-align: right; padding-bottom: .6svh; }
@@ -311,15 +314,17 @@ body.logo-in .travel-logo img { transform: none; }
 .stats-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 3px 14px 3px 0; vertical-align: top; }
 .limits-list { margin: 4px 0 8px; padding-left: 18px; font-size: .82rem; color: var(--muted); }
 
-/* ---------- glossary: one slim band; tap a term to see its meaning ---------- */
-.glossary { max-width: 1400px; margin: 0 auto; padding: 22px var(--gutter) 28px; display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; align-items: center; scroll-margin-top: 70px; }
-.glossary-title { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-.glossary-terms { display: flex; flex-wrap: wrap; gap: 6px; }
-.glossary-term { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); font-size: .84rem; font-weight: 600; color: var(--ink); transition: background .2s, color .2s, border-color .2s; }
+/* ---------- Words: equal term cells on the left, the chosen term's meaning in a card on the right ----------
+   Inset like the questions section, so the title sits inside the page rails, not on them. */
+.glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px clamp(20px, 3vw, 40px); align-items: stretch; scroll-margin-top: 70px; }
+.glossary-title { grid-column: 1 / -1; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
+.glossary-terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-content: start; }
+.glossary-term { min-width: 0; display: flex; align-items: center; justify-content: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--milk); font-size: .86rem; font-weight: 600; line-height: 1.25; text-align: center; color: var(--ink); transition: background .2s, color .2s, border-color .2s; }
 .glossary-term:hover { border-color: var(--blue); color: var(--blue); }
+.glossary-term:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .glossary-term[aria-selected="true"] { background: var(--blue); border-color: var(--blue); color: var(--milk); }
-.glossary-def { grid-column: 2; margin: 0; font-size: .95rem; color: #2A3550; }
-.glossary-def b { color: var(--blue); }
+.glossary-def { margin: 0; padding: clamp(18px, 2.4vw, 28px); border: 1px solid var(--line); border-radius: 12px; background: #FBF8F2; font-size: 1.02rem; line-height: 1.5; color: #2A3550; }
+.glossary-def b { display: block; margin-bottom: 8px; font-size: clamp(1.15rem, 1.8vw, 1.4rem); line-height: 1.2; color: var(--blue); }
 
 /* ---------- footer ---------- */
 .site-footer { background: var(--blue); color: var(--milk); padding: 56px var(--gutter); }
@@ -342,7 +347,7 @@ body.logo-in .travel-logo img { transform: none; }
   .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 74px); gap: 3svh; }
   .header-inner { min-height: 60px; }
   .hero-copy { grid-template-columns: 1fr; padding: 0 6px; }
-  .hero-title { font-size: clamp(2.8rem, min(17vw, 10svh), 4.6rem); }
+  .hero-title { font-size: clamp(2rem, min(12.5vw, 7.5svh), 3.6rem); }
   .hero-side { justify-items: start; text-align: left; }
   .hero-sub { max-width: none; }
   .hero-art { width: calc(var(--tile) * 5); }
@@ -354,8 +359,9 @@ body.logo-in .travel-logo img { transform: none; }
   .orbit-item { --size: calc(var(--o) * .3); }
   .orbit-shape { font-size: clamp(.6rem, 2.7vw, .78rem); padding: 12%; gap: 3px; }
   .frame { padding-top: 64px; padding-bottom: 64px; }
-  .glossary { grid-template-columns: 1fr; }
-  .glossary-def { grid-column: 1; }
+  .glossary { grid-template-columns: minmax(0, 1fr); }
+  .glossary-terms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .glossary-term:last-child:nth-child(odd) { grid-column: 1 / -1; }
   /* Phones: the bar sits above the map, and the result appears below the map instead of beside it. */
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
   .stage-bar { position: relative; }

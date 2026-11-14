@@ -1,4 +1,4 @@
-# Quindecim: Үнэн үү? / Is it real?
+# Quindecim: climate trends for every soum in Mongolia
 
 > A bilingual (Mongolian and English) web tool that tests whether climate and vegetation in each of Mongolia's 337 soums are really changing. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective".
 

@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Үнэн үү? · Quindecim</title>
+  <title>Quindecim · Сум бүрийн уур амьсгалын чиг хандлага</title>
   <meta name="description" content="Is the climate in your soum really changing? Pick a question and one of Mongolia's 337 soums, and test 25 to 45 years of NASA data for a real trend. In Mongolian and English.">
   <meta name="theme-color" content="#F6F1E7">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Quindecim">
-  <meta property="og:title" content="Үнэн үү? Is it real? Climate trends for every soum">
+  <meta property="og:title" content="Quindecim · Climate trends for every soum in Mongolia">
   <meta property="og:description" content="Test NASA data for a real climate trend in any of Mongolia's 337 soums. Mann-Kendall trend test, Sen's slope, in Mongolian and English.">
   <meta name="twitter:card" content="summary">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -16,15 +16,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611142306">
+  <link rel="stylesheet" href="css/site.css?v=202611142318">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "Quindecim: Is it real?",
-        "alternateName": "Үнэн үү? Сум бүрийн уур амьсгалын чиг хандлага",
+        "name": "Quindecim",
+        "alternateName": "Quindecim · Сум бүрийн уур амьсгалын чиг хандлага",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "Any web browser",
         "inLanguage": ["mn", "en"],
@@ -94,8 +94,11 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <div class="hero-head">
-          <h1 id="hero-title" class="hero-title" data-i18n="heroTitle" data-split></h1>
-          <p class="hero-rotator" aria-live="off"><span id="rot-before"></span> <span class="rot-window"><span id="rot-word" class="rot-word"></span></span> <span id="rot-after"></span></p>
+          <!-- The headline is the rotating question: "Is it getting / greener?" ("Ногоорч / байна уу?"). -->
+          <h1 id="hero-title" class="hero-title" data-reveal>
+            <span id="rot-before" class="rot-before" aria-hidden="true"></span>
+            <span class="rot-line" aria-hidden="true"><span class="rot-window"><span id="rot-word" class="rot-word"></span></span><span id="rot-after" class="rot-after"></span></span>
+          </h1>
         </div>
         <div class="hero-side">
           <p class="hero-sub" data-i18n="heroSub" data-reveal></p>
@@ -230,14 +233,14 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><img src="assets/brand/quindecim-mark-small.svg" alt=""></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="data/data.js?v=202611142306"></script>
-  <script src="js/stats.js?v=202611142306"></script>
-  <script src="js/variables.js?v=202611142306"></script>
-  <script src="js/i18n.js?v=202611142306"></script>
-  <script src="js/data.js?v=202611142306"></script>
-  <script src="js/map.js?v=202611142306"></script>
-  <script src="js/chart.js?v=202611142306"></script>
-  <script src="js/motion.js?v=202611142306"></script>
-  <script src="js/app.js?v=202611142306"></script>
+  <script src="data/data.js?v=202611142318"></script>
+  <script src="js/stats.js?v=202611142318"></script>
+  <script src="js/variables.js?v=202611142318"></script>
+  <script src="js/i18n.js?v=202611142318"></script>
+  <script src="js/data.js?v=202611142318"></script>
+  <script src="js/map.js?v=202611142318"></script>
+  <script src="js/chart.js?v=202611142318"></script>
+  <script src="js/motion.js?v=202611142318"></script>
+  <script src="js/app.js?v=202611142318"></script>
 </body>
 </html>

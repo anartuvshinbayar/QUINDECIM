@@ -1,4 +1,4 @@
-# Quindecim · Is it real?
+# Quindecim
 
 NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Team Quindecim, Ulaanbaatar.
 
