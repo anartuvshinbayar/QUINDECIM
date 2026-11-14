@@ -1,7 +1,9 @@
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
 // All interface text in English and Mongolian.
 // Mongolian is a first draft: Anu, please check every line.
 
-export const STRINGS = {
+const STRINGS = {
   en: {
     title: 'Is it real? Climate trends for every soum',
     sample: 'SAMPLE DATA: invented numbers for testing. Not real results.',
@@ -104,7 +106,7 @@ export const STRINGS = {
   },
 };
 
-export const GLOSSARY = [
+const GLOSSARY = [
   { en: ['Time series', 'The same measurement repeated every year, drawn as a line.'],
     mn: ['Хугацааны цуваа', 'Жил бүр давтагдсан ижил хэмжилт, шугамаар зурсан.'] },
   { en: ['Trend', 'A steady movement up or down over many years.'],
@@ -124,3 +126,6 @@ export const GLOSSARY = [
   { en: ['Confidence interval', 'The range the true rate of change most likely sits in.'],
     mn: ['Итгэх интервал', 'Өөрчлөлтийн жинхэнэ хурд байх магадлалтай хүрээ.'] },
 ];
+
+Q.i18n = { STRINGS, GLOSSARY };
+})(globalThis.Q = globalThis.Q || {});

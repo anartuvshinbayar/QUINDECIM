@@ -1,7 +1,9 @@
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
 // One entry per variable id used in data/data.csv.
 // display: 'percent' shows the rate as % of the period average per decade; 'absolute' shows units per decade.
 // level: 'soum' = genuinely soum-level data; 'regional' = coarse model cells shared by nearby soums.
-export const VARIABLES = [
+const VARIABLES = [
   {
     id: 'ndvi_summer', display: 'percent', unit: 'NDVI', decimals: 3,
     level: 'soum', source: 'NASA MODIS MOD13A2 (1 km)',
@@ -45,4 +47,7 @@ export const VARIABLES = [
   },
 ];
 
-export const byId = Object.fromEntries(VARIABLES.map(v => [v.id, v]));
+const byId = Object.fromEntries(VARIABLES.map(v => [v.id, v]));
+
+Q.variables = { VARIABLES, byId };
+})(globalThis.Q = globalThis.Q || {});

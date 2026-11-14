@@ -1,9 +1,11 @@
-import { analyze } from './stats.js';
-import { loadData, slice } from './data.js';
-import { drawMap } from './map.js';
-import { drawChart } from './chart.js';
-import { VARIABLES, byId } from './variables.js';
-import { STRINGS, GLOSSARY } from './i18n.js';
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
+const { analyze } = Q.stats;
+const { loadData, slice } = Q.data;
+const { drawMap } = Q.map;
+const { drawChart } = Q.chart;
+const { VARIABLES, byId } = Q.variables;
+const { STRINGS, GLOSSARY } = Q.i18n;
 
 const $ = id => document.getElementById(id);
 
@@ -294,8 +296,7 @@ function wire() {
     DATA = await loadData();
   } catch (err) {
     $('load-error').hidden = false;
-    $('load-error').textContent = 'Could not load data: ' + err.message +
-      '. Open the site through a web server (see README), not as a file.';
+    $('load-error').textContent = 'Could not load data: ' + err.message;
     return;
   }
   $('sample-banner').hidden = !DATA.sample;
@@ -306,3 +307,4 @@ function wire() {
   wire();
   render();
 })();
+})(globalThis.Q = globalThis.Q || {});

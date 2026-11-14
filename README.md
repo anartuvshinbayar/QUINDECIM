@@ -8,13 +8,13 @@ Built for students and teachers in Mongolia, in Mongolian and English.
 
 ## Run it
 
-It is a static site with no build step. It must be served over HTTP (browsers block `fetch` from `file://`):
+Double-click `index.html` to open it in Chrome, Safari or Firefox. No server and no build step are needed:
+the data is packed into `data/data.js`, and the scripts are plain (no modules).
 
-```bash
-python3 -m http.server 8765
-```
+A local server also works (`python3 -m http.server 8765`, then http://localhost:8765), and so does GitHub Pages.
 
-Then open http://localhost:8765. GitHub Pages works the same way.
+After changing `data/soums.geojson` or `data/data.csv` by hand, run `python3 tools/build_data.py` to rebuild
+`data/data.js`. The export scripts do this automatically.
 
 ## Files
 
@@ -30,6 +30,8 @@ Then open http://localhost:8765. GitHub Pages works the same way.
 | `js/i18n.js` | All text in English and Mongolian, plus the glossary |
 | `data/soums.geojson` | Real soum boundaries (FAO GAUL 2025, 337 soums) |
 | `data/data.csv` | Real values, one row per soum per year per variable |
+| `data/data.js` | The two files above packed into one script; this is what the page loads |
+| `tools/build_data.py` | Rebuilds `data/data.js` |
 | `data/parts/` | One CSV per variable (merged into `data.csv`) |
 | `data/sample/` | Invented test data in the same format |
 | `tools/gee_export.py` | Earth Engine export for boundaries, greenness, rain, temperature |

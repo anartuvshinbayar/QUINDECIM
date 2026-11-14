@@ -1,3 +1,5 @@
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
 // Plain SVG map of soums. No library, no tiles: works offline.
 // Every soum is a <path class="soum" data-id=".." data-verdict=".."> so CSS decides the colours.
 
@@ -9,7 +11,7 @@ function rings(geometry) {
   return [];
 }
 
-export function drawMap(container, soums, { onSelect, label }) {
+function drawMap(container, soums, { onSelect, label }) {
   // Equirectangular projection, x stretched by cos(mid latitude) so Mongolia keeps its shape.
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const s of soums) for (const r of rings(s.geometry)) for (const [x, y] of r) {
@@ -58,3 +60,6 @@ export function drawMap(container, soums, { onSelect, label }) {
     },
   };
 }
+
+Q.map = { drawMap };
+})(globalThis.Q = globalThis.Q || {});

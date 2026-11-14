@@ -87,3 +87,5 @@ with open(OUT / "data.csv", "w", newline="") as f:
     w.writerows(rows)
 
 print(f"{len(features)} sample soums, {len(rows)} rows")
+from build_data import build
+build(OUT)

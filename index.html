@@ -147,6 +147,14 @@
     </section>
   </main>
 
-  <script type="module" src="js/app.js"></script>
+  <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
+  <script src="data/data.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/variables.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

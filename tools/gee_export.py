@@ -136,6 +136,8 @@ def merge():
         w.writerow(["soum_id", "variable", "year", "value"])
         w.writerows(rows)
     print(f"data.csv: {len(rows)} rows from {len(list(PARTS.glob('*.csv')))} variables")
+    from build_data import build
+    build(DATA)
 
 
 TASKS = {"boundaries": export_boundaries, "ndvi_summer": ndvi_summer, "rain_summer": rain_summer,

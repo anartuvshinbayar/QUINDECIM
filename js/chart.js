@@ -1,3 +1,5 @@
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
 // Time series chart as plain SVG: one dot per year, Sen's slope trend line,
 // dashed straight-line fit, dotted period average. Classes only, CSS sets colours.
 
@@ -20,7 +22,7 @@ function niceTicks(lo, hi, count = 5) {
   return ticks;
 }
 
-export function drawChart(container, result, { decimals = 2, unit = '', labels }) {
+function drawChart(container, result, { decimals = 2, unit = '', labels }) {
   const W = 720, H = 340, m = { l: 64, r: 16, t: 16, b: 40 };
   const { x, y } = result;
   const yMin = Math.min(...y), yMax = Math.max(...y), pad = (yMax - yMin) * 0.12 || 1;
@@ -63,3 +65,6 @@ export function drawChart(container, result, { decimals = 2, unit = '', labels }
 
   container.replaceChildren(svg);
 }
+
+Q.chart = { drawChart };
+})(globalThis.Q = globalThis.Q || {});

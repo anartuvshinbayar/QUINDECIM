@@ -1,7 +1,9 @@
+// Plain script (no modules) so the site also works when index.html is opened as a file.
+(function (Q) {
 // Trend statistics. Pure functions, no DOM, so they run in the browser and in node tests.
 // Mann-Kendall (with tie correction), Sen's slope, ordinary least squares with t-test and 95% CI.
 
-export const MIN_YEARS = 20;
+const MIN_YEARS = 20;
 
 // ---------- distributions ----------
 
@@ -15,7 +17,7 @@ function erfc(x) {
   return x >= 0 ? r : 2 - r;
 }
 
-export function normalCdf(z) {
+function normalCdf(z) {
   return 0.5 * erfc(-z / Math.SQRT2);
 }
 
@@ -63,12 +65,12 @@ function incBeta(x, a, b) {
 }
 
 // Two-sided p value for Student's t with df degrees of freedom.
-export function tTwoSidedP(t, df) {
+function tTwoSidedP(t, df) {
   return incBeta(df / (df + t * t), df / 2, 0.5);
 }
 
 // Critical t value for a two-sided interval at the given confidence (bisection).
-export function tCritical(df, confidence = 0.95) {
+function tCritical(df, confidence = 0.95) {
   const target = 1 - confidence;
   let lo = 0, hi = 1000;
   for (let i = 0; i < 200; i++) {
@@ -87,12 +89,12 @@ function median(arr) {
   return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
 }
 
-export function mean(arr) {
+function mean(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
 // Drop years with missing values and keep the two arrays aligned.
-export function clean(years, values) {
+function clean(years, values) {
   const x = [], y = [];
   for (let i = 0; i < years.length; i++) {
     if (Number.isFinite(years[i]) && Number.isFinite(values[i])) { x.push(years[i]); y.push(values[i]); }
@@ -102,7 +104,7 @@ export function clean(years, values) {
 
 // ---------- tests ----------
 
-export function mannKendall(y) {
+function mannKendall(y) {
   const n = y.length;
   let s = 0;
   for (let i = 0; i < n - 1; i++) {
@@ -122,7 +124,7 @@ export function mannKendall(y) {
   return { n, s, varS, z, p, tau };
 }
 
-export function sensSlope(x, y) {
+function sensSlope(x, y) {
   const slopes = [];
   for (let i = 0; i < x.length - 1; i++) {
     for (let j = i + 1; j < x.length; j++) {
@@ -134,7 +136,7 @@ export function sensSlope(x, y) {
   return { slope, intercept };
 }
 
-export function linearTrend(x, y) {
+function linearTrend(x, y) {
   const n = x.length;
   const mx = mean(x), my = mean(y);
   let sxx = 0, sxy = 0;
@@ -155,14 +157,14 @@ export function linearTrend(x, y) {
 // ---------- verdict ----------
 
 // Levels follow the Mann-Kendall p value: < 0.05 real, 0.05-0.10 possible, otherwise not proven.
-export function verdictLevel(p) {
+function verdictLevel(p) {
   if (p < 0.05) return 'real';
   if (p < 0.10) return 'possible';
   return 'not-proven';
 }
 
 // Full analysis of one series. Returns { ok:false, reason } when there is too little data.
-export function analyze(years, values) {
+function analyze(years, values) {
   const { x, y } = clean(years, values);
   if (x.length < MIN_YEARS) return { ok: false, reason: 'too-short', n: x.length, x, y };
   const mk = mannKendall(y);
@@ -177,3 +179,6 @@ export function analyze(years, values) {
     testsDisagree: linSig !== mkSig,
   };
 }
+
+Q.stats = { MIN_YEARS, normalCdf, tTwoSidedP, tCritical, mean, clean, mannKendall, sensSlope, linearTrend, verdictLevel, analyze };
+})(globalThis.Q = globalThis.Q || {});

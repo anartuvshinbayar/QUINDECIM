@@ -85,6 +85,8 @@ def main():
     with open(DATA / "data.csv", "w", newline="") as fh:
         w = csv.writer(fh); w.writerow(["soum_id", "variable", "year", "value"]); w.writerows(merged)
     print(f"data.csv: {len(merged)} rows")
+    from build_data import build
+    build(DATA)
 
 
 if __name__ == "__main__":

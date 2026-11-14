@@ -29,12 +29,13 @@ for k in range(8):
     cases.append({"x": x, "y": [float(v) for v in y]})
 
 js = """
-import { analyze } from './js/stats.js';
+eval(require('fs').readFileSync('js/stats.js', 'utf8'));
+const { analyze } = globalThis.Q.stats;
 const cases = JSON.parse(process.argv[1]);
 console.log(JSON.stringify(cases.map(c => { const r = analyze(c.x, c.y);
   return { s: r.mk.s, z: r.mk.z, p: r.mk.p, sen: r.sen.slope, slope: r.lin.slope, lp: r.lin.p, lo: r.lin.ciLow, hi: r.lin.ciHigh }; })));
 """
-out = subprocess.run(["node", "--input-type=module", "-e", js, json.dumps(cases)], cwd=ROOT, capture_output=True, text=True)
+out = subprocess.run(["node", "--input-type=commonjs", "-e", js, json.dumps(cases)], cwd=ROOT, capture_output=True, text=True)
 if out.returncode: sys.exit(out.stderr)
 site = json.loads(out.stdout)
 
