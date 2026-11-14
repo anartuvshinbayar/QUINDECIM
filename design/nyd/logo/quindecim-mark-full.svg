@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <title>Quindecim mark</title>
+  <g id="ring" fill="none" stroke="#1D4FA8" stroke-width="11">
+    <circle cx="96" cy="96" r="86"/>
+  </g>
+  <g id="mountain" fill="none" stroke="#2E7A57" stroke-width="5" stroke-linejoin="miter" stroke-miterlimit="4" stroke-linecap="round">
+    <path d="M30.22 119.94L52 84L68 97L96 40L124 97L140 84L161.78 119.94A70 70 0 0 1 30.22 119.94Z"/>
+    <path d="M96 133A7 7 0 0 1 96 147A11.75 11.75 0 0 1 96 123.5A16.5 16.5 0 0 1 96 156.5A60.5 60.5 0 0 1 40.81 120.79L54.47 98.25L71.27 111.9L96 61.55L120.73 111.9L137.53 98.25L151.19 120.79A60.5 60.5 0 0 1 96 156.5"/>
+  </g>
+  <g id="cloud" fill="none" stroke="#1D4FA8" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M52.5 58.5A3.25 3.25 0 0 0 46 58.5A6.5 6.5 0 0 0 59 58.5A9.75 9.75 0 0 0 39.5 58.5A7.5 7.5 0 0 0 47 66L71.5 66A4.25 4.25 0 0 0 71.5 57.5A8.5 8.5 0 0 0 57.24 52.91"/>
+  </g>
+  <g id="sun" fill="#B9431C">
+    <circle cx="139" cy="60" r="8.5"/>
+  </g>
+</svg>
