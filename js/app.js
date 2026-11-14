@@ -99,7 +99,7 @@ function lockSizes() {
   document.querySelectorAll('.glossary-term').forEach(el => add(el, 'height', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
   GLOSSARY.forEach((_, i) => add($('glossary-def'), 'height', l => showDef(i, l)));
   add($('glossary-def'), 'height', () => showDef(glossaryIndex, state.lang));
-  document.querySelectorAll('.hero-sub, #map-hint, #questions [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
+  document.querySelectorAll('.hero-sub, #map-hint').forEach(el => add(el, 'height', i18nText(el)));
   const legendSet = l => { for (const [id, text] of Object.entries(legendTexts(l))) $(id).textContent = text; };
   add($('map-legend'), 'width', legendSet);
   add($('map-legend'), 'height', legendSet);
@@ -125,7 +125,7 @@ function lockSizes() {
   motion.refresh();
 }
 
-// ---------- the five questions as shapes (orbit) and in the map-bar switcher ----------
+// ---------- the five questions as tabs in the map bar ----------
 const ICONS = {
   leaf: '<path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14z"/><path d="M5 19l7-7"/>',
   drop: '<path d="M12 3c3.5 4.5 6 7.6 6 10.5a6 6 0 0 1-12 0C6 10.6 8.5 7.5 12 3z"/>',
@@ -133,44 +133,24 @@ const ICONS = {
   snow: '<path d="M12 2.5v19M3.8 7.2l16.4 9.6M3.8 16.8l16.4-9.6M9 4.3l3 2 3-2M9 19.7l3-2 3 2"/>',
   frost: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 17.5v-6"/><path d="M18 4l2 2M20 4l-2 2"/>',
 };
+// Icon colours per question (background, line).
 const SHAPES = {
-  ndvi_summer: { shape: 'circle', bg: '#CFDCCB', fg: '#2E7A57', icon: 'leaf', a: -90, bd: '0s' },
-  rain_summer: { shape: 'square', bg: '#CFE0F2', fg: '#3A68BD', icon: 'drop', a: -18, bd: '-1.4s', tilt: '10deg' },
-  temp_summer: { shape: 'diamond', bg: '#F1D6C8', fg: '#B9431C', icon: 'sun', a: 54, bd: '-2.6s' },
-  temp_winter: { shape: 'circle', bg: '#D9DDE6', fg: '#15213B', icon: 'snow', a: 126, bd: '-3.3s' },
-  first_frost: { shape: 'square', bg: '#EFE2C4', fg: '#8A5A1C', icon: 'frost', a: 198, bd: '-.7s', tilt: '-9deg' },
+  ndvi_summer: { bg: '#CFDCCB', fg: '#2E7A57', icon: 'leaf' },
+  rain_summer: { bg: '#CFE0F2', fg: '#3A68BD', icon: 'drop' },
+  temp_summer: { bg: '#F1D6C8', fg: '#B9431C', icon: 'sun' },
+  temp_winter: { bg: '#D9DDE6', fg: '#15213B', icon: 'snow' },
+  first_frost: { bg: '#EFE2C4', fg: '#8A5A1C', icon: 'frost' },
 };
 // Colour of each rotating headline word, in the order of rotWords (same in both languages), taken from the
-// question shapes: greener = green, drier = dry earth, hotter = clay, colder = winter navy.
+// question icons: greener = green, drier = dry earth, hotter = clay, colder = winter navy.
 const ROT_COLORS = ['#2E7A57', '#8A5A1C', '#B9431C', '#15213B'];
 const iconSvg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 const paint = (el, sh) => { el.style.setProperty('--bg', sh.bg); el.style.setProperty('--fg', sh.fg); };
 
 function renderQuestions() {
   const vars = VARIABLES.filter(v => DATA.series[v.id]);
-  // Built once. Rebuilding on a language switch restarted each label's counter-spin while the ring kept
-  // turning, which left the labels tilted (90 degrees after 45 seconds). A switch now only changes the text.
-  if (!$('orbit-ring').children.length) {
-    $('orbit-ring').replaceChildren(...vars.map(v => {
-      const sh = SHAPES[v.id];
-      const b = make('button', { type: 'button', className: 'orbit-item' });
-      b.dataset.var = v.id;
-      b.setAttribute('role', 'radio');
-      b.style.setProperty('--a', sh.a + 'deg');
-      const inner = make('span', { className: 'orbit-inner' });
-      const shape = make('span', { className: `orbit-shape shape-${sh.shape}` });
-      paint(shape, sh);
-      shape.style.setProperty('--bd', sh.bd);
-      if (sh.tilt) shape.style.setProperty('--tilt', sh.tilt);
-      shape.innerHTML = iconSvg(sh.icon);
-      shape.append(make('span', { className: 'orbit-label' }));
-      inner.append(shape);
-      b.append(inner);
-      // Pick a question, then go to the map.
-      b.addEventListener('click', () => { selectVariable(v.id); $('tool').scrollIntoView({ behavior: 'smooth' }); });
-      return b;
-    }));
-    // The same five questions as tabs on top of the map: always visible, one tap switches.
+  // Built once; a language switch only changes the text.
+  if (!$('q-tabs').children.length) {
     $('q-tabs').replaceChildren(...vars.map(v => {
       const b = make('button', { type: 'button', className: 'q-tab' });
       b.setAttribute('role', 'radio');
@@ -183,16 +163,15 @@ function renderQuestions() {
       return b;
     }));
   }
-  // Names in the current language (the same short names in the ring and the tabs); the full question on hover.
-  document.querySelectorAll('.orbit-item, .q-tab').forEach(b => {
+  // Names in the current language; the full question on hover.
+  document.querySelectorAll('.q-tab').forEach(b => {
     const v = byId[b.dataset.var];
     b.title = `${tr(v.question)} ${tr(v.season)}`;
-    b.querySelector('.orbit-label, .q-tab-name').textContent = tr(v.short);
+    b.querySelector('.q-tab-name').textContent = tr(v.short);
   });
 }
 function showCurrentQuestion() {
   const id = state.varId;
-  document.querySelectorAll('.orbit-item').forEach(b => b.setAttribute('aria-checked', b.dataset.var === id));
   document.querySelectorAll('.q-tab').forEach(b => {
     b.setAttribute('aria-checked', b.dataset.var === id);
     b.tabIndex = b.dataset.var === id ? 0 : -1;   // one tab stop; arrow keys move between questions
@@ -404,6 +383,15 @@ function wire() {
 
 
   $('map-back').addEventListener('click', goOverview);
+  // Links to the tool: scroll to where it rests (while it rises in on scroll it is drawn a little lower).
+  document.querySelectorAll('a[href="#tool"]').forEach(link => link.addEventListener('click', e => {
+    e.preventDefault();
+    let y = 0;
+    for (let el = $('tool'); el; el = el.offsetParent) y += el.offsetTop;
+    scrollTo({ top: y - 64, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const tab = document.querySelector('.q-tab[aria-checked="true"]');
+    if (tab) tab.focus({ preventScroll: true });
+  }));
   // Back to top: scroll the page itself (the header is pinned, so jumping to it would not move anything).
   document.querySelectorAll('a[href="#top"]').forEach(link => link.addEventListener('click', e => {
     e.preventDefault();

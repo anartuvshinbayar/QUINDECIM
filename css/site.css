@@ -146,41 +146,17 @@ main > section { position: relative; z-index: 1; }
 .hero-tiles.is-in .tile-face { transform: none; opacity: 1; }
 .tile-face.is-out { transform: scale(.08) !important; opacity: 0 !important; transition: transform .45s var(--ease), opacity .3s .15s; transition-delay: 0s; }
 
-/* The travelling logo (positioned by js/motion.js). */
-.travel-logo { position: absolute; left: 0; top: 0; z-index: 4; display: grid; place-items: center; border-radius: 50%; background: var(--milk); pointer-events: none; opacity: 0; transition: opacity .5s; will-change: transform; }
-.travel-logo img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
+/* The travelling logo, fixed to the screen and moved by js/motion.js: it leaves the tiles, holds in the middle of the
+   screen while the page scrolls (so it goes straight down the page), grows, then dissolves before the tool rises in. */
+.travel-logo { position: fixed; left: 0; top: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .5s; transform-origin: 0 0; will-change: transform; }
+.travel-disc { width: 100%; height: 100%; display: grid; place-items: center; border-radius: 50%; background: var(--milk); will-change: opacity, filter; }
+.travel-disc img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
 body.logo-in .travel-logo { opacity: 1; }
-body.logo-in .travel-logo img { transform: none; }
+body.logo-in .travel-disc img { transform: none; }
+/* Empty scroll room under the hero for the logo's trip. The tool then rises over the spot where the logo dissolved. */
+.logo-run { height: 95svh; }
+main > .tool { z-index: 5; }
 
-/* ---------- five questions circling the logo ---------- */
-.questions { max-width: 1400px; margin: 0 auto; min-height: 100svh; padding: 8svh calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: 32px; }
-.questions-copy { order: 2; }
-.questions-title { font-size: clamp(2rem, 4.4vw, 4rem); line-height: 1.02; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
-.questions-lead { margin: 18px 0 0; max-width: 36ch; font-size: 1.1rem; color: #2A3550; }
-.orbit { --o: min(600px, 86vw, 80svh); position: relative; width: var(--o); height: var(--o); margin: 0 auto; }
-.orbit-slot { position: absolute; left: 50%; top: 50%; width: calc(var(--o) * .27); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; }
-.orbit-ring { position: absolute; inset: 0; animation: orbit-spin 180s linear infinite; }
-/* The ring spins from the start; it pauses only while a shape is pointed at or has keyboard focus, so it is easy to click.
-   (Two rules: a browser without :has() drops only the first one.) */
-.orbit:has(.orbit-item:hover) :is(.orbit-ring, .orbit-inner, .orbit-shape) { animation-play-state: paused; }
-.orbit:focus-within :is(.orbit-ring, .orbit-inner, .orbit-shape) { animation-play-state: paused; }
-@keyframes orbit-spin { to { transform: rotate(360deg); } }
-@keyframes orbit-unspin { to { transform: rotate(-360deg); } }
-.orbit-item { --size: calc(var(--o) * .27); position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size); margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
-  transform: rotate(var(--a)) translate(calc(var(--o) * .37)) rotate(calc(-1 * var(--a))); padding: 0; border: 0; background: none; color: var(--ink); }
-.orbit-inner { display: block; width: 100%; height: 100%; animation: orbit-unspin 180s linear infinite; }
-.orbit-shape { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 100%; padding: 14%;
-  text-align: center; font-weight: 700; font-size: clamp(.68rem, calc(var(--o) * .025), .95rem); line-height: 1.2; animation: bob 5.5s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); }
-.orbit-shape::before { content: ""; position: absolute; inset: var(--inset, 0); z-index: -1; background: var(--bg); border-radius: var(--r, 0); transform: rotate(var(--tilt, 0deg)); transition: box-shadow .25s, filter .25s; }
-.orbit-shape svg { width: 30%; height: 30%; fill: none; stroke: var(--fg); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.orbit-item:hover .orbit-shape::before { filter: brightness(.96); }
-.orbit-item[aria-checked="true"] .orbit-shape::before { box-shadow: 0 0 0 3px var(--ink); }
-.shape-circle { --r: 50%; }
-/* All five shapes cover about the same area (the diamond used to be much smaller), and the label stays inside. */
-.shape-square { --r: 12px; --inset: 6%; }
-.shape-diamond { --r: 12px; --inset: 8%; --tilt: 45deg; }
-.orbit-label { max-width: 82%; text-wrap: balance; }
-@keyframes bob { from { transform: translateY(-6px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
 
 /* ---------- reveal on scroll ---------- */
 [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--d, 0s); }
@@ -323,7 +299,7 @@ body.logo-in .travel-logo img { transform: none; }
 .limits-list { margin: 4px 0 8px; padding-left: 18px; font-size: .82rem; color: var(--muted); }
 
 /* ---------- Words: equal term cells on the left, the chosen term's meaning in a card on the right ----------
-   Inset like the questions section, so the title sits inside the page rails, not on them. */
+   Inset like the hero text, so the title sits inside the page rails, not on them. */
 .glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px clamp(20px, 3vw, 40px); align-items: stretch; scroll-margin-top: 70px; }
 .glossary-title { grid-column: 1 / -1; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
 .glossary-terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-content: start; }
@@ -359,12 +335,7 @@ body.logo-in .travel-logo img { transform: none; }
   .hero-sub { max-width: none; }
   .hero-art { width: calc(var(--tile) * 5); }
   .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
-  .questions { grid-template-columns: minmax(0, 1fr); padding-top: 6svh; padding-bottom: 6svh; min-height: auto; }
-  .questions-copy { order: 0; }
-  /* The shapes reach about half the ring size past the centre: keep the whole ring inside the rails. */
-  .orbit { --o: min(76vw, 62svh); }
-  .orbit-item { --size: calc(var(--o) * .3); }
-  .orbit-shape { font-size: clamp(.6rem, 2.7vw, .78rem); padding: 12%; gap: 3px; }
+  .logo-run { height: 75svh; }
   .frame { padding-top: 64px; padding-bottom: 64px; }
   .glossary { grid-template-columns: minmax(0, 1fr); }
   .glossary-terms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -403,8 +374,7 @@ body.logo-in .travel-logo img { transform: none; }
   html { scroll-behavior: auto; }
   /* Nothing waits for a scroll reveal. */
   [data-reveal], .word > span, .tile-face, .chart-band, .chart-dots circle { opacity: 1 !important; transform: none !important; }
-  .orbit-ring, .orbit-inner, .orbit-shape { animation: none !important; }
-  .travel-logo, .travel-logo img { opacity: 1 !important; transform-origin: center; }
+  .travel-logo, .travel-disc img { opacity: 1 !important; }
   .chart-band { opacity: .55 !important; }
   .chart-trend.draw { stroke-dashoffset: 0 !important; }
 }

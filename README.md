@@ -2,7 +2,7 @@
 
 NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Team Quindecim, Ulaanbaatar.
 
-Scroll down: the logo travels from the tiles into a ring of five question shapes. Pick a question, then tap an aimag on the map. The aimag zooms in, its soums appear, and the result slides in:
+Scroll down: the logo drops straight down out of the tiles, grows and dissolves, and the map tool rises in. Pick one of the five questions above the map, then tap an aimag. The aimag zooms in, its soums appear, and the result slides in:
 the yearly data, the trend, and an honest verdict (**real trend**, **possible trend** or **not proven**).
 Tap any soum for its own result; the small arrow goes back to all aimags.
 Built for students and teachers in Mongolia, in Mongolian and English.
@@ -24,12 +24,12 @@ visitors' browsers load the new files instead of an old cached copy.
 
 | Path | What it is |
 |---|---|
-| `index.html` | The page: hero (fits one screen), five-question orbit, map tool, Words. Meta tags and structured data (JSON-LD) in the head |
+| `index.html` | The page: hero (fits one screen), scroll room for the logo's trip, map tool, Words. Meta tags and structured data (JSON-LD) in the head |
 | `404.html` | Custom not-found page (GitHub Pages serves it automatically) |
 | `css/site.css` | All styles, from nyd's design. Palette and font are tokens at the top |
-| `js/motion.js` | Animation, in the style of loopsii.com: loader, tile grow-in wave and reshuffle, travelling logo, rotating word, pill header, scroll reveals. Respects reduced motion |
+| `js/motion.js` | Animation, in the style of loopsii.com: loader, tile grow-in wave and reshuffle, the logo's scroll trip (straight down, grows, dissolves, the tool rises in), rotating headline with colour fades, pill header, scroll reveals. Respects reduced motion |
 | `js/stats.js` | Mann-Kendall, Sen's slope, linear fit, t-test, 95% CI and band. No DOM, testable in node |
-| `js/app.js` | State and flow (question, aimag, soum), question orbit and switcher, result panel, breadcrumb, URL sharing, CSV download, no-shift language switch |
+| `js/app.js` | State and flow (question, aimag, soum), question tabs, result panel, breadcrumb, URL sharing, CSV download, no-shift language switch |
 | `js/map.js` | Two-level SVG map: aimag overview, smooth zoom into one aimag and its soums, label placement |
 | `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |

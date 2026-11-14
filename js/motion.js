@@ -110,42 +110,70 @@ function shuffle(cells) {
   }, 600);
 }
 
-// ---------- travelling logo ----------
-// One logo: it starts in the centre of the tile grid, follows the page as you scroll (shaking a little),
-// and lands in the centre of the questions ring. Before and after the trip it scrolls with the page.
+// ---------- the logo's scroll story (in the style of loopsii.com) ----------
+// The logo starts in the centre of the tile grid. As you scroll it leaves the grid and holds in the middle of the
+// screen, so on the page it travels straight down; it grows, then dissolves into a soft blur just before the tool
+// rises over that spot. Everything is tied to the scroll and runs backwards when you scroll up. The motion trails
+// the scroll slightly and settles, like loopsii's smooth scrolling, so fast scrolling never makes anything jump.
 function initTraveler() {
-  const t = $('travel-logo'), from = () => $('hero-logo-slot'), to = $('orbit-slot');
-  if (!t || !to) return;
-  const docRect = el => { const r = el.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, s: r.width }; };
-  // Ease-out: most of the trip happens early in the scroll, then the logo settles into the ring.
-  const ease = p => 1 - Math.pow(1 - p, 3);
-  function place() {
-    const fs = from();
-    if (!fs) return;
-    const A = docRect(fs), B = docRect(to);
-    // It lands when the ring's centre is 60% of the way down the screen, before the ring is fully in view.
-    const end = Math.max(1, B.y + B.s / 2 - innerHeight * 0.6);
-    const p = Math.min(1, Math.max(0, scrollY / end)), e = ease(p);
-    let x, y, s;
-    if (p <= 0) ({ x, y, s } = A);
-    else if (p >= 1) ({ x, y, s } = B);
+  const t = $('travel-logo'), disc = t && t.firstElementChild, tool = $('tool');
+  if (!t || !disc || !tool) return {};
+  const clamp = v => Math.min(1, Math.max(0, v));
+  const smooth = p => p * p * (3 - 2 * p);
+  const easeOut = p => 1 - (1 - p) * (1 - p);
+  const pageTop = el => { let y = 0; for (let e = el; e; e = e.offsetParent) y += e.offsetTop; return y; };   // ignores transforms
+
+  // Draw everything for a (smoothed) scroll position s.
+  function draw(s) {
+    const slot = $('hero-logo-slot');
+    if (!slot) return;
+    const r = slot.getBoundingClientRect(), vh = innerHeight, vw = innerWidth;
+    const x = r.left + r.width / 2, y0 = r.top + scrollY + r.height / 2, size0 = r.width;   // the slot, at scroll 0
+    const toolTop = pageTop(tool);
+    const mid = vh / 2;
+    const leave = Math.max(vh * 0.25, 2 * (y0 - mid));   // leaves the grid at the page's speed, then slows to a hold at the middle
+    const gone = toolTop - vh * 0.5;                     // fully dissolved when the tool's top edge reaches the middle
+    const fadeFrom = gone - vh * 0.45;                   // dissolving starts here
+    const big = Math.min(vw * 0.46, vh * 0.46, 440);     // its size just before it dissolves
+
+    let y, size, k = 1, blur = 0, alpha = 1;
+    if (reduced) { y = y0 - s; size = size0; }           // no trip: it simply scrolls away with the tiles
     else {
-      // Screen position moves from where the slot starts to the centre of the screen; the page scrolls under it.
-      s = A.s + (B.s - A.s) * e;
-      x = A.x + (B.x - A.x) * e;
-      const yScreen = A.y + ((B.y - end) - A.y) * e;
-      y = yScreen + scrollY;
+      y = y0 + (mid - y0) * easeOut(clamp(s / leave));
+      size = size0 + (big - size0) * smooth(clamp((s - leave * 0.4) / (fadeFrom - leave * 0.4)));
+      const d = clamp((s - fadeFrom) / (gone - fadeFrom));
+      k = 1 + 0.7 * smooth(d); blur = 22 * d; alpha = 1 - smooth(d);
     }
-    // No spin: a small side-to-side shake on the way, strongest mid-trip and still at both ends.
-    const shake = reduced ? 0 : 6 * Math.sin(p * Math.PI * 6) * Math.sin(p * Math.PI);
-    t.style.width = t.style.height = s.toFixed(1) + 'px';
-    t.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${shake.toFixed(2)}deg)`;
+    // The element is drawn at its largest size and scaled down, so it stays sharp and only the transform changes.
+    t.style.width = t.style.height = big.toFixed(1) + 'px';
+    const scale = (size / big) * k;
+    t.style.transform = `translate3d(${(x - big * scale / 2).toFixed(1)}px, ${(y - big * scale / 2).toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
+    disc.style.opacity = alpha.toFixed(3);
+    disc.style.filter = blur > 0.05 ? `blur(${blur.toFixed(1)}px)` : '';
+    t.style.visibility = alpha <= 0.001 ? 'hidden' : '';
+
+    // The tool rises into place as the logo goes: from its top at the bottom edge to just over the middle.
+    if (reduced) return;
+    const rise = clamp((s - (toolTop - vh)) / (vh * 0.55));
+    tool.style.opacity = rise >= 1 ? '' : (0.15 + 0.85 * smooth(rise)).toFixed(3);
+    tool.style.transform = rise >= 1 ? '' : `translateY(${((1 - easeOut(rise)) * 90).toFixed(1)}px)`;
   }
-  addEventListener('scroll', place, { passive: true });
-  addEventListener('resize', place);
-  if ('ResizeObserver' in window) new ResizeObserver(place).observe(document.body);
-  place();
-  return place;
+
+  // Follow the scroll softly: each frame closes a part of the gap; a long jump (a link, a reload) snaps.
+  let target = scrollY, shown = scrollY, raf = 0;
+  const tick = () => {
+    const gap = target - shown;
+    shown = Math.abs(gap) < 0.5 || Math.abs(gap) > innerHeight * 1.5 ? target : shown + gap * 0.14;
+    draw(shown);
+    raf = shown === target ? 0 : requestAnimationFrame(tick);
+  };
+  const follow = () => { target = scrollY; if (!raf) raf = requestAnimationFrame(tick); };
+  const refresh = () => { target = shown = scrollY; draw(shown); };
+  addEventListener('scroll', follow, { passive: true });
+  addEventListener('resize', refresh);
+  if ('ResizeObserver' in window) new ResizeObserver(refresh).observe(document.body);
+  refresh();
+  return { refresh, drawAt: draw };
 }
 
 // ---------- rotating word ----------
@@ -257,10 +285,12 @@ function countUp(span) {
   }, 30);
 }
 
+let logoDraw = null;   // for checking the logo at any scroll position from the console
 function init(onReady) {
   header();
   buildTiles();
-  const place = initTraveler();
+  const logo = initTraveler(), place = logo.refresh;
+  logoDraw = logo.drawAt;
   // Rebuild the grid only when switching between the phone and desktop layouts.
   let rt, wasNarrow = matchMedia('(max-width: 760px)').matches;
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => {
@@ -278,5 +308,5 @@ function init(onReady) {
   });
 }
 
-Q.motion = { init, refresh, startRotator, countUp, observe };
+Q.motion = { init, refresh, startRotator, countUp, observe, logoAt: s => logoDraw && logoDraw(s) };
 })(globalThis.Q = globalThis.Q || {});
