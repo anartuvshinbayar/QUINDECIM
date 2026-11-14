@@ -39,7 +39,7 @@ const T = name => ({ img: `assets/tiles/${name}.svg` });
 const S = c => ({ solid: c });
 const POOL = [T('uulen-blue'), T('ever-quarter'), T('uul-line'), T('seal-hooks'), T('alkhan-square'), T('uulen-red'),
   T('ever-pair'), T('uul-fill'), T('seal-hammer'), T('alkhan-band'),
-  S('#1D4FA8'), S('#15213B'), S('#2E7A57'), S('#B9431C'), S('#D2DBCF'), S('#D7DAE0'), S('#EDD3C6')];
+  S('#3A68BD'), S('#15213B'), S('#2E7A57'), S('#B9431C'), S('#D2DBCF'), S('#D7DAE0'), S('#EDD3C6')];
 // 12 x 3 layout from the mockup (null = empty cell, number = index in POOL).
 const LAYOUT = [
   null, 0, 1, 16, 2, null, 3, 9, 9, null, 6, 1,

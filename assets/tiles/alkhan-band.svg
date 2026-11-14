@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
   <title>Алхан хээ, hammer band</title>
-  <rect width="120" height="120" fill="#1D4FA8" fill-opacity="0.14"/>
-  <path d="M0 24H120M0 96H120M15 24V72M-3 72H33M75 24V72M57 72H93M45 96V48M27 48H63M105 96V48M87 48H123" fill="none" stroke="#1D4FA8" stroke-width="8" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="4"/>
+  <rect width="120" height="120" fill="#3A68BD" fill-opacity="0.14"/>
+  <path d="M0 24H120M0 96H120M15 24V72M-3 72H33M75 24V72M57 72H93M45 96V48M27 48H63M105 96V48M87 48H123" fill="none" stroke="#3A68BD" stroke-width="8" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="4"/>
 </svg>

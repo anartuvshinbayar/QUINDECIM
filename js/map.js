@@ -43,7 +43,20 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
   const k = Math.cos(((minY + maxY) / 2) * Math.PI / 180);
   const U = 1000 / ((maxX - minX) * k);
   const px = x => (x - minX) * k * U, py = y => (maxY - y) * U;
-  const pathOf = g => rings(g).map(r => 'M' + r.map(([x, y]) => px(x).toFixed(2) + ',' + py(y).toFixed(2)).join('L') + 'Z').join('');
+  // Borders are softened with one pass of corner cutting (Chaikin): every corner is replaced by two points
+  // a quarter of the way along its two sides. Shapes keep their outline; sharp spikes become gentle bends.
+  const smooth = ring => {
+    const pts = ring.map(([x, y]) => [px(x), py(y)]);
+    if (pts.length > 1 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]) pts.pop();
+    if (pts.length < 4) return pts;
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+      out.push([x1 * 0.75 + x2 * 0.25, y1 * 0.75 + y2 * 0.25], [x1 * 0.25 + x2 * 0.75, y1 * 0.25 + y2 * 0.75]);
+    }
+    return out;
+  };
+  const pathOf = g => rings(g).map(r => 'M' + smooth(r).map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join('L') + 'Z').join('');
   const bboxOf = g => {
     let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
     for (const r of rings(g)) for (const [x, y] of r) { const X = px(x), Y = py(y); a = Math.min(a, X); b = Math.max(b, X); c = Math.min(c, Y); d = Math.max(d, Y); }

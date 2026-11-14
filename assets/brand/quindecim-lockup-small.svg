@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 48" width="244" height="48">
   <title>Quindecim</title>
-  <g id="ring" fill="none" stroke="#1D4FA8" stroke-width="4">
+  <g id="ring" fill="none" stroke="#3A68BD" stroke-width="4">
     <circle cx="24" cy="24" r="22"/>
   </g>
   <g id="mountain" fill="#2E7A57" fill-rule="evenodd">
