@@ -112,8 +112,9 @@ function shuffle(cells) {
 
 // ---------- the logo's scroll story (in the style of loopsii.com) ----------
 // The logo starts in the centre of the tile grid. As you scroll it leaves the grid and holds in the middle of the
-// screen, so on the page it travels straight down; it grows, then dissolves into a soft blur just before the tool
-// rises over that spot. Everything is tied to the scroll and runs backwards when you scroll up. The motion trails
+// screen, so on the page it travels straight down, and grows. The moment you scroll past the point where the rising
+// tool reaches it, it vanishes in a quick puff (a short timed fade, not tied to the scroll); scroll back and it returns.
+// The trip and the growth follow the scroll and run backwards when you scroll up. The motion trails
 // the scroll slightly and settles, like loopsii's smooth scrolling, so fast scrolling never makes anything jump.
 function initTraveler() {
   const t = $('travel-logo'), disc = t && t.firstElementChild, tool = $('tool');
@@ -132,27 +133,22 @@ function initTraveler() {
     const toolTop = pageTop(tool);
     const mid = vh / 2;
     const leave = Math.max(vh * 0.25, 2 * (y0 - mid));   // leaves the grid at the page's speed, then slows to a hold at the middle
-    const gone = toolTop - vh * 0.5;                     // fully dissolved when the tool's top edge reaches the middle
-    const fadeFrom = gone - vh * 0.45;                   // dissolving starts here
-    const big = Math.min(vw * 0.46, vh * 0.46, 440);     // its size just before it dissolves
+    const big = Math.min(vw * 0.46, vh * 0.46, 440);     // its size just before it vanishes
+    const vanish = toolTop - mid - big / 2;              // the scroll point where the rising tool reaches the logo's bottom edge
 
-    let y, size, k = 1, blur = 0, alpha = 1;
+    let y, size;
     if (reduced) { y = y0 - s; size = size0; }           // no trip: it simply scrolls away with the tiles
     else {
       y = y0 + (mid - y0) * easeOut(clamp(s / leave));
-      size = size0 + (big - size0) * smooth(clamp((s - leave * 0.4) / (fadeFrom - leave * 0.4)));
-      const d = clamp((s - fadeFrom) / (gone - fadeFrom));
-      k = 1 + 0.7 * smooth(d); blur = 22 * d; alpha = 1 - smooth(d);
+      size = size0 + (big - size0) * smooth(clamp((s - leave * 0.4) / (vanish - leave * 0.4)));
     }
     // The element is drawn at its largest size and scaled down, so it stays sharp and only the transform changes.
     t.style.width = t.style.height = big.toFixed(1) + 'px';
-    const scale = (size / big) * k;
+    const scale = size / big;
     t.style.transform = `translate3d(${(x - big * scale / 2).toFixed(1)}px, ${(y - big * scale / 2).toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
-    disc.style.opacity = alpha.toFixed(3);
-    disc.style.filter = blur > 0.05 ? `blur(${blur.toFixed(1)}px)` : '';
-    t.style.visibility = alpha <= 0.001 ? 'hidden' : '';
+    t.classList.toggle('is-gone', !reduced && s >= vanish);   // CSS plays the quick puff (and its reverse)
 
-    // The tool rises into place as the logo goes: from its top at the bottom edge to just over the middle.
+    // The tool rises into place around that moment: from its top at the bottom edge to just over the middle.
     if (reduced) return;
     const rise = clamp((s - (toolTop - vh)) / (vh * 0.55));
     tool.style.opacity = rise >= 1 ? '' : (0.15 + 0.85 * smooth(rise)).toFixed(3);
