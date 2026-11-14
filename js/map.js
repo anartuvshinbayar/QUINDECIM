@@ -36,6 +36,10 @@ function drawMap(container, soums, { onSelect, label }) {
     p.setAttribute('data-id', s.id);
     p.setAttribute('tabindex', '0');
     p.setAttribute('role', 'button');
+    // Wave-in delay from west to east (CSS: .map.is-in .soum).
+    const first = rings(s.geometry)[0] || [[minX, 0]];
+    const cx = first.reduce((a, c) => a + c[0], 0) / first.length;
+    p.style.setProperty('--d', (((cx - minX) / (maxX - minX)) * 1.1).toFixed(2) + 's');
     const title = document.createElementNS(SVG_NS, 'title');
     p.appendChild(title);
     p.addEventListener('click', () => onSelect(s.id));

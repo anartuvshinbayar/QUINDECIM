@@ -151,7 +151,10 @@ function linearTrend(x, y) {
   const p = se > 0 ? tTwoSidedP(t, df) : (slope === 0 ? 1 : 0);
   const tc = tCritical(df, 0.95);
   const ssTot = y.reduce((a, v) => a + (v - my) ** 2, 0);
-  return { slope, intercept, se, t, df, p, ciLow: slope - tc * se, ciHigh: slope + tc * se, r2: ssTot ? 1 - sse / ssTot : 0 };
+  const s = Math.sqrt(sse / df);
+  // 95% confidence band for the fitted line at year xv (used to shade the chart).
+  const band = xv => tc * s * Math.sqrt(1 / n + (xv - mx) ** 2 / sxx);
+  return { slope, intercept, se, t, df, p, ciLow: slope - tc * se, ciHigh: slope + tc * se, r2: ssTot ? 1 - sse / ssTot : 0, band };
 }
 
 // ---------- verdict ----------

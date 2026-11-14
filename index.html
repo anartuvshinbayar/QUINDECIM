@@ -1,151 +1,261 @@
 <!doctype html>
-<html lang="en">
+<html lang="mn">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Is it real? · Quindecim</title>
-  <link rel="stylesheet" href="css/base.css">
+  <title>Үнэн үү? · Quindecim</title>
+  <meta name="description" content="Is the climate in your soum really changing? Pick a question and one of Mongolia's 337 soums, and test 25 to 45 years of NASA data for a real trend. In Mongolian and English.">
+  <meta name="theme-color" content="#F6F1E7">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Quindecim">
+  <meta property="og:title" content="Үнэн үү? Is it real? Climate trends for every soum">
+  <meta property="og:description" content="Test NASA data for a real climate trend in any of Mongolia's 337 soums. Mann-Kendall trend test, Sen's slope, in Mongolian and English.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Quindecim: Is it real?",
+        "alternateName": "Үнэн үү? Сум бүрийн уур амьсгалын чиг хандлага",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any web browser",
+        "inLanguage": ["mn", "en"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Pick a climate question and a Mongolian soum, see yearly NASA data, and test whether the trend is real with the Mann-Kendall test and Sen's slope.",
+        "creator": { "@type": "Organization", "name": "Team Quindecim, NASA Space Apps Challenge 2026, Ulaanbaatar" }
+      },
+      {
+        "@type": "Dataset",
+        "name": "Seasonal climate and vegetation series for Mongolia's 337 soums",
+        "description": "One value per soum per year: summer NDVI (MODIS MOD13A2, 2001-2026), summer rainfall and summer and winter air temperature (NASA FLDAS, 1982-2026), first autumn frost (NASA POWER, 1981-2026).",
+        "spatialCoverage": { "@type": "Place", "name": "Mongolia" },
+        "temporalCoverage": "1981/2026",
+        "variableMeasured": ["Summer NDVI", "Summer rainfall", "Summer air temperature", "Winter air temperature", "First autumn frost day"],
+        "isBasedOn": ["NASA MODIS MOD13A2", "NASA FLDAS Noah", "NASA POWER", "FAO GAUL 2025"]
+      }
+    ]
+  }
+  </script>
 </head>
-<body>
-  <!--
-    Structure only. Every block has a class and an id so a design can be applied in CSS
-    (css/base.css) without touching the JavaScript. Text comes from js/i18n.js.
-  -->
-  <header class="site-header">
-    <h1 id="title" data-i18n="title"></h1>
-    <div class="lang-switch" role="group" aria-label="Language / Хэл">
-      <button type="button" class="lang-button" data-lang="mn" lang="mn" aria-label="Монгол">
-        <svg class="flag" viewBox="0 0 30 15" aria-hidden="true">
-          <rect width="30" height="15" fill="#C4272F"/>
-          <rect x="10" width="10" height="15" fill="#015197"/>
-          <g fill="#F9CF02">
-            <path d="M5 1.2c.6.8.6 1.5 0 2-.6-.5-.6-1.2 0-2z"/>
-            <circle cx="5" cy="4.6" r="0.9"/>
-            <path d="M3.6 5.6a1.4 1.4 0 0 0 2.8 0a1.6 1.6 0 0 1-2.8 0z"/>
-            <rect x="3.6" y="6.6" width="2.8" height="0.5"/>
-            <rect x="3.6" y="11.6" width="2.8" height="0.5"/>
-            <rect x="2.4" y="6.6" width="0.6" height="5.5"/>
-            <rect x="7" y="6.6" width="0.6" height="5.5"/>
-            <circle cx="5" cy="9.35" r="1.2"/>
-          </g>
-        </svg>
-        <span>MN</span>
-      </button>
-      <button type="button" class="lang-button" data-lang="en" lang="en" aria-label="English">
-        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
-          <clipPath id="uk-clip"><rect width="60" height="30"/></clipPath>
-          <g clip-path="url(#uk-clip)">
-            <rect width="60" height="30" fill="#012169"/>
-            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2.4"/>
-            <path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>
-            <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/>
-          </g>
-        </svg>
-        <span>EN</span>
-      </button>
+<body class="is-loading">
+  <a class="skip-link" href="#tool" data-i18n="skip"></a>
+
+  <!-- Loading screen: framed square with the mark drawing itself and a counter. -->
+  <div id="loader" class="loader" aria-hidden="true">
+    <div class="loader-grid"></div>
+    <div class="loader-box">
+      <svg class="loader-mark" viewBox="0 0 192 192">
+        <circle class="draw" cx="96" cy="96" r="86" fill="none" stroke="#1D4FA8" stroke-width="11"/>
+        <path class="draw" d="M30.22 119.94L52 84L68 97L96 40L124 97L140 84L161.78 119.94A70 70 0 0 1 30.22 119.94Z" fill="none" stroke="#2E7A57" stroke-width="5" stroke-linejoin="miter" stroke-linecap="round"/>
+        <path class="draw" d="M96 133A7 7 0 0 1 96 147A11.75 11.75 0 0 1 96 123.5A16.5 16.5 0 0 1 96 156.5A60.5 60.5 0 0 1 40.81 120.79L54.47 98.25L71.27 111.9L96 61.55L120.73 111.9L137.53 98.25L151.19 120.79A60.5 60.5 0 0 1 96 156.5" fill="none" stroke="#2E7A57" stroke-width="5" stroke-linecap="round"/>
+        <path class="draw" d="M52.5 58.5A3.25 3.25 0 0 0 46 58.5A6.5 6.5 0 0 0 59 58.5A9.75 9.75 0 0 0 39.5 58.5A7.5 7.5 0 0 0 47 66L71.5 66A4.25 4.25 0 0 0 71.5 57.5A8.5 8.5 0 0 0 57.24 52.91" fill="none" stroke="#1D4FA8" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle class="pop" cx="139" cy="60" r="8.5" fill="#B9431C"/>
+      </svg>
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    </div>
+    <p class="loader-count"><span id="loader-num">000</span>%</p>
+  </div>
+
+  <header class="site-header" id="top">
+    <div class="header-inner">
+      <a class="brand" href="#top"><img src="assets/brand/quindecim-lockup-small.svg" alt="Quindecim" width="183" height="36"></a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="#tool" data-i18n="navTool"></a>
+        <a href="#how" data-i18n="navHow"></a>
+        <a href="#glossary" data-i18n="navGlossary"></a>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Language / Хэл">
+        <button type="button" class="lang-button" data-lang="mn" lang="mn" aria-label="Монгол">
+          <svg class="flag" viewBox="0 0 30 15" aria-hidden="true">
+            <rect width="30" height="15" fill="#C4272F"/><rect x="10" width="10" height="15" fill="#015197"/>
+            <g fill="#F9CF02"><path d="M5 1.2c.6.8.6 1.5 0 2-.6-.5-.6-1.2 0-2z"/><circle cx="5" cy="4.6" r="0.9"/><path d="M3.6 5.6a1.4 1.4 0 0 0 2.8 0a1.6 1.6 0 0 1-2.8 0z"/><rect x="3.6" y="6.6" width="2.8" height="0.5"/><rect x="3.6" y="11.6" width="2.8" height="0.5"/><rect x="2.4" y="6.6" width="0.6" height="5.5"/><rect x="7" y="6.6" width="0.6" height="5.5"/><circle cx="5" cy="9.35" r="1.2"/></g>
+          </svg>
+          <span>MN</span>
+        </button>
+        <button type="button" class="lang-button" data-lang="en" lang="en" aria-label="English">
+          <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+            <clipPath id="uk-clip"><rect width="60" height="30"/></clipPath>
+            <g clip-path="url(#uk-clip)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2.4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></g>
+          </svg>
+          <span>EN</span>
+        </button>
+      </div>
+      <a class="button button-primary header-cta" href="#tool" data-i18n="cta"></a>
     </div>
   </header>
+  <div class="band" aria-hidden="true"></div>
 
-  <p id="sample-banner" class="sample-banner" data-i18n="sample" hidden></p>
-  <p id="load-error" class="load-error" hidden></p>
-
-  <main class="layout">
-    <section class="step step-variable" aria-labelledby="h-step1">
-      <h2 id="h-step1" data-i18n="step1"></h2>
-      <div id="variable-buttons" class="variable-buttons" role="radiogroup"></div>
+  <main>
+    <section class="hero frame" aria-labelledby="hero-title">
+      <div class="hero-art">
+        <button type="button" class="hero-q q-tl" data-pick="ndvi_summer"></button>
+        <button type="button" class="hero-q q-tr" data-pick="temp_summer"></button>
+        <div id="hero-tiles" class="hero-tiles" aria-hidden="true"></div>
+        <div class="hero-mark" aria-hidden="true"><img src="assets/brand/quindecim-mark-full.svg" alt="" width="160" height="160"></div>
+        <button type="button" class="hero-q q-bl" data-pick="rain_summer"></button>
+        <button type="button" class="hero-q q-br" data-pick="temp_winter"></button>
+      </div>
+      <div class="hero-copy">
+        <h1 id="hero-title" class="hero-title" data-i18n="heroTitle" data-split></h1>
+        <p class="hero-rotator" aria-live="off"><span id="rot-before"></span> <span class="rot-window"><span id="rot-word" class="rot-word"></span></span> <span id="rot-after"></span></p>
+        <p class="hero-sub" data-i18n="heroSub" data-reveal></p>
+        <p class="hero-lead" data-i18n="heroLead" data-reveal></p>
+        <a class="button button-primary button-big" href="#tool" data-reveal><span data-i18n="cta"></span> <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
     </section>
 
-    <section class="step step-place" aria-labelledby="h-step2">
-      <h2 id="h-step2" data-i18n="step2"></h2>
-      <label class="soum-search">
-        <span data-i18n="searchSoum"></span>
-        <input id="soum-search" type="search" list="soum-list" autocomplete="off">
-        <datalist id="soum-list"></datalist>
-      </label>
-      <p class="hint" data-i18n="mapHint"></p>
-      <div id="map" class="map"></div>
-      <div id="map-legend" class="map-legend" hidden>
-        <p data-i18n="mapLegend"></p>
-        <ul>
-          <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
-          <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
-          <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
-          <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
-          <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
+    <section id="claims" class="claims frame" aria-labelledby="claims-title">
+      <p class="kicker" data-i18n="claimsKicker" data-reveal></p>
+      <h2 id="claims-title" class="section-title" data-i18n="claimsTitle" data-split></h2>
+      <div class="claims-diagram" id="claims-diagram">
+        <svg class="claims-lines" id="claims-lines" aria-hidden="true"></svg>
+        <ul class="claims-list">
+          <li class="claim" data-claim="0"></li>
+          <li class="claim" data-claim="1"></li>
+          <li class="claim" data-claim="2"></li>
+        </ul>
+        <div class="claims-hub" aria-hidden="true"><img src="assets/brand/quindecim-mark-full.svg" alt="" width="104" height="104"></div>
+        <ul class="claims-verdicts">
+          <li class="pill pill-real" data-i18n="real"></li>
+          <li class="pill pill-possible" data-i18n="possible"></li>
+          <li class="pill pill-not-proven" data-i18n="notProven"></li>
         </ul>
       </div>
+      <p class="claims-close" data-i18n="claimsClose" data-reveal></p>
     </section>
 
-    <section class="step step-years" aria-labelledby="h-step3">
-      <h2 id="h-step3" data-i18n="step3"></h2>
-      <label class="year-range"><span data-i18n="from"></span>
-        <input id="year-from" type="range" step="1"><output id="year-from-out"></output></label>
-      <label class="year-range"><span data-i18n="to"></span>
-        <input id="year-to" type="range" step="1"><output id="year-to-out"></output></label>
-    </section>
+    <section id="tool" class="tool frame" aria-labelledby="tool-title">
+      <p class="kicker" data-i18n="toolKicker" data-reveal></p>
+      <h2 id="tool-title" class="section-title" data-i18n="title" data-split></h2>
+      <p id="sample-banner" class="sample-banner" data-i18n="sample" hidden></p>
+      <p id="load-error" class="load-error" role="alert" hidden></p>
 
-    <section id="guess" class="step step-guess" aria-labelledby="h-step4" hidden>
-      <h2 id="h-step4" data-i18n="step4"></h2>
-      <p data-i18n="guessPrompt"></p>
-      <div class="guess-buttons">
-        <button type="button" data-guess="up" id="guess-up"></button>
-        <button type="button" data-guess="down" id="guess-down"></button>
-        <button type="button" data-guess="flat" data-i18n="guessFlat"></button>
-      </div>
-      <button type="button" class="link-button" data-guess="skip" data-i18n="skipGuess"></button>
-    </section>
-
-    <p id="pick-first" class="hint" data-i18n="pickFirst"></p>
-
-    <section id="result" class="result" aria-labelledby="h-result" hidden>
-      <h2 id="h-result" data-i18n="resultTitle"></h2>
-      <p id="guess-feedback" class="guess-feedback"></p>
-
-      <div id="too-short" class="too-short" hidden></div>
-
-      <div id="result-body">
-        <figure class="chart">
-          <div id="chart"></div>
-          <figcaption class="chart-legend">
-            <span class="key key-trend" data-i18n="chartLegendSen"></span>
-            <span class="key key-linear" data-i18n="chartLegendLin"></span>
-            <span class="key key-mean" data-i18n="chartLegendAvg"></span>
-          </figcaption>
-        </figure>
-
-        <dl id="verdict" class="verdict-card">
-          <dt data-i18n="whatChanged"></dt><dd id="v-what"></dd>
-          <dt data-i18n="speed"></dt><dd id="v-speed"></dd>
-          <dt data-i18n="isReal"></dt><dd id="v-real"></dd>
-          <dt data-i18n="meaning"></dt><dd id="v-meaning"></dd>
-        </dl>
-
-        <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
-        <p id="level-note" class="note"></p>
-
-        <details class="stats-details">
-          <summary data-i18n="details"></summary>
-          <table class="stats-table"><tbody id="stats-rows"></tbody></table>
-        </details>
-
-        <div class="result-actions">
-          <button id="download" type="button" data-i18n="download"></button>
-          <button id="share" type="button" data-i18n="share"></button>
+      <div class="panel" data-reveal>
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="step step-variable">
+          <h3 data-i18n="step1"></h3>
+          <div id="variable-buttons" class="variable-buttons" role="radiogroup"></div>
         </div>
 
-        <aside class="limits">
-          <h3 data-i18n="limitsTitle"></h3>
-          <ul id="limits-list"></ul>
-        </aside>
+        <div class="panel-cols">
+          <div class="panel-left">
+            <div class="step step-place">
+              <h3 data-i18n="step2"></h3>
+              <label class="soum-search">
+                <span class="label" data-i18n="searchSoum"></span>
+                <span class="search-box">
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  <input id="soum-search" type="search" list="soum-list" autocomplete="off">
+                </span>
+                <datalist id="soum-list"></datalist>
+              </label>
+              <div id="map" class="map"></div>
+              <p class="hint" data-i18n="mapHint"></p>
+              <div id="map-legend" class="map-legend">
+                <p class="legend-title" data-i18n="mapLegend"></p>
+                <ul>
+                  <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
+                  <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
+                  <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
+                  <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
+                  <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
+                  <li><span class="swatch swatch-selected"></span><span data-i18n="selectedSoum"></span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="step step-years">
+              <h3 data-i18n="step3"></h3>
+              <div class="years">
+                <label class="year-range"><span class="year-head"><span data-i18n="from"></span><output id="year-from-out"></output></span>
+                  <input id="year-from" type="range" step="1"></label>
+                <label class="year-range"><span class="year-head"><span data-i18n="to"></span><output id="year-to-out"></output></span>
+                  <input id="year-to" type="range" step="1"></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-right">
+            <div class="result-head">
+              <h3 data-i18n="resultTitle"></h3>
+              <span id="verdict-badge" class="pill" hidden></span>
+            </div>
+            <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb" hidden><ol></ol></nav>
+            <p id="result-empty" class="result-empty" data-i18n="resultEmpty"></p>
+
+            <section id="result" class="result" aria-live="polite" hidden>
+              <div id="too-short" class="too-short" hidden></div>
+              <div id="result-body">
+                <figure class="chart">
+                  <div id="chart"></div>
+                  <figcaption class="chart-legend">
+                    <span class="key key-trend" data-i18n="chartLegendSen"></span>
+                    <span class="key key-band" data-i18n="chartBand"></span>
+                  </figcaption>
+                </figure>
+                <p id="source-line" class="source-line"></p>
+
+                <dl id="verdict" class="verdict-grid">
+                  <div><dt data-i18n="whatChanged"></dt><dd id="v-what"></dd></div>
+                  <div><dt data-i18n="speed"></dt><dd id="v-speed"></dd></div>
+                  <div><dt data-i18n="isReal"></dt><dd id="v-real"></dd></div>
+                  <div><dt data-i18n="meaning"></dt><dd id="v-meaning"></dd></div>
+                </dl>
+
+                <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
+                <p id="level-note" class="note"></p>
+
+                <details class="stats-details">
+                  <summary data-i18n="details"></summary>
+                  <table class="stats-table"><tbody id="stats-rows"></tbody></table>
+                </details>
+
+                <div class="result-actions">
+                  <button id="download" type="button" class="button button-outline" data-i18n="download"></button>
+                  <button id="share" type="button" class="button button-outline" data-i18n="share"></button>
+                </div>
+
+                <aside class="limits">
+                  <h4 data-i18n="limitsTitle"></h4>
+                  <ul id="limits-list"></ul>
+                </aside>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="glossary" aria-labelledby="h-glossary">
-      <h2 id="h-glossary" data-i18n="glossaryTitle"></h2>
-      <dl id="glossary-list"></dl>
+    <section id="how" class="how frame" aria-labelledby="how-title">
+      <p class="kicker" data-i18n="howKicker" data-reveal></p>
+      <h2 id="how-title" class="section-title" data-i18n="howTitle" data-split></h2>
+      <ol id="steps" class="steps"></ol>
+    </section>
+
+    <section id="glossary" class="glossary frame" aria-labelledby="h-glossary">
+      <h2 id="h-glossary" class="section-title" data-i18n="glossaryTitle" data-split></h2>
+      <dl id="glossary-list" class="glossary-list"></dl>
     </section>
   </main>
+
+  <div class="band" aria-hidden="true"></div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <img src="assets/brand/quindecim-lockup-1colour-milk.svg" alt="Quindecim" width="244" height="48">
+      <p data-i18n="footerData"></p>
+      <p data-i18n="footerTeam"></p>
+      <a href="#top" class="footer-top" data-i18n="toTop"></a>
+    </div>
+  </footer>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
   <script src="data/data.js"></script>
@@ -155,6 +265,7 @@
   <script src="js/data.js"></script>
   <script src="js/map.js"></script>
   <script src="js/chart.js"></script>
+  <script src="js/motion.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

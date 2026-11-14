@@ -2,8 +2,8 @@
 
 NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Team Quindecim, Ulaanbaatar.
 
-Pick a question, a soum and a range of years. Guess what happened, then see the yearly data,
-the trend, and an honest verdict: **real trend**, **possible trend** or **not proven**.
+Pick a question, a soum and a range of years. See the yearly data, the trend, and an honest
+verdict: **real trend**, **possible trend** or **not proven**.
 Built for students and teachers in Mongolia, in Mongolian and English.
 
 ## Run it
@@ -20,24 +20,30 @@ After changing `data/soums.geojson` or `data/data.csv` by hand, run `python3 too
 
 | Path | What it is |
 |---|---|
-| `index.html` | Page structure. Every block has an id and a class for styling |
-| `css/base.css` | Bare layout only. Colours and fonts are tokens at the top |
-| `js/stats.js` | Mann-Kendall, Sen's slope, linear fit, t-test, 95% CI. No DOM, testable in node |
-| `js/app.js` | State, rendering, guess step, URL sharing, CSV download |
-| `js/map.js` | Soum map drawn as plain SVG from `data/soums.geojson` |
-| `js/chart.js` | Yearly chart as plain SVG |
+| `index.html` | The page: hero, claims, tool, steps, glossary. Meta tags and structured data (JSON-LD) in the head |
+| `404.html` | Custom not-found page (GitHub Pages serves it automatically) |
+| `css/site.css` | All styles, from nyd's design. Palette and font are tokens at the top |
+| `js/motion.js` | Animation, in the style of loopsii.com: loader, reshuffling tiles, rotating word, pill header, scroll reveals, drawn lines. Respects reduced motion |
+| `js/stats.js` | Mann-Kendall, Sen's slope, linear fit, t-test, 95% CI and band. No DOM, testable in node |
+| `js/app.js` | State, rendering, breadcrumb, URL sharing, CSV download |
+| `js/map.js` | Soum map drawn as plain SVG |
+| `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |
-| `js/i18n.js` | All text in English and Mongolian, plus the glossary |
+| `js/i18n.js` | All text in Mongolian and English, plus the glossary |
+| `assets/brand/`, `assets/tiles/` | nyd's logo and ornament tiles (originals in `design/nyd/`) |
+| `favicon.svg`, `favicon.ico` | Site icon |
+| `robots.txt`, `llms.txt` | Crawler rules and a plain-text summary for AI assistants |
 | `data/soums.geojson` | Real soum boundaries (FAO GAUL 2025, 337 soums) |
 | `data/data.csv` | Real values, one row per soum per year per variable |
-| `data/data.js` | The two files above packed into one script; this is what the page loads |
-| `tools/build_data.py` | Rebuilds `data/data.js` |
+| `data/data.js` | Compact copy of the two files above (0.8 MB, about 250 KB compressed); this is what the page loads |
 | `data/parts/` | One CSV per variable (merged into `data.csv`) |
 | `data/sample/` | Invented test data in the same format |
+| `tools/build_data.py` | Rebuilds `data/data.js` |
 | `tools/gee_export.py` | Earth Engine export for boundaries, greenness, rain, temperature |
 | `tools/power_frost.py` | First autumn frost from the NASA POWER API |
 | `tools/check_stats.py` | Checks `js/stats.js` against scipy |
 | `tools/make_sample.py` | Rebuilds the sample data |
+| `design/nyd/` | nyd's brand files and mockups |
 
 ## Data format
 
@@ -92,3 +98,23 @@ python3 tools/power_frost.py
 - FLDAS winter temperatures look 3 to 4 °C milder than station records in cold basins, probably because the model misses
   winter cold-air inversions. Trends need checking against station data before quoting absolute winter values.
 - A trend is not a cause.
+
+## Before hosting
+
+| Check | Status |
+|---|---|
+| Vite / React leftovers | None: plain HTML, CSS and JS |
+| Meta description, Open Graph tags | Done in `index.html` and `404.html` |
+| Custom 404 page | `404.html` |
+| Breadcrumbs | Result panel (Mongolia › aimag › soum) and the 404 page |
+| Alt text on images | All images have `alt`; decorative tiles use an empty `alt` |
+| Page source | Semantic sections, `lang` follows the language switch, one `h1` |
+| Console errors | None (checked in Chrome at 1440 px, 390 px and opened as a file) |
+| Structured data | JSON-LD `WebApplication` and `Dataset` |
+| Production source maps | None: nothing is bundled |
+| `robots.txt`, `llms.txt` | Done. Add a `Sitemap:` line once the public URL is known |
+| Placeholder text | None in the site. `design/nyd/` mockups still contain nyd's `[placeholder]` marks |
+| Favicon | `favicon.svg` and `favicon.ico` |
+| Large JS | Data file cut from 2.55 MB to 0.78 MB; no libraries |
+
+Still open: `og:image` and `og:url` need the final public URL, and Mongolian soum names (`name_mn`) are empty.

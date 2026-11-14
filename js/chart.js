@@ -1,7 +1,7 @@
 // Plain script (no modules) so the site also works when index.html is opened as a file.
 (function (Q) {
-// Time series chart as plain SVG: one dot per year, Sen's slope trend line,
-// dashed straight-line fit, dotted period average. Classes only, CSS sets colours.
+// Time series chart as plain SVG: one dot per year, Sen's slope trend line, and the
+// 95% confidence band of the straight-line fit. Classes only; CSS sets colours and motion.
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -23,47 +23,58 @@ function niceTicks(lo, hi, count = 5) {
 }
 
 function drawChart(container, result, { decimals = 2, unit = '', labels }) {
-  const W = 720, H = 340, m = { l: 64, r: 16, t: 16, b: 40 };
-  const { x, y } = result;
-  const yMin = Math.min(...y), yMax = Math.max(...y), pad = (yMax - yMin) * 0.12 || 1;
-  const x0 = x[0] - 0.5, x1 = x[x.length - 1] + 0.5, y0 = yMin - pad, y1 = yMax + pad;
+  const W = 720, H = 360, m = { l: 56, r: 12, t: 28, b: 36 };
+  const { x, y, lin, sen } = result;
+  const xa = x[0], xb = x[x.length - 1];
+  const bandAt = xv => lin.band(xv);
+  const fit = xv => lin.intercept + lin.slope * xv;
+  const lows = [...y, fit(xa) - bandAt(xa), fit(xb) - bandAt(xb)];
+  const highs = [...y, fit(xa) + bandAt(xa), fit(xb) + bandAt(xb)];
+  const yMin = Math.min(...lows), yMax = Math.max(...highs), pad = (yMax - yMin) * 0.08 || 1;
+  const x0 = xa - 0.6, x1 = xb + 0.6, y0 = yMin - pad, y1 = yMax + pad;
   const sx = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
   const sy = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
 
-  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart-svg', role: 'img' });
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart-svg', role: 'img', 'aria-label': labels.title });
   svg.appendChild(el('title', {}, labels.title));
 
   const grid = el('g', { class: 'chart-grid' });
-  for (const t of niceTicks(y0, y1)) {
-    grid.appendChild(el('line', { x1: m.l, x2: W - m.r, y1: sy(t), y2: sy(t) }));
-    grid.appendChild(el('text', { x: m.l - 8, y: sy(t) + 4, 'text-anchor': 'end', class: 'chart-tick' }, t.toFixed(Math.max(0, decimals))));
+  for (const tk of niceTicks(y0, y1)) {
+    grid.appendChild(el('line', { x1: m.l, x2: W - m.r, y1: sy(tk), y2: sy(tk) }));
+    grid.appendChild(el('text', { x: m.l - 10, y: sy(tk) + 4, 'text-anchor': 'end', class: 'chart-tick' }, tk.toFixed(Math.max(0, decimals))));
   }
   const step = x.length > 30 ? 10 : 5;
-  for (let yr = Math.ceil(x[0] / step) * step; yr <= x[x.length - 1]; yr += step) {
-    grid.appendChild(el('text', { x: sx(yr), y: H - m.b + 22, 'text-anchor': 'middle', class: 'chart-tick' }, yr));
+  for (let yr = Math.ceil(xa / step) * step; yr <= xb; yr += step) {
+    grid.appendChild(el('text', { x: sx(yr), y: H - m.b + 24, 'text-anchor': 'middle', class: 'chart-tick' }, yr));
   }
-  grid.appendChild(el('text', { x: 14, y: m.t + (H - m.t - m.b) / 2, class: 'chart-unit', 'text-anchor': 'middle',
-    transform: `rotate(-90 14 ${m.t + (H - m.t - m.b) / 2})` }, unit));
+  grid.appendChild(el('text', { x: m.l, y: 14, class: 'chart-unit' }, unit));
   svg.appendChild(grid);
 
-  const avg = result.mean;
-  svg.appendChild(el('line', { class: 'chart-mean', x1: m.l, x2: W - m.r, y1: sy(avg), y2: sy(avg) }));
+  // Confidence band of the straight-line fit, sampled along the years.
+  const pts = [];
+  for (let i = 0; i <= 24; i++) { const xv = xa + (xb - xa) * i / 24; pts.push([xv, fit(xv) + bandAt(xv)]); }
+  for (let i = 24; i >= 0; i--) { const xv = xa + (xb - xa) * i / 24; pts.push([xv, fit(xv) - bandAt(xv)]); }
+  svg.appendChild(el('path', { class: 'chart-band', d: 'M' + pts.map(([a, b]) => `${sx(a).toFixed(1)},${sy(b).toFixed(1)}`).join('L') + 'Z' }));
 
-  const { lin, sen } = result;
-  svg.appendChild(el('line', { class: 'chart-linear', x1: sx(x[0]), x2: sx(x[x.length - 1]),
-    y1: sy(lin.intercept + lin.slope * x[0]), y2: sy(lin.intercept + lin.slope * x[x.length - 1]) }));
-  svg.appendChild(el('line', { class: 'chart-trend', 'data-level': result.level, x1: sx(x[0]), x2: sx(x[x.length - 1]),
-    y1: sy(sen.intercept + sen.slope * x[0]), y2: sy(sen.intercept + sen.slope * x[x.length - 1]) }));
+  const tx1 = sx(xa), ty1 = sy(sen.intercept + sen.slope * xa), tx2 = sx(xb), ty2 = sy(sen.intercept + sen.slope * xb);
+  const len = Math.hypot(tx2 - tx1, ty2 - ty1).toFixed(1);
+  const trend = el('line', { class: 'chart-trend' + (result.level === 'not-proven' ? '' : ' draw'), 'data-level': result.level,
+    x1: tx1, y1: ty1, x2: tx2, y2: ty2, style: `--len:${len}` });
 
   const dots = el('g', { class: 'chart-dots' });
   x.forEach((yr, i) => {
-    const c = el('circle', { cx: sx(yr), cy: sy(y[i]), r: 4.5, class: y[i] >= avg ? 'above' : 'below' });
+    const c = el('circle', { cx: sx(yr).toFixed(1), cy: sy(y[i]).toFixed(1), r: 4.5, style: `--d:${(i * 0.025).toFixed(3)}s` });
     c.appendChild(el('title', {}, `${yr}: ${y[i].toFixed(decimals)} ${unit}`));
     dots.appendChild(c);
   });
   svg.appendChild(dots);
+  svg.appendChild(trend);
 
+  const fig = container.closest('.chart') || container;
+  fig.classList.remove('is-drawn');
   container.replaceChildren(svg);
+  // Next frame: start the draw-in animation.
+  setTimeout(() => fig.classList.add('is-drawn'), 34);
 }
 
 Q.chart = { drawChart };

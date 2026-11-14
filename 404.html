@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 · Хуудас олдсонгүй · Page not found · Quindecim</title>
+  <meta name="description" content="This page does not exist. Go back to Quindecim, the climate trend tool for every Mongolian soum.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F6F1E7">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
+  <style>
+    :root { --milk: #F6F1E7; --ink: #15213B; --blue: #1D4FA8; --clay: #B9431C; --line: #CFC8BA; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: "Montserrat", system-ui, sans-serif; background: var(--milk); color: var(--ink); }
+    header { padding: 20px clamp(16px, 4vw, 40px); }
+    header img { height: 36px; width: auto; }
+    .band { height: 14px; background: url("assets/tiles/band-alkhan.svg") repeat-x left center / 35px 14px; animation: band 30s linear infinite; }
+    @keyframes band { to { background-position: 350px center; } }
+    main { flex: 1; display: grid; place-items: center; padding: 48px 16px; text-align: center; }
+    .crumbs { list-style: none; display: flex; gap: 6px; justify-content: center; padding: 0; margin: 0 0 24px; font-size: .85rem; color: #5B6375; }
+    .crumbs li + li::before { content: "›"; margin-right: 6px; }
+    .crumbs a { color: var(--blue); }
+    .code { font-size: clamp(5rem, 18vw, 10rem); font-weight: 700; color: var(--blue); line-height: 1; margin: 0; letter-spacing: -.03em; }
+    .mark { width: 120px; margin: 0 auto 8px; animation: float 4s ease-in-out infinite; }
+    @keyframes float { 50% { transform: translateY(-10px) rotate(-4deg); } }
+    h1 { font-size: 1.6rem; margin: 12px 0 4px; }
+    p { margin: 4px 0; }
+    a.button { display: inline-block; margin-top: 28px; padding: 14px 28px; background: var(--blue); color: var(--milk); font-weight: 600; text-decoration: none; }
+    a.button:hover { background: var(--ink); }
+    @media (prefers-reduced-motion: reduce) { .band, .mark { animation: none; } }
+  </style>
+</head>
+<body>
+  <header><a href="./"><img src="assets/brand/quindecim-lockup-small.svg" alt="Quindecim" width="183" height="36"></a></header>
+  <div class="band" aria-hidden="true"></div>
+  <main>
+    <div>
+      <nav aria-label="Breadcrumb"><ol class="crumbs"><li><a href="./">Нүүр · Home</a></li><li aria-current="page">404</li></ol></nav>
+      <img class="mark" src="assets/brand/quindecim-mark-full.svg" alt="" width="120" height="120">
+      <p class="code">404</p>
+      <h1 lang="mn">Хуудас олдсонгүй</h1>
+      <p lang="en">Page not found</p>
+      <a class="button" href="./">Нүүр хуудас руу буцах · Back to the tool</a>
+    </div>
+  </main>
+</body>
+</html>
