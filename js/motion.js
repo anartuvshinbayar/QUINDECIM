@@ -172,15 +172,22 @@ function initTraveler() {
     tool.style.transform = rise >= 1 ? '' : `translateY(${((1 - easeOut(rise)) * 90).toFixed(1)}px)`;
   }
 
-  // Scrolling up during the trip: hide the logo where it is, put it back in its tile, and let it bloom in there.
-  function goHome() {
+  // Where the trip draws the logo (centre y on screen) for scroll position q.
+  const tripY = (g, q) => g.y0 + (g.mid - g.y0) * easeOut(clamp(q / g.leave));
+  // Switch modes without a jump: if the logo would land more than a few pixels away, hide it at once, move it, and let
+  // it bloom in at its new place (the puff in reverse).
+  function switchTo(next, g) {
+    const before = mode === 'home' ? g.y0 - scrollY : tripY(g, shown);
+    mode = next;
+    const after = mode === 'home' ? g.y0 - scrollY : tripY(g, shown);
+    if (Math.abs(after - before) < 6) { draw(shown); return; }
     t.classList.add('no-anim', 'is-gone');
     getComputedStyle(disc).opacity;        // apply the instant hide before moving
-    mode = 'home';
     draw(shown);
     getComputedStyle(t).transform;
-    t.classList.remove('no-anim', 'is-gone');   // the puff in reverse
+    t.classList.remove('no-anim', 'is-gone');
   }
+
 
   // Glide: a quick, smooth scroll to y. Wheel or trackpad movement in the same direction is held back during the
   // glide and until the flick has died out, so it cannot push past the resting place; movement the other way, a key,
@@ -210,7 +217,7 @@ function initTraveler() {
     if (!gliding) settle();
   }, { passive: false });
   addEventListener('touchstart', () => { touching = true; takeOver(); }, { passive: true });
-  const lift = () => { touching = false; if (pending != null) { const y = pending; pending = null; glide(y); } };
+  const lift = () => { touching = false; if (pending != null) { const y = pending; pending = null; glide(y); } else { clearTimeout(idleT); idleT = setTimeout(settleGap, 160); } };
   addEventListener('touchend', lift, { passive: true });
   addEventListener('touchcancel', lift, { passive: true });
   addEventListener('keydown', takeOver);
@@ -225,12 +232,28 @@ function initTraveler() {
     draw(shown);
     raf = shown === target ? 0 : requestAnimationFrame(tick);
   };
+  // Two places to stop: the top (the hero) and the tool. Scrolling the stretch between them always ends at one of them.
+  let idleT = 0, lastDir = 1;
+  function settleGap() {
+    if (gliding || touching || pending != null || reduced) return;
+    const y = scrollY, g = geo(), rest = toolRest();
+    if (!g || y <= g.leave || y >= rest - 2) return;           // in the hero, or at / below the tool: fine to stop
+    glide(rest - y < 40 || lastDir > 0 ? rest : 0);            // just above the tool, or going down: the tool; else the top
+  }
   const follow = () => {
     const y = scrollY, g = geo();
     if (g && !reduced) {
       const up = y < lastY - 1, down = y > lastY;
-      if (up && !gliding && mode !== 'home') goHome();                            // no trip back up
-      if (mode === 'home' && y <= 2) { mode = 'trip'; shown = target = y; }       // back at the top: ready again
+      if (up) lastDir = -1; else if (down) lastDir = 1;
+      if (up && !gliding && mode !== 'home') switchTo('home', g);                 // no trip back up
+      if (down && mode === 'home' && !gliding) {
+        // Going down from its tile: pick the trip up exactly where the logo is (or bloom in if the tile is already past
+        // the middle of the screen), so it never just scrolls away with the tiles.
+        const e = g.y0 > g.mid ? y / (g.y0 - g.mid) : 2;
+        if (e < 0.98) { shown = (1 - Math.sqrt(1 - e)) * g.leave; mode = 'trip'; }
+        else { shown = y; switchTo('trip', g); }
+      }
+      if (y <= 2 && mode !== 'trip') { mode = 'trip'; shown = target = y; }       // back at the top: ready again (and visible)
       if (y < g.vanish - 40) snapArmed = true;
       if (!gliding && pending == null) {
         if (down && snapArmed && y >= g.vanish) { snapArmed = false; glide(toolRest()); }
@@ -239,8 +262,10 @@ function initTraveler() {
     }
     lastY = y;
     target = y;
+    clearTimeout(idleT); idleT = setTimeout(settleGap, 160);   // scrolling stopped in the stretch: finish the move
     if (!raf) raf = requestAnimationFrame(tick);
   };
+
   const refresh = () => { target = shown = lastY = scrollY; draw(shown); };
   addEventListener('scroll', follow, { passive: true });
   addEventListener('resize', refresh);
