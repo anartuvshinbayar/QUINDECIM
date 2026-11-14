@@ -74,6 +74,45 @@ function verdictKey(r) {
 }
 const resultFor = s => { const part = slice(s, state.from, state.to); return analyze(part.years, part.values); };
 
+
+// ---------- no layout shift when switching language ----------
+// Every piece of text that changes with the language gets room for its longer version (width for
+// buttons and labels, height for text that can wrap), so nothing moves when you press MN or EN.
+const LANGS = ['mn', 'en'];
+function lockSizes() {
+  const items = [];
+  const add = (box, holder, texts, dim) => items.push({ box, holder: holder || box, texts, dim });
+  document.querySelectorAll('.main-nav [data-i18n], .header-cta, .year-label').forEach(el =>
+    add(el, el, LANGS.map(l => STRINGS[l][el.dataset.i18n]), 'width'));
+  const big = document.querySelector('.hero .button-big');
+  if (big) add(big, big.querySelector('[data-i18n]'), LANGS.map(l => STRINGS[l].cta), 'width');
+  if (big) add(big, big.querySelector('[data-i18n]'), LANGS.map(l => STRINGS[l].cta), 'height');   // it can wrap on small phones
+  document.querySelectorAll('.variable-button').forEach(el => add(el, el, LANGS.map(l => byId[el.dataset.var].name[l]), 'width'));
+  document.querySelectorAll('[data-pick]').forEach(el => add(el, el, LANGS.map(l => byId[el.dataset.pick].question[l]), 'height'));
+  document.querySelectorAll('.hero-sub, .hero-title, #map-hint').forEach(el => add(el, el, LANGS.map(l => STRINGS[l][el.dataset.i18n]), 'height'));
+
+  // Widths first (they decide how text wraps), then heights.
+  for (const dim of ['width', 'height']) {
+    const prop = dim === 'width' ? 'minWidth' : 'minHeight';
+    const group = items.filter(i => i.dim === dim);
+    group.forEach(i => { i.box.style[prop] = ''; });
+    for (const i of group) {
+      const keep = i.holder.textContent, keepLabel = i.holder.getAttribute('aria-label');
+      let max = 0;
+      for (const text of i.texts) {
+        i.holder.textContent = text;
+        const r = i.box.getBoundingClientRect();
+        max = Math.max(max, dim === 'width' ? r.width : r.height);
+      }
+      i.holder.textContent = keep;
+      if (keepLabel != null) i.holder.setAttribute('aria-label', keepLabel);
+      i.box.style[prop] = Math.ceil(max) + 'px';
+    }
+  }
+  // The hero title is split into rising words; split it again after measuring.
+  motion.refresh();
+}
+
 // ---------- rendering ----------
 
 function renderStatic() {
@@ -110,6 +149,7 @@ function renderStatic() {
 
   motion.startRotator(t('rotWords'), t('rotBefore'), t('rotAfter'));
   motion.refresh();
+  lockSizes();
   lastResultKey = '';
 }
 
@@ -122,9 +162,21 @@ function render() {
   });
 
   const [lo, hi] = DATA.yearRange[v.id];
-  for (const id of ['year-from', 'year-to']) { $(id).min = lo; $(id).max = hi; }
-  $('year-from').value = state.from; $('year-to').value = state.to;
-  $('year-from-out').textContent = state.from; $('year-to-out').textContent = state.to;
+  // Year pickers: a list of every year of this question's record, plus one-year arrows.
+  for (const [id, val, min, max] of [['year-from', state.from, lo, state.to], ['year-to', state.to, state.from, hi]]) {
+    const sel = $(id);
+    if (sel.dataset.range !== `${lo}-${hi}`) {
+      sel.replaceChildren(...Array.from({ length: hi - lo + 1 }, (_, i) => make('option', { value: lo + i, textContent: lo + i })));
+      sel.dataset.range = `${lo}-${hi}`;
+    }
+    for (const o of sel.options) o.disabled = +o.value < min || +o.value > max;   // keep from <= to
+    sel.value = val;
+  }
+  document.querySelectorAll('.year-step').forEach(b => {
+    const which = b.dataset.which, step = +b.dataset.step;
+    const next = (which === 'from' ? state.from : state.to) + step;
+    b.disabled = which === 'from' ? next < lo || next > state.to : next < state.from || next > hi;
+  });
 
   // Map colours: every aimag (average of its soums); soums only for the open aimag.
   const aimagVerdicts = {}, soumVerdicts = {};
@@ -285,14 +337,19 @@ function wire() {
     if (hit) selectSoum(hit.id);
   });
 
-  const onYears = which => () => {
-    let from = +$('year-from').value, to = +$('year-to').value;
-    if (from > to) { if (which === 'from') to = from; else from = to; }
+  const setYears = (from, to) => {
+    const [lo, hi] = DATA.yearRange[state.varId];
+    from = Math.max(lo, Math.min(from, hi)); to = Math.max(lo, Math.min(to, hi));
+    if (from > to) return;
     state.from = from; state.to = to;
     render();
   };
-  $('year-from').addEventListener('input', onYears('from'));
-  $('year-to').addEventListener('input', onYears('to'));
+  $('year-from').addEventListener('change', e => setYears(+e.target.value, state.to));
+  $('year-to').addEventListener('change', e => setYears(state.from, +e.target.value));
+  document.querySelectorAll('.year-step').forEach(b => b.addEventListener('click', () => {
+    const step = +b.dataset.step;
+    if (b.dataset.which === 'from') setYears(state.from + step, state.to); else setYears(state.from, state.to + step);
+  }));
 
   $('share').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(location.href); $('share').textContent = t('copied'); }
@@ -326,5 +383,8 @@ function wire() {
   wire();
   render();
   motion.init();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockSizes);
+  let lockT;
+  addEventListener('resize', () => { clearTimeout(lockT); lockT = setTimeout(lockSizes, 200); });
 })();
 })(globalThis.Q = globalThis.Q || {});

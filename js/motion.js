@@ -195,7 +195,12 @@ function countUp(span) {
 function init(onReady) {
   header();
   buildTiles();
-  runLoader(() => { started = true; observe(); onReady && onReady(); });
+  runLoader(() => {
+    started = true; observe(); onReady && onReady();
+    // Layout can still settle (fonts, sizes) just after loading: check again so nothing on screen stays hidden.
+    [250, 700, 1500, 3000].forEach(ms => setTimeout(check, ms));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(check, 50));
+  });
 }
 
 Q.motion = { init, refresh, startRotator, countUp, observe };

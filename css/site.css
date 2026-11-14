@@ -165,10 +165,19 @@ body.is-loading { overflow: hidden; }
 .variable-button { padding: 7px 12px; border: 1px solid var(--line); background: var(--milk); font-weight: 600; font-size: .84rem; white-space: nowrap; transition: background .3s var(--ease), color .3s var(--ease), border-color .3s; }
 .variable-button:hover { border-color: var(--blue); color: var(--blue); }
 .variable-button.is-selected { background: var(--blue); color: var(--milk); border-color: var(--blue); }
-.years { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 260px; }
-.year-head { display: flex; justify-content: space-between; align-items: baseline; font-size: .74rem; color: var(--muted); }
-.year-head output { font-weight: 700; font-size: .9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
-.year-range input { width: 100%; margin: 2px 0 0; accent-color: var(--blue); }
+/* Year pickers: tap the arrows for one year, or tap the year to choose from the list. No dragging. */
+.years { display: flex; align-items: center; gap: 6px; }
+.year-pick { display: flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--milk); transition: border-color .2s; }
+.year-pick:hover, .year-pick:focus-within { border-color: var(--blue); }
+.year-label { font-size: .7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.year-step { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--blue); transition: background .2s, color .2s; }
+.year-step svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.year-step:hover:not(:disabled) { background: var(--blue); color: var(--milk); }
+.year-step:disabled { color: var(--line); cursor: default; }
+.year-select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 2px 4px; font: inherit; font-weight: 700; font-size: .95rem; color: var(--ink); font-variant-numeric: tabular-nums; text-align: center; cursor: pointer; border-radius: 6px; }
+.year-select:hover { background: var(--line-soft); }
+.year-select:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.year-dash { color: var(--muted); font-weight: 600; }
 .search-box { display: flex; align-items: center; gap: 8px; width: 230px; border: 1px solid var(--line); padding: 0 10px; background: #FBF8F2; transition: border-color .2s; }
 .search-box:focus-within { border-color: var(--blue); }
 .search-box svg { width: 16px; height: 16px; color: var(--blue); flex: none; }
@@ -291,7 +300,7 @@ body.is-loading { overflow: hidden; }
 @media (max-width: 760px) {
   .header-cta { display: none; }
   /* Phones: 6 columns by 3 rows of tiles; the medallion sits below the question labels. */
-  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 6), 5.8svh); min-height: calc(100svh - 74px); }
+  .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 6), 5.4svh); min-height: calc(100svh - 74px); }
   .hero-q { font-size: clamp(.6rem, 1.45svh, .72rem); padding: .9svh 0; }
   .q-bl, .q-br { padding-left: 0; padding-right: 0; }
   .header-inner { min-height: 60px; }
@@ -306,7 +315,9 @@ body.is-loading { overflow: hidden; }
   /* Phones: the bar sits above the map, and the result appears below the map instead of beside it. */
   .stage { --bar-h: 0px; height: auto; overflow: visible; display: flex; flex-direction: column; }
   .stage-bar { position: relative; }
-  .years, .search-box { width: 100%; }
+  .search-box { width: 100%; }
+  .years { width: 100%; justify-content: space-between; }
+  .year-pick { flex: 1; justify-content: space-between; }
   .variable-buttons { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .map-svg { position: relative; height: clamp(260px, 92vw, 52svh); }
   .result-panel { position: relative; width: auto; transform: translateY(24px); opacity: 0; border-left: 0; border-top: 1px solid var(--line); overflow: visible; transition: transform .6s .3s var(--ease), opacity .6s .3s; }

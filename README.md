@@ -17,6 +17,9 @@ A local server also works (`python3 -m http.server 8765`, then http://localhost:
 After changing `data/soums.geojson` or `data/data.csv` by hand, run `python3 tools/build_data.py` to rebuild
 `data/data.js`. The export scripts do this automatically.
 
+Before each deploy, run `python3 tools/bump_version.py`. It gives the CSS and JS links a new `?v=` number so
+visitors' browsers load the new files instead of an old cached copy.
+
 ## Files
 
 | Path | What it is |
@@ -41,6 +44,7 @@ After changing `data/soums.geojson` or `data/data.csv` by hand, run `python3 too
 | `data/parts/` | One CSV per variable (merged into `data.csv`) |
 | `data/sample/` | Invented test data in the same format |
 | `tools/build_data.py` | Rebuilds `data/data.js` |
+| `tools/bump_version.py` | New `?v=` number on CSS and JS links, so updates are never hidden by the browser cache |
 | `tools/gee_export.py` | Earth Engine export for soum and aimag boundaries, greenness, rain, temperature |
 | `tools/power_frost.py` | First autumn frost from the NASA POWER API |
 | `tools/check_stats.py` | Checks `js/stats.js` against scipy |
