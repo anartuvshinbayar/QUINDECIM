@@ -70,7 +70,6 @@
       <a class="brand" href="#top"><img src="assets/brand/quindecim-lockup-small.svg" alt="Quindecim" width="183" height="36"></a>
       <nav class="main-nav" aria-label="Main">
         <a href="#tool" data-i18n="navTool"></a>
-        <a href="#how" data-i18n="navHow"></a>
         <a href="#glossary" data-i18n="navGlossary"></a>
       </nav>
       <div class="lang-switch" role="group" aria-label="Language / Хэл">
@@ -108,137 +107,84 @@
         <h1 id="hero-title" class="hero-title" data-i18n="heroTitle" data-split></h1>
         <p class="hero-rotator" aria-live="off"><span id="rot-before"></span> <span class="rot-window"><span id="rot-word" class="rot-word"></span></span> <span id="rot-after"></span></p>
         <p class="hero-sub" data-i18n="heroSub" data-reveal></p>
-        <p class="hero-lead" data-i18n="heroLead" data-reveal></p>
         <a class="button button-primary button-big" href="#tool" data-reveal><span data-i18n="cta"></span> <span class="arrow" aria-hidden="true">→</span></a>
       </div>
     </section>
 
-    <section id="claims" class="claims frame" aria-labelledby="claims-title">
-      <p class="kicker" data-i18n="claimsKicker" data-reveal></p>
-      <h2 id="claims-title" class="section-title" data-i18n="claimsTitle" data-split></h2>
-      <div class="claims-diagram" id="claims-diagram">
-        <svg class="claims-lines" id="claims-lines" aria-hidden="true"></svg>
-        <ul class="claims-list">
-          <li class="claim" data-claim="0"></li>
-          <li class="claim" data-claim="1"></li>
-          <li class="claim" data-claim="2"></li>
-        </ul>
-        <div class="claims-hub" aria-hidden="true"><img src="assets/brand/quindecim-mark-full.svg" alt="" width="104" height="104"></div>
-        <ul class="claims-verdicts">
-          <li class="pill pill-real" data-i18n="real"></li>
-          <li class="pill pill-possible" data-i18n="possible"></li>
-          <li class="pill pill-not-proven" data-i18n="notProven"></li>
-        </ul>
-      </div>
-      <p class="claims-close" data-i18n="claimsClose" data-reveal></p>
-    </section>
-
-    <section id="tool" class="tool frame" aria-labelledby="tool-title">
-      <p class="kicker" data-i18n="toolKicker" data-reveal></p>
-      <h2 id="tool-title" class="section-title" data-i18n="title" data-split></h2>
+    <section id="tool" class="tool" aria-labelledby="tool-title">
+      <h2 id="tool-title" class="visually-hidden" data-i18n="toolTitle"></h2>
       <p id="sample-banner" class="sample-banner" data-i18n="sample" hidden></p>
       <p id="load-error" class="load-error" role="alert" hidden></p>
 
-      <div class="panel" data-reveal>
-        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-        <div class="step step-variable">
-          <h3 data-i18n="step1"></h3>
-          <div id="variable-buttons" class="variable-buttons" role="radiogroup"></div>
+      <div id="stage" class="stage">
+        <div id="stage-bar" class="stage-bar">
+          <div id="variable-buttons" class="variable-buttons" role="radiogroup" aria-labelledby="tool-title"></div>
+          <div class="years">
+            <label class="year-range"><span class="year-head"><span data-i18n="from"></span><output id="year-from-out"></output></span>
+              <input id="year-from" type="range" step="1"></label>
+            <label class="year-range"><span class="year-head"><span data-i18n="to"></span><output id="year-to-out"></output></span>
+              <input id="year-to" type="range" step="1"></label>
+          </div>
+          <label class="search-box">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="visually-hidden" data-i18n="searchSoum"></span>
+            <input id="soum-search" type="search" list="soum-list" autocomplete="off">
+            <datalist id="soum-list"></datalist>
+          </label>
+        </div>
+        <button id="map-back" class="map-back" type="button" hidden>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="visually-hidden" data-i18n="back"></span>
+        </button>
+        <p id="map-hint" class="map-hint" data-i18n="mapHintAimag"></p>
+        <div id="map-legend" class="map-legend">
+          <ul>
+            <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
+            <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
+            <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
+            <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
+            <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
+          </ul>
         </div>
 
-        <div class="panel-cols">
-          <div class="panel-left">
-            <div class="step step-place">
-              <h3 data-i18n="step2"></h3>
-              <label class="soum-search">
-                <span class="label" data-i18n="searchSoum"></span>
-                <span class="search-box">
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                  <input id="soum-search" type="search" list="soum-list" autocomplete="off">
-                </span>
-                <datalist id="soum-list"></datalist>
-              </label>
-              <div id="map" class="map"></div>
-              <p class="hint" data-i18n="mapHint"></p>
-              <div id="map-legend" class="map-legend">
-                <p class="legend-title" data-i18n="mapLegend"></p>
-                <ul>
-                  <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
-                  <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
-                  <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
-                  <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
-                  <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
-                  <li><span class="swatch swatch-selected"></span><span data-i18n="selectedSoum"></span></li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="step step-years">
-              <h3 data-i18n="step3"></h3>
-              <div class="years">
-                <label class="year-range"><span class="year-head"><span data-i18n="from"></span><output id="year-from-out"></output></span>
-                  <input id="year-from" type="range" step="1"></label>
-                <label class="year-range"><span class="year-head"><span data-i18n="to"></span><output id="year-to-out"></output></span>
-                  <input id="year-to" type="range" step="1"></label>
-              </div>
-            </div>
+        <aside id="result-panel" class="result-panel" aria-live="polite" aria-labelledby="result-title" hidden>
+          <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb"><ol></ol></nav>
+          <div class="result-head">
+            <h3 id="result-title"></h3>
+            <span id="verdict-badge" class="pill"></span>
           </div>
-
-          <div class="panel-right">
-            <div class="result-head">
-              <h3 data-i18n="resultTitle"></h3>
-              <span id="verdict-badge" class="pill" hidden></span>
-            </div>
-            <nav id="breadcrumb" class="breadcrumb" aria-label="Breadcrumb" hidden><ol></ol></nav>
-            <p id="result-empty" class="result-empty" data-i18n="resultEmpty"></p>
-
-            <section id="result" class="result" aria-live="polite" hidden>
-              <div id="too-short" class="too-short" hidden></div>
-              <div id="result-body">
-                <figure class="chart">
-                  <div id="chart"></div>
-                  <figcaption class="chart-legend">
-                    <span class="key key-trend" data-i18n="chartLegendSen"></span>
-                    <span class="key key-band" data-i18n="chartBand"></span>
-                  </figcaption>
-                </figure>
-                <p id="source-line" class="source-line"></p>
-
-                <dl id="verdict" class="verdict-grid">
-                  <div><dt data-i18n="whatChanged"></dt><dd id="v-what"></dd></div>
-                  <div><dt data-i18n="speed"></dt><dd id="v-speed"></dd></div>
-                  <div><dt data-i18n="isReal"></dt><dd id="v-real"></dd></div>
-                  <div><dt data-i18n="meaning"></dt><dd id="v-meaning"></dd></div>
-                </dl>
-
-                <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
-                <p id="level-note" class="note"></p>
-
-                <details class="stats-details">
-                  <summary data-i18n="details"></summary>
-                  <table class="stats-table"><tbody id="stats-rows"></tbody></table>
-                </details>
-
-                <div class="result-actions">
-                  <button id="download" type="button" class="button button-outline" data-i18n="download"></button>
-                  <button id="share" type="button" class="button button-outline" data-i18n="share"></button>
-                </div>
-
-                <aside class="limits">
-                  <h4 data-i18n="limitsTitle"></h4>
-                  <ul id="limits-list"></ul>
-                </aside>
-              </div>
-            </section>
+          <div id="too-short" class="too-short" hidden></div>
+          <div id="result-body">
+            <figure class="chart">
+              <div id="chart"></div>
+              <figcaption class="chart-legend">
+                <span class="key key-trend" data-i18n="chartLegendSen"></span>
+                <span class="key key-band" data-i18n="chartBand"></span>
+              </figcaption>
+            </figure>
+            <dl id="verdict" class="verdict-grid">
+              <div><dt data-i18n="speed"></dt><dd id="v-speed"></dd></div>
+              <div><dt data-i18n="isReal"></dt><dd id="v-real"></dd></div>
+              <div class="wide"><dt data-i18n="meaning"></dt><dd id="v-meaning"></dd></div>
+            </dl>
+            <p id="source-line" class="source-line"></p>
+            <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
           </div>
-        </div>
+        </aside>
       </div>
-    </section>
 
-    <section id="how" class="how frame" aria-labelledby="how-title">
-      <p class="kicker" data-i18n="howKicker" data-reveal></p>
-      <h2 id="how-title" class="section-title" data-i18n="howTitle" data-split></h2>
-      <ol id="steps" class="steps"></ol>
+      <div id="result-extras" class="result-extras" hidden>
+        <details class="extra">
+          <summary data-i18n="details"></summary>
+          <table class="stats-table"><tbody id="stats-rows"></tbody></table>
+        </details>
+        <details class="extra">
+          <summary data-i18n="limitsTitle"></summary>
+          <ul id="limits-list" class="limits-list"></ul>
+        </details>
+        <button id="download" type="button" class="button button-outline" data-i18n="download"></button>
+        <button id="share" type="button" class="button button-outline" data-i18n="share"></button>
+      </div>
     </section>
 
     <section id="glossary" class="glossary frame" aria-labelledby="h-glossary">

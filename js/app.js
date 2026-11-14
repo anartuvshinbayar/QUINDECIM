@@ -2,42 +2,44 @@
 (function (Q) {
 const { analyze } = Q.stats;
 const { loadData, slice } = Q.data;
-const { drawMap } = Q.map;
+const { createMap } = Q.map;
 const { drawChart } = Q.chart;
-const { VARIABLES, byId } = Q.variables;
+const { VARIABLES, byId, AIMAG_MN } = Q.variables;
 const { STRINGS, GLOSSARY } = Q.i18n;
 const motion = Q.motion;
 
 const $ = id => document.getElementById(id);
 
-// Opens on summer greenness so the map is coloured from the start.
+// Flow: overview of aimags -> click an aimag (zoom, result panel slides in, soums appear) -> click a soum.
 const DEFAULT_VAR = 'ndvi_summer';
-const state = { lang: 'mn', varId: DEFAULT_VAR, soumId: null, from: null, to: null };
+const state = { lang: 'mn', varId: DEFAULT_VAR, aimag: null, soumId: null, from: null, to: null };
 let DATA, map, lastResultKey = '';
 
 const t = key => STRINGS[state.lang][key];
 const tr = obj => obj[state.lang];
+const aimagName = a => (state.lang === 'mn' ? AIMAG_MN[a] || a : a);
 const soumName = s => (state.lang === 'mn' ? s.name_mn : s.name_en);
-const soumLabel = s => `${soumName(s)}${s.aimag ? ', ' + s.aimag : ''}`;
+const soumLabel = s => `${soumName(s)}, ${aimagName(s.aimag)}`;
 const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
 
-// ---------- URL state: #v=ndvi_summer&s=12345&from=2001&to=2025&lang=en ----------
+// ---------- URL state: #v=ndvi_summer&a=Dundgovi&s=12345&from=2001&to=2025&lang=en ----------
 
 function readHash() {
   const p = new URLSearchParams(location.hash.slice(1));
   if (p.get('lang') === 'en') state.lang = 'en';
   if (byId[p.get('v')]) state.varId = p.get('v');
-  if (p.get('s') && DATA.soumById[p.get('s')]) state.soumId = p.get('s');
+  if (p.get('a') && DATA.aimagByName[p.get('a')]) state.aimag = p.get('a');
+  if (p.get('s') && DATA.soumById[p.get('s')]) { state.soumId = p.get('s'); state.aimag = DATA.soumById[state.soumId].aimag; }
   if (p.get('from')) state.from = +p.get('from');
   if (p.get('to')) state.to = +p.get('to');
 }
 
 function writeHash() {
   const p = new URLSearchParams();
-  if (state.varId) p.set('v', state.varId);
+  p.set('v', state.varId);
+  if (state.aimag) p.set('a', state.aimag);
   if (state.soumId) p.set('s', state.soumId);
-  if (state.from) p.set('from', state.from);
-  if (state.to) p.set('to', state.to);
+  p.set('from', state.from); p.set('to', state.to);
   if (state.lang !== 'mn') p.set('lang', state.lang);
   history.replaceState(null, '', '#' + p.toString());
 }
@@ -47,16 +49,9 @@ function writeHash() {
 const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '–');
 const fmtP = p => (p < 0.001 ? '< 0.001' : p.toFixed(3));
 const signed = (v, d) => (v > 0 ? '+' : '') + fmt(v, d);
+const perDecade = (v, r, slope) => (v.display === 'percent' ? (slope * 10 / r.mean) * 100 : slope * 10);
+const rateUnit = v => (v.display === 'percent' ? '%' : ' ' + (v.unitName ? tr(v.unitName) : v.unit));
 
-function perDecade(v, r, slope) {
-  return v.display === 'percent' ? (slope * 10 / r.mean) * 100 : slope * 10;
-}
-function rateUnit(v) {
-  if (v.display === 'percent') return '%';
-  return v.unitName ? ' ' + tr(v.unitName) : ' ' + v.unit;
-}
-
-// "Rose by <num>% per decade, since 2001", with the number in a span that counts up.
 function speedNode(v, r) {
   const node = document.createDocumentFragment();
   if (r.direction === 'flat') { node.append(`${t('noChange')} (${r.first}–${r.last})`); return node; }
@@ -77,6 +72,7 @@ function verdictKey(r) {
   if (r.level === 'not-proven' || r.direction === 'flat') return 'not-proven';
   return `${r.level}-${r.direction}`;
 }
+const resultFor = s => { const part = slice(s, state.from, state.to); return analyze(part.years, part.values); };
 
 // ---------- rendering ----------
 
@@ -90,8 +86,9 @@ function renderStatic() {
     b.setAttribute('aria-pressed', on);
   });
   document.querySelectorAll('[data-pick]').forEach(b => { b.textContent = tr(byId[b.dataset.pick].question); });
-  document.querySelectorAll('[data-claim]').forEach(li => { li.textContent = t('claims')[+li.dataset.claim]; });
   $('soum-search').placeholder = t('searchSoum');
+  $('map-back').setAttribute('aria-label', t('back'));
+  $('map-back').title = t('back');
   $('limits-list').replaceChildren(...t('limits').map(s => make('li', { textContent: s })));
   $('glossary-list').replaceChildren(...GLOSSARY.map(g => {
     const [term, def] = g[state.lang];
@@ -99,21 +96,14 @@ function renderStatic() {
     row.append(make('dt', { textContent: term }), make('dd', { textContent: def }));
     return row;
   }));
-  $('steps').replaceChildren(...t('steps').map(([title, text], i) => {
-    const li = make('li');
-    li.style.setProperty('--d', (i * 0.08) + 's');
-    li.append(make('span', { className: 'step-num', textContent: `${i + 1}/${t('steps').length}` }),
-      make('h3', { textContent: title }), make('p', { textContent: text }));
-    return li;
-  }));
-  $('soum-list').replaceChildren(...DATA.soums.map(s => make('option', { value: soumLabel(s) })));
+  $('soum-list').replaceChildren(
+    ...DATA.aimags.map(a => make('option', { value: aimagName(a.name) })),
+    ...DATA.soums.map(s => make('option', { value: soumLabel(s) })));
 
   $('variable-buttons').replaceChildren(...VARIABLES.filter(v => DATA.series[v.id]).map(v => {
-    const b = make('button', { type: 'button', className: 'variable-button' });
+    const b = make('button', { type: 'button', className: 'variable-button', title: `${tr(v.question)} ${tr(v.season)}`, textContent: tr(v.name) });
     b.dataset.var = v.id;
     b.setAttribute('role', 'radio');
-    b.append(make('span', { className: 'variable-question', textContent: tr(v.question) }),
-      make('span', { className: 'variable-name', textContent: `${tr(v.name)} · ${tr(v.season)}` }));
     b.addEventListener('click', () => selectVariable(v.id));
     return b;
   }));
@@ -125,88 +115,92 @@ function renderStatic() {
 
 function render() {
   const v = byId[state.varId];
-  const soum = state.soumId && DATA.soumById[state.soumId];
-
   document.querySelectorAll('.variable-button').forEach(b => {
     const on = b.dataset.var === state.varId;
     b.classList.toggle('is-selected', on);
     b.setAttribute('aria-checked', on);
   });
-  if (soum && document.activeElement !== $('soum-search')) $('soum-search').value = soumLabel(soum);
 
   const [lo, hi] = DATA.yearRange[v.id];
   for (const id of ['year-from', 'year-to']) { $(id).min = lo; $(id).max = hi; }
   $('year-from').value = state.from; $('year-to').value = state.to;
   $('year-from-out').textContent = state.from; $('year-to-out').textContent = state.to;
 
-  const verdicts = {};
-  for (const s of DATA.soums) {
-    const part = slice(DATA.series[v.id][s.id], state.from, state.to);
-    verdicts[s.id] = verdictKey(analyze(part.years, part.values));
-  }
-  map.update({ selectedId: state.soumId, verdicts });
+  // Map colours: every aimag (average of its soums); soums only for the open aimag.
+  const aimagVerdicts = {}, soumVerdicts = {};
+  for (const a of DATA.aimags) aimagVerdicts[a.name] = verdictKey(resultFor(DATA.aimagSeries(v.id, a.name)));
+  if (state.aimag) for (const id of DATA.aimagByName[state.aimag].soumIds) soumVerdicts[id] = verdictKey(resultFor(DATA.series[v.id][id]));
+  const panel = Boolean(state.aimag);
+  map.update({ aimag: state.aimag, soumId: state.soumId, panel, aimagVerdicts, soumVerdicts });
+  $('stage').classList.toggle('has-panel', panel);
+  $('map-back').hidden = false;
+  $('result-panel').hidden = false;
+  $('result-panel').inert = !panel;
+  $('result-extras').hidden = !panel;
+
   $('legend-real-up').textContent = `${t('real')}: ${tr(v.up)}`;
   $('legend-possible-up').textContent = `${t('possibleShort')}: ${tr(v.up)}`;
   $('legend-not-proven').textContent = t('notProven');
   $('legend-possible-down').textContent = `${t('possibleShort')}: ${tr(v.down)}`;
   $('legend-real-down').textContent = `${t('real')}: ${tr(v.down)}`;
 
-  $('result-empty').hidden = Boolean(soum);
-  $('result').hidden = !soum;
-  $('breadcrumb').hidden = !soum;
-  if (!soum) $('verdict-badge').hidden = true;
-  if (soum) renderResult(v, soum);
+  if (panel) renderResult(v);
+  if (!$('soum-search').matches(':focus')) {
+    $('soum-search').value = state.soumId ? soumLabel(DATA.soumById[state.soumId]) : state.aimag ? aimagName(state.aimag) : '';
+  }
   writeHash();
 }
 
-function renderResult(v, soum) {
-  const part = slice(DATA.series[v.id][soum.id], state.from, state.to);
-  const r = analyze(part.years, part.values);
-  const key = [v.id, soum.id, state.from, state.to, state.lang].join('|');
+function renderResult(v) {
+  const soum = state.soumId && DATA.soumById[state.soumId];
+  const series = soum ? DATA.series[v.id][soum.id] : DATA.aimagSeries(v.id, state.aimag);
+  const r = resultFor(series);
+  const key = [v.id, state.aimag, state.soumId, state.from, state.to, state.lang].join('|');
   const changed = key !== lastResultKey;
   lastResultKey = key;
-  $('result').dataset.verdict = verdictKey(r);
+  if (!changed) return;
 
-  // Breadcrumb: Mongolia › aimag › soum
-  $('breadcrumb').querySelector('ol').replaceChildren(
-    ...[t('mapRegion'), soum.aimag, soumName(soum)].filter(Boolean).map(x => make('li', { textContent: x })));
+  // Breadcrumb: Mongolia › Aimag › Soum (earlier steps are buttons).
+  const crumbs = [[t('mapRegion'), goOverview], [aimagName(state.aimag), soum ? () => selectAimag(state.aimag) : null]];
+  if (soum) crumbs.push([soumName(soum), null]);
+  $('breadcrumb').querySelector('ol').replaceChildren(...crumbs.map(([label, fn]) => {
+    const li = make('li');
+    li.append(fn ? Object.assign(make('button', { type: 'button', textContent: label }), { onclick: fn }) : label);
+    return li;
+  }));
+  $('result-title').textContent = soum ? soumName(soum) : aimagName(state.aimag);
 
+  const badge = $('verdict-badge');
   $('too-short').hidden = r.ok;
   $('result-body').hidden = !r.ok;
-  const badge = $('verdict-badge');
   if (!r.ok) {
     $('too-short').textContent = `${t('tooShort')} ${r.n} ${t('years')}.`;
     badge.hidden = true;
     return;
   }
 
-  const levelText = { real: t('real'), possible: t('possible'), 'not-proven': t('notProven') }[r.level];
   const vk = verdictKey(r);
+  const short = { real: t('real'), possible: t('possibleShort'), 'not-proven': t('notProven') }[r.level];
   badge.hidden = false;
   badge.className = 'pill ' + ({ 'real-up': 'pill-real', 'possible-up': 'pill-possible', 'real-down': 'pill-real-down',
     'possible-down': 'pill-possible-down' }[vk] || 'pill-not-proven');
-  const short = { real: t('real'), possible: t('possibleShort'), 'not-proven': t('notProven') }[r.level];
   badge.textContent = vk === 'not-proven' ? short : `${short} · ${tr(v[r.direction === 'up' ? 'up' : 'down'])}`;
-  if (changed) { badge.style.animation = 'none'; void badge.offsetWidth; badge.style.animation = ''; }
-
-  if (!changed) return;   // same result: keep the drawn chart as it is
+  badge.style.animation = 'none'; void badge.offsetWidth; badge.style.animation = '';
 
   const unit = v.unitName ? tr(v.unitName) : v.unit;
-  drawChart($('chart'), r, { decimals: v.decimals, unit, labels: { title: `${tr(v.name)}, ${soumName(soum)}` } });
-  $('source-line').textContent = `${t('sourceLine')}: ${v.source}. ${tr(v.season)}.`;
+  drawChart($('chart'), r, { decimals: v.decimals, unit, labels: { title: `${tr(v.name)}, ${$('result-title').textContent}` } });
 
+  const levelText = { real: t('real'), possible: t('possible'), 'not-proven': t('notProven') }[r.level];
   const levelP = { real: t('realP'), possible: t('possibleP'), 'not-proven': t('notProvenP') }[r.level];
-  $('v-what').textContent = `${tr(v.name)}, ${soumLabel(soum)} (${r.first}–${r.last})`;
   $('v-speed').replaceChildren(speedNode(v, r));
   $('v-speed').querySelectorAll('.num[data-value]').forEach(motion.countUp);
   $('v-real').textContent = `${levelText}: ${levelP} (p = ${fmtP(r.mk.p)})`;
   $('v-meaning').textContent = { real: t('meaningReal'), possible: t('meaningPossible'), 'not-proven': t('meaningNotProven') }[r.level];
-  // Restart the cell animation for a new result.
   $('verdict').querySelectorAll(':scope > div').forEach(d => { d.style.animation = 'none'; void d.offsetWidth; d.style.animation = ''; });
 
+  const scope = soum ? (v.level === 'regional' ? t('regional') : v.level === 'point' ? t('point') : '') : t('aimagAverage');
+  $('source-line').textContent = `${t('sourceLine')}: ${v.source}. ${tr(v.season)}. ${scope}`.trim();
   $('disagree-note').hidden = !r.testsDisagree;
-  $('level-note').textContent = v.level === 'regional' ? t('regional') : v.level === 'point' ? t('point') : '';
-  $('level-note').hidden = v.level === 'soum';
 
   const ru = rateUnit(v), dd = v.display === 'percent' ? 2 : 3;
   const rows = [
@@ -223,21 +217,21 @@ function renderResult(v, soum) {
     row.append(make('th', { textContent: k, scope: 'row' }), make('td', { textContent: val }));
     return row;
   }));
-
   $('download').onclick = () => downloadCsv(v, soum, r);
 }
 
 function downloadCsv(v, soum, r) {
+  const place = soum ? `${soum.name_en}, ${soum.aimag}` : `${state.aimag} (average of its soums)`;
   const lines = [
-    `# ${v.name.en} (${v.unit}), ${soum.name_en}${soum.aimag ? ', ' + soum.aimag : ''}`,
+    `# ${v.name.en} (${v.unit}), ${place}`,
     `# Source: ${v.source}. ${v.season.en}.`,
     `# Mann-Kendall p = ${r.mk.p.toFixed(4)}, Sen's slope = ${r.sen.slope.toPrecision(4)} ${v.unit}/year, ` +
       `linear slope = ${r.lin.slope.toPrecision(4)} ${v.unit}/year (95% CI ${r.lin.ciLow.toPrecision(4)} to ${r.lin.ciHigh.toPrecision(4)}), linear p = ${r.lin.p.toFixed(4)}`,
     DATA.sample ? '# SAMPLE DATA: invented numbers, not real results' : '',
     'year,value',
-    ...r.x.map((yr, i) => `${yr},${r.y[i]}`),
+    ...r.x.map((yr, i) => `${yr},${+r.y[i].toFixed(4)}`),
   ].filter(Boolean);
-  const a = make('a', { download: `${v.id}_${soum.id}_${r.first}-${r.last}.csv` });
+  const a = make('a', { download: `${v.id}_${soum ? soum.id : state.aimag}_${r.first}-${r.last}.csv` });
   a.href = URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }));
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -249,11 +243,17 @@ function selectVariable(id) {
   if (state.varId !== id) { state.varId = id; [state.from, state.to] = DATA.yearRange[id]; }
   render();
 }
-
-function selectSoum(id) {
-  state.soumId = id;
-  render();
+// On phones the result appears under the map, so bring it into view after the zoom.
+function showResultOnPhone() {
+  if (innerWidth >= 760) return;
+  setTimeout(() => {
+    const top = $('result-panel').getBoundingClientRect().top + scrollY - 70;
+    if (top > scrollY + innerHeight * 0.5) scrollTo({ top, behavior: 'smooth' });
+  }, 900);
 }
+function selectAimag(name) { state.aimag = name; state.soumId = null; render(); }
+function selectSoum(id) { state.aimag = DATA.soumById[id].aimag; state.soumId = id; render(); showResultOnPhone(); }
+function goOverview() { state.aimag = null; state.soumId = null; render(); }
 
 function wire() {
   document.querySelectorAll('.lang-button').forEach(b => b.addEventListener('click', () => {
@@ -268,11 +268,16 @@ function wire() {
     $('tool').scrollIntoView({ behavior: 'smooth' });
   }));
 
+  $('map-back').addEventListener('click', goOverview);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && state.aimag) goOverview(); });
+
   $('soum-search').addEventListener('change', e => {
     const q = e.target.value.trim().toLowerCase();
     if (!q) return;
+    const a = DATA.aimags.find(x => [x.name, AIMAG_MN[x.name] || ''].some(n => n.toLowerCase() === q));
+    if (a) { selectAimag(a.name); return; }
     const hit = DATA.soums.find(s => soumLabel(s).toLowerCase() === q)
-      || DATA.soums.find(s => [s.name_en, s.name_mn, s.aimag].some(n => n && n.toLowerCase().startsWith(q)));
+      || DATA.soums.find(s => [s.name_en, s.name_mn].some(n => n && n.toLowerCase().startsWith(q)));
     if (hit) selectSoum(hit.id);
   });
 
@@ -297,6 +302,7 @@ function wire() {
 (async function start() {
   try {
     DATA = await loadData();
+    if (!DATA.aimags.length) throw new Error('no aimag outlines in data/data.js (run tools/gee_export.py --only aimags, then tools/build_data.py)');
   } catch (err) {
     $('load-error').hidden = false;
     $('load-error').textContent = 'Could not load data: ' + err.message;
@@ -306,7 +312,12 @@ function wire() {
   $('sample-banner').hidden = !DATA.sample;
   readHash();
   if (state.from == null || state.to == null) [state.from, state.to] = DATA.yearRange[state.varId];
-  map = drawMap($('map'), DATA.soums, { onSelect: selectSoum, label: soumLabel });
+  map = createMap($('stage'), {
+    soums: DATA.soums, aimags: DATA.aimags,
+    onAimag: selectAimag, onSoum: selectSoum,
+    aimagLabel: name => aimagName(name),
+    soumLabel: id => soumName(DATA.soumById[id]),
+  });
   renderStatic();
   wire();
   render();

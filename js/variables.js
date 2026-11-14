@@ -51,3 +51,14 @@ const byId = Object.fromEntries(VARIABLES.map(v => [v.id, v]));
 
 Q.variables = { VARIABLES, byId };
 })(globalThis.Q = globalThis.Q || {});
+
+// Mongolian names of the aimags (FAO GAUL spelling -> Cyrillic). Anu: please check.
+(function (Q) {
+  Q.variables.AIMAG_MN = {
+    'Arkhangai': 'Архангай', 'Bayan-Ölgii': 'Баян-Өлгий', 'Bayankhongor': 'Баянхонгор', 'Bulgan': 'Булган',
+    'Darkhan-Uul': 'Дархан-Уул', 'Dornod': 'Дорнод', 'Dornogovi': 'Дорноговь', 'Dundgovi': 'Дундговь',
+    'Govi-Altai': 'Говь-Алтай', 'Govisümber': 'Говьсүмбэр', 'Khentii': 'Хэнтий', 'Khovd': 'Ховд',
+    'Khövsgöl': 'Хөвсгөл', 'Orkhon': 'Орхон', 'Selenge': 'Сэлэнгэ', 'Sükhbaatar': 'Сүхбаатар', 'Töv': 'Төв',
+    'Ulaanbaatar': 'Улаанбаатар', 'Uvs': 'Увс', 'Zavkhan': 'Завхан', 'Ömnögovi': 'Өмнөговь', 'Övörkhangai': 'Өвөрхангай',
+  };
+})(globalThis.Q);

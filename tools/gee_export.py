@@ -65,6 +65,32 @@ def export_boundaries():
     print(f"soums.geojson: {len(feats)} soums, {out.stat().st_size / 1e6:.2f} MB")
 
 
+def export_aimags():
+    """Aimag outlines (FAO GAUL 2025 level 1) for the overview map."""
+    fc = ee.FeatureCollection("FAO/GAUL/2025/level1").filter(ee.Filter.eq("ISO3_CODE", "MNG")) \
+        .map(lambda f: ee.Feature(f.geometry().simplify(1500), {"aimag": f.get("GAUL1_NAME")}))
+    gj = fc.getInfo()
+
+    def rnd(c):
+        return [rnd(x) for x in c] if isinstance(c[0], list) else [round(c[0], 3), round(c[1], 3)]
+
+    feats = []
+    for f in gj["features"]:
+        g = f["geometry"]
+        if g["type"] == "GeometryCollection":
+            coords = []
+            for part in g["geometries"]:
+                if part["type"] == "Polygon": coords.append(part["coordinates"])
+                elif part["type"] == "MultiPolygon": coords += part["coordinates"]
+            g = {"type": "MultiPolygon", "coordinates": coords}
+        g["coordinates"] = rnd(g["coordinates"])
+        feats.append({"type": "Feature", "geometry": g, "properties": {"aimag": f["properties"]["aimag"]}})
+    feats.sort(key=lambda f: f["properties"]["aimag"])
+    out = DATA / "aimags.geojson"
+    out.write_text(json.dumps({"type": "FeatureCollection", "source": "FAO/GAUL/2025/level1", "features": feats}, separators=(",", ":"), ensure_ascii=False))
+    print(f"aimags.geojson: {len(feats)} aimags, {out.stat().st_size / 1e6:.2f} MB")
+
+
 def reduce_years(variable, years, image_for_year, scale):
     """Stack one band per year and reduce over every soum in one call."""
     stack = ee.Image.cat([image_for_year(y).rename(f"y{y}") for y in years])
@@ -140,7 +166,7 @@ def merge():
     build(DATA)
 
 
-TASKS = {"boundaries": export_boundaries, "ndvi_summer": ndvi_summer, "rain_summer": rain_summer,
+TASKS = {"boundaries": export_boundaries, "aimags": export_aimags, "ndvi_summer": ndvi_summer, "rain_summer": rain_summer,
          "temp_summer": temp_summer, "temp_winter": temp_winter}
 
 if __name__ == "__main__":

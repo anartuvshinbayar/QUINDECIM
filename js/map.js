@@ -1,69 +1,180 @@
 // Plain script (no modules) so the site also works when index.html is opened as a file.
 (function (Q) {
-// Plain SVG map of soums. No library, no tiles: works offline.
-// Every soum is a <path class="soum" data-id=".." data-verdict=".."> so CSS decides the colours.
+// Two-level SVG map. Overview: the 22 aimags fill the stage. Clicking an aimag zooms to it on the
+// left side of the stage (the result panel takes the right side) and shows its soums.
+// The zoom is a CSS transform on one group, so it animates smoothly; strokes keep their width.
+// Shapes never move or grow on hover or click: only colour and outline change.
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
+const NS = 'http://www.w3.org/2000/svg';
+const el = (name, attrs = {}) => { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
 
-function rings(geometry) {
-  if (geometry.type === 'Polygon') return geometry.coordinates;
-  if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat();
+function rings(g) {
+  if (g.type === 'Polygon') return g.coordinates;
+  if (g.type === 'MultiPolygon') return g.coordinates.flat();
   return [];
 }
 
-function drawMap(container, soums, { onSelect, label }) {
-  // Equirectangular projection, x stretched by cos(mid latitude) so Mongolia keeps its shape.
+// Best label point: the sampled point inside the shape that is farthest from its edges.
+function labelPoint(polys) {   // polys: array of rings in world units [[x, y], ...]
+  let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+  for (const r of polys) for (const [x, y] of r) { a = Math.min(a, x); b = Math.max(b, x); c = Math.min(c, y); d = Math.max(d, y); }
+  const inside = (x, y) => { let hit = false; for (const r of polys) for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > y) !== (yj > y) && x < xi + (y - yi) * (xj - xi) / (yj - yi)) hit = !hit; } return hit; };
+  const edgeDist = (x, y) => { let m = Infinity; for (const r of polys) for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [x1, y1] = r[j], [x2, y2] = r[i], dx = x2 - x1, dy = y2 - y1, L = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L)); m = Math.min(m, Math.hypot(x - x1 - t * dx, y - y1 - t * dy)); } return m; };
+  let best = [(a + b) / 2, (c + d) / 2], bestD = -1;
+  const N = 18;
+  for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) {
+    const x = a + (b - a) * i / N, y = c + (d - c) * j / N;
+    if (!inside(x, y)) continue;
+    const dd = edgeDist(x, y);
+    if (dd > bestD) { bestD = dd; best = [x, y]; }
+  }
+  return { x: best[0], y: best[1], room: bestD };
+}
+
+function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabel }) {
+  // Projection to "world units": equirectangular with x stretched by cos(mid latitude).
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const s of soums) for (const r of rings(s.geometry)) for (const [x, y] of r) {
+  for (const a of aimags) for (const r of rings(a.geometry)) for (const [x, y] of r) {
     if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
   }
   const k = Math.cos(((minY + maxY) / 2) * Math.PI / 180);
-  const W = 1000, scale = W / ((maxX - minX) * k), H = (maxY - minY) * scale;
-  const px = x => ((x - minX) * k * scale).toFixed(1);
-  const py = y => ((maxY - y) * scale).toFixed(1);
-
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${W} ${H.toFixed(0)}`);
-  svg.setAttribute('class', 'map-svg');
-  svg.setAttribute('role', 'group');
-
-  const paths = {};
-  for (const s of soums) {
-    const d = rings(s.geometry).map(r => 'M' + r.map(([x, y]) => px(x) + ',' + py(y)).join('L') + 'Z').join('');
-    const p = document.createElementNS(SVG_NS, 'path');
-    p.setAttribute('d', d);
-    p.setAttribute('class', 'soum');
-    p.setAttribute('data-id', s.id);
-    p.setAttribute('tabindex', '0');
-    p.setAttribute('role', 'button');
-    // Wave-in delay from west to east (CSS: .map.is-in .soum).
-    const first = rings(s.geometry)[0] || [[minX, 0]];
-    const cx = first.reduce((a, c) => a + c[0], 0) / first.length;
-    p.style.setProperty('--d', (((cx - minX) / (maxX - minX)) * 1.1).toFixed(2) + 's');
-    const title = document.createElementNS(SVG_NS, 'title');
-    p.appendChild(title);
-    p.addEventListener('click', () => onSelect(s.id));
-    p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(s.id); } });
-    svg.appendChild(p);
-    paths[s.id] = p;
-  }
-  container.replaceChildren(svg);
-
-  return {
-    // verdicts: { soum_id: 'real-up' | 'real-down' | 'possible-up' | 'possible-down' | 'not-proven' | 'no-data' } or null
-    update({ selectedId, verdicts }) {
-      for (const s of soums) {
-        const p = paths[s.id];
-        p.classList.toggle('is-selected', s.id === selectedId);
-        if (verdicts) p.setAttribute('data-verdict', verdicts[s.id] || 'no-data');
-        else p.removeAttribute('data-verdict');
-        p.firstChild.textContent = label(s);
-      }
-      // Draw the selected soum last so its outline sits on top.
-      if (selectedId && paths[selectedId]) svg.appendChild(paths[selectedId]);
-    },
+  const U = 1000 / ((maxX - minX) * k);
+  const px = x => (x - minX) * k * U, py = y => (maxY - y) * U;
+  const pathOf = g => rings(g).map(r => 'M' + r.map(([x, y]) => px(x).toFixed(2) + ',' + py(y).toFixed(2)).join('L') + 'Z').join('');
+  const bboxOf = g => {
+    let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+    for (const r of rings(g)) for (const [x, y] of r) { const X = px(x), Y = py(y); a = Math.min(a, X); b = Math.max(b, X); c = Math.min(c, Y); d = Math.max(d, Y); }
+    return { x: a, y: c, w: b - a, h: d - c };
   };
+  const world = { x: 0, y: 0, w: 1000, h: (maxY - minY) * U };
+  const worldRings = g => rings(g).map(r => r.map(([x, y]) => [px(x), py(y)]));
+
+  const svg = el('svg', { class: 'map-svg', role: 'group' });
+  const g = el('g', { class: 'map-world' });
+  const gAimags = el('g', { class: 'layer-aimags' });
+  const gSoums = el('g', { class: 'layer-soums' });
+  const gLabels = el('g', { class: 'layer-labels', 'aria-hidden': 'true' });
+  g.append(gAimags, gSoums, gLabels);
+  svg.appendChild(g);
+  stage.prepend(svg);
+
+  const aPaths = {}, aBoxes = {}, aGroups = {}, sPaths = {}, labels = {}, sLabels = {};
+  const keyActivate = fn => e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
+
+  for (const a of aimags) {
+    const p = el('path', { d: pathOf(a.geometry), class: 'aimag', tabindex: '0', role: 'button', 'data-aimag': a.name });
+    p.appendChild(el('title'));
+    p.addEventListener('click', () => onAimag(a.name));
+    p.addEventListener('keydown', keyActivate(() => onAimag(a.name)));
+    gAimags.appendChild(p);
+    aPaths[a.name] = p;
+    aBoxes[a.name] = bboxOf(a.geometry);
+
+    const sg = el('g', { class: 'soum-group', 'data-aimag': a.name });
+    gSoums.appendChild(sg);
+    aGroups[a.name] = sg;
+
+    // Label at the point deepest inside the aimag. Tiny aimags (cities) get no label; their name shows on hover.
+    const lp = labelPoint(worldRings(a.geometry));
+    const t = el('text', { class: 'aimag-label' + (lp.room < 9 ? ' is-tiny' : ''), x: lp.x.toFixed(1), y: lp.y.toFixed(1), 'text-anchor': 'middle', 'dominant-baseline': 'middle' });
+    gLabels.appendChild(t);
+    labels[a.name] = t;
+  }
+  for (const s of soums) {
+    const p = el('path', { d: pathOf(s.geometry), class: 'soum', tabindex: '-1', role: 'button', 'data-id': s.id });
+    p.appendChild(el('title'));
+    p.addEventListener('click', () => onSoum(s.id));
+    p.addEventListener('keydown', keyActivate(() => onSoum(s.id)));
+    (aGroups[s.aimag] || gSoums).appendChild(p);
+    sPaths[s.id] = p;
+    const lp = labelPoint(worldRings(s.geometry));
+    const t = el('text', { class: 'soum-label', x: lp.x.toFixed(2), y: lp.y.toFixed(2), 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'aria-hidden': 'true' });
+    sLabels[s.id] = { el: t, room: lp.room, aimag: s.aimag };
+  }
+  // Soum labels go on top of all soum shapes of their aimag.
+  for (const s of soums) (aGroups[s.aimag] || gSoums).appendChild(sLabels[s.id].el);
+
+  let current = { aimag: null, panel: false };
+  let scale = 1;
+
+  // Fit a box (world units) into a region of the stage (pixels).
+  function fit(box, region, pad) {
+    const s = Math.min((region.w - 2 * pad) / box.w, (region.h - 2 * pad) / box.h);
+    const tx = region.x + (region.w - box.w * s) / 2 - box.x * s;
+    const ty = region.y + (region.h - box.h * s) / 2 - box.y * s;
+    return { s, tx, ty };
+  }
+
+  const bar = stage.querySelector('.stage-bar');
+  function layout(animate = true) {
+    const W = svg.clientWidth || stage.clientWidth, H = svg.clientHeight || stage.clientHeight;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const wide = W >= 760;
+    const zoomed = Boolean(current.aimag);
+    // On wide screens the bar floats over the top of the map, so the map fits below it.
+    const top = bar && getComputedStyle(bar).position === 'absolute' ? bar.offsetHeight : 0;
+    stage.style.setProperty('--bar-h', top + 'px');
+    // With the result panel open on a wide screen, the map keeps the left part of the stage.
+    const region = zoomed && wide && current.panel ? { x: 0, y: top, w: W * 0.54, h: H - top } : { x: 0, y: top, w: W, h: H - top };
+    const box = zoomed ? aBoxes[current.aimag] : world;
+    const f = fit(box, region, zoomed ? Math.min(W, H) * 0.06 : Math.min(W, H) * 0.03);
+    scale = f.s;
+    g.classList.toggle('no-anim', !animate);
+    g.style.transform = `translate(${f.tx.toFixed(1)}px, ${f.ty.toFixed(1)}px) scale(${f.s.toFixed(4)})`;
+    // Labels keep a constant on-screen size.
+    gLabels.style.fontSize = (11.5 / f.s).toFixed(2) + 'px';
+    gSoums.style.fontSize = (10.5 / f.s).toFixed(2) + 'px';
+    if (zoomed) for (const id of DATA_IDS(current.aimag)) {
+      const L = sLabels[id];
+      L.el.classList.toggle('is-hidden', L.room * f.s < (wide ? 15 : 18));   // only where the name has room
+    }
+    if (!animate) setTimeout(() => g.classList.remove("no-anim"), 50);
+  }
+
+  // aimagVerdicts: { name: verdictKey }, soumVerdicts: { id: verdictKey } (only for the open aimag)
+  function update({ aimag, soumId, panel, aimagVerdicts, soumVerdicts }) {
+    const changed = aimag !== current.aimag || panel !== current.panel;
+    current = { aimag, panel };
+    stage.classList.toggle('is-zoomed', Boolean(aimag));
+    for (const a of aimags) {
+      const p = aPaths[a.name];
+      p.setAttribute('data-verdict', aimagVerdicts[a.name] || 'no-data');
+      p.classList.toggle('is-open', a.name === aimag);
+      p.classList.toggle('is-away', Boolean(aimag) && a.name !== aimag);
+      p.setAttribute('tabindex', aimag ? '-1' : '0');
+      p.firstChild.textContent = aimagLabel(a.name);
+      labels[a.name].textContent = aimagLabel(a.name);
+      aGroups[a.name].classList.toggle('is-active', a.name === aimag);
+    }
+    if (aimag) {
+      for (const id of DATA_IDS(aimag)) {
+        const p = sPaths[id];
+        p.setAttribute('data-verdict', soumVerdicts[id] || 'no-data');
+        p.classList.toggle('is-selected', id === soumId);
+        p.setAttribute('tabindex', '0');
+        p.firstChild.textContent = soumLabel(id);
+        sLabels[id].el.textContent = soumLabel(id);
+      }
+      // The selected soum's outline is drawn last so it sits on top (it does not move or grow).
+      if (soumId && sPaths[soumId]) aGroups[aimag].appendChild(sPaths[soumId]);
+    }
+    for (const s of soums) if (s.aimag !== aimag) sPaths[s.id].setAttribute('tabindex', '-1');
+    if (changed) layout(true);
+  }
+  const byAimag = Object.fromEntries(aimags.map(a => [a.name, a.soumIds]));
+  const DATA_IDS = name => byAimag[name] || [];
+
+  let rt;
+  const relayout = () => { clearTimeout(rt); rt = setTimeout(() => layout(false), 120); };
+  addEventListener('resize', relayout);
+  if (bar && 'ResizeObserver' in window) new ResizeObserver(relayout).observe(bar);
+  layout(false);
+
+  return { update, layout };
 }
 
-Q.map = { drawMap };
+Q.map = { createMap };
 })(globalThis.Q = globalThis.Q || {});

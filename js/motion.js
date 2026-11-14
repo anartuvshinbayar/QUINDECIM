@@ -2,7 +2,7 @@
 (function (Q) {
 // Motion in the style of loopsii.com, with no libraries:
 // loading counter, tile grid that reshuffles, rotating headline word, header that turns into a pill,
-// words rising into view, sections revealing on scroll, connector lines drawing themselves.
+// words rising into view, sections revealing on scroll.
 // Everything stops or shortens when the visitor has asked for reduced motion.
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -60,7 +60,7 @@ function buildTiles() {
   const grid = $('hero-tiles');
   if (!grid) return;
   const narrow = matchMedia('(max-width: 760px)').matches;
-  const layout = narrow ? LAYOUT.filter((_, i) => i % 12 < 6).concat(LAYOUT.filter((_, i) => i % 12 >= 6).slice(0, 6)) : LAYOUT;
+  const layout = narrow ? LAYOUT.filter((_, i) => i % 12 < 6) : LAYOUT;   // phones: 6 x 3
   grid.replaceChildren();
   const cells = layout.map((idx, i) => {
     const cell = document.createElement('div');
@@ -134,16 +134,15 @@ function split(el) {
 // ---------- reveal on scroll ----------
 // A plain position check on scroll (not IntersectionObserver): it works even when the browser
 // skips rendering frames, so content can never stay hidden.
-const TARGETS = '[data-reveal], [data-split], .map, #claims-diagram, .steps li';
+const TARGETS = '[data-reveal], [data-split]';
 let started = false, pending = [], checkT = null;
 function check() {
   checkT = null;
   const vh = innerHeight;
   pending = pending.filter(el => {
     const r = el.getBoundingClientRect();
-    if (r.top < vh * 0.92 && r.bottom > 0) {
+    if (r.top < vh - 8 && r.bottom > 0) {   // anything visible on screen, even at the very bottom
       el.classList.add('is-in');
-      if (el.id === 'claims-diagram') drawClaimLines();
       return false;
     }
     return true;
@@ -155,7 +154,6 @@ function observe(root = document) {
   const targets = [...root.querySelectorAll(TARGETS)];
   if (reduced) {
     targets.forEach(el => el.classList.add('is-in'));
-    drawClaimLines();
     return;
   }
   for (const el of targets) if (!el.classList.contains('is-in') && !pending.includes(el)) pending.push(el);
@@ -172,40 +170,6 @@ function refresh() {
     if (wasIn) el.classList.add('is-in');
   });
   observe();
-  layoutClaimLines();
-}
-
-// ---------- claims connector lines ----------
-function layoutClaimLines() {
-  const box = $('claims-diagram'), svg = $('claims-lines');
-  if (!box || !svg || getComputedStyle(svg).display === 'none') return;
-  const r0 = box.getBoundingClientRect();
-  const hub = box.querySelector('.claims-hub').getBoundingClientRect();
-  const hx1 = hub.left - r0.left, hx2 = hub.right - r0.left, hy = hub.top - r0.top + hub.height / 2;
-  const paths = [];
-  box.querySelectorAll('.claim').forEach(c => {
-    const r = c.getBoundingClientRect();
-    const x = r.right - r0.left, y = r.top - r0.top + r.height / 2, mid = (x + hx1) / 2;
-    paths.push(`M${x},${y}H${mid}V${hy}H${hx1}`);
-  });
-  box.querySelectorAll('.claims-verdicts .pill').forEach(p => {
-    const r = p.getBoundingClientRect();
-    const x = r.left - r0.left, y = r.top - r0.top + r.height / 2, mid = (hx2 + x) / 2;
-    paths.push(`M${hx2},${hy}H${mid}V${y}H${x}`);
-  });
-  svg.setAttribute('viewBox', `0 0 ${r0.width} ${r0.height}`);
-  const drawn = box.classList.contains('is-in');
-  // Each dashed line sits under a solid "mask" line of the background colour that slides away.
-  svg.innerHTML = paths.map(d => `<path d="${d}"/><path class="mask" d="${d}"/>`).join('');
-  svg.querySelectorAll('.mask').forEach(m => {
-    const L = m.getTotalLength();
-    m.style.strokeDasharray = L; m.style.strokeDashoffset = drawn ? -L : 0;
-  });
-  box.querySelectorAll('.claim, .claims-verdicts .pill').forEach((el, i) => el.style.setProperty('--d', (0.15 + (i % 3) * 0.15) + 's'));
-}
-function drawClaimLines() {
-  layoutClaimLines();
-  later(() => document.querySelectorAll('#claims-lines .mask').forEach(m => { m.style.strokeDashoffset = -m.getTotalLength(); }));
 }
 
 // ---------- header ----------
@@ -231,8 +195,6 @@ function countUp(span) {
 function init(onReady) {
   header();
   buildTiles();
-  let resizeT;
-  addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(layoutClaimLines, 150); });
   runLoader(() => { started = true; observe(); onReady && onReady(); });
 }
 
