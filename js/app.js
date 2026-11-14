@@ -78,7 +78,11 @@ function verdictKey(r) {
 function renderStatic() {
   document.documentElement.lang = state.lang;
   document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
-  $('lang-toggle').textContent = t('lang');
+  document.querySelectorAll('.lang-button').forEach(b => {
+    const on = b.dataset.lang === state.lang;
+    b.classList.toggle('is-active', on);
+    b.setAttribute('aria-pressed', on);
+  });
   $('soum-search').placeholder = t('searchSoum');
   $('limits-list').replaceChildren(...t('limits').map(s => Object.assign(document.createElement('li'), { textContent: s })));
   $('glossary-list').replaceChildren(...GLOSSARY.flatMap(g => {
@@ -249,7 +253,11 @@ function selectSoum(id) {
 }
 
 function wire() {
-  $('lang-toggle').addEventListener('click', () => { state.lang = state.lang === 'en' ? 'mn' : 'en'; renderStatic(); render(); });
+  document.querySelectorAll('.lang-button').forEach(b => b.addEventListener('click', () => {
+    if (state.lang === b.dataset.lang) return;
+    state.lang = b.dataset.lang;
+    renderStatic(); render();
+  }));
 
   $('soum-search').addEventListener('change', e => {
     const q = e.target.value.trim().toLowerCase();

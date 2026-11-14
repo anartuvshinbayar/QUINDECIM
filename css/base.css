@@ -33,6 +33,11 @@ button { font: inherit; cursor: pointer; }
 [hidden] { display: none !important; }
 
 .site-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.lang-switch { display: flex; gap: 8px; }
+.lang-button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--muted); font-weight: 600; }
+.lang-button .flag { width: 24px; height: 12px; display: block; outline: 1px solid rgba(0, 0, 0, 0.15); }
+.lang-button.is-active { border: 3px solid var(--text); padding: 4px 8px; color: var(--text); }
+.lang-button:not(.is-active):hover { border-color: var(--text); }
 .sample-banner { padding: 8px; border: 2px dashed #b4430f; font-weight: bold; }
 .load-error { padding: 8px; border: 2px solid red; }
 .hint { color: var(--muted); }
