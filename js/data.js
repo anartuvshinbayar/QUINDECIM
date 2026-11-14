@@ -2,10 +2,30 @@
 (function (Q) {
 // Reads window.QUINDECIM_DATA, written by data/data.js (built by tools/build_data.py).
 // Format 2: { soums: [[id, name_en, name_mn, aimag, geometry]], aimags: [[name, geometry]],
-//             series: { variable: { id: [firstYear, v, v, ...] } } }
+//             series: { variable: { id: [firstYear, v, v, ...] } }, grass: { id: [land_km2, grass_km2] } }
+
+// data/data.js loads in parallel with the page (async, id="data-js" in index.html), so wait for it. If it failed
+// before this ran, its onerror attribute has set QUINDECIM_DATA_ERROR; once the whole page has loaded (which includes
+// async scripts) and there is still no data, it is not coming.
+function dataArrived() {
+  return new Promise((resolve, reject) => {
+    const settle = () => {
+      if (globalThis.QUINDECIM_DATA) { resolve(globalThis.QUINDECIM_DATA); return true; }
+      if (globalThis.QUINDECIM_DATA_ERROR) { reject(new Error('data/data.js could not be downloaded')); return true; }
+      return false;
+    };
+    if (settle()) return;
+    const missing = () => { if (!settle()) reject(new Error('data/data.js is missing or old. Run: python3 tools/build_data.py')); };
+    const tag = document.getElementById('data-js');
+    if (!tag || document.readyState === 'complete') { missing(); return; }
+    tag.addEventListener('load', missing);
+    tag.addEventListener('error', () => { globalThis.QUINDECIM_DATA_ERROR = true; settle(); });
+    addEventListener('load', missing);
+  });
+}
 
 async function loadData() {
-  const raw = globalThis.QUINDECIM_DATA;
+  const raw = await dataArrived();
   if (!raw || raw.format !== 2) throw new Error('data/data.js is missing or old. Run: python3 tools/build_data.py');
 
   const soums = raw.soums.map(([id, name_en, name_mn, aimag, geometry]) => ({
@@ -54,6 +74,7 @@ async function loadData() {
     soums, aimags, soumById: Object.fromEntries(soums.map(s => [s.id, s])),
     aimagByName: Object.fromEntries(aimags.map(a => [a.name, a])),
     series, yearRange, aimagSeries, sample: raw.sample === true,
+    grass: raw.grass || {},   // soum id -> [land km2, grassland km2]; greenness is measured on grassland only
   };
 }
 

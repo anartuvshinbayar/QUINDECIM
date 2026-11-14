@@ -9,14 +9,25 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Quindecim">
   <meta property="og:title" content="Quindecim · Climate trends for every soum in Mongolia">
-  <meta property="og:description" content="Test NASA data for a real climate trend in any of Mongolia's 337 soums. Mann-Kendall trend test, Sen's slope, in Mongolian and English.">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:description" content="Test NASA data for a real climate trend in any of Mongolia's 337 soums. Mann-Kendall trend test corrected for year-to-year correlation and checked for chance across all soums, in Mongolian and English.">
+  <meta property="og:url" content="https://quindecim-theta.vercel.app/">
+  <!-- Social preview: the summer temperature map with the site's own verdicts (made by tools/og_card.html). -->
+  <meta property="og:image" content="https://quindecim-theta.vercel.app/assets/brand/quindecim-og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Map of Mongolia's soums coloured by how much summers have warmed since 1982, under the question: Is it getting hotter?">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://quindecim-theta.vercel.app/assets/brand/quindecim-og.png">
+  <link rel="canonical" href="https://quindecim-theta.vercel.app/">
   <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
   <link rel="icon" href="favicon.ico?v=2" sizes="32x32">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611150118">
+  <link rel="stylesheet" href="css/site.css?v=202611150352">
+  <!-- The data (0.84 MB, about 250 KB compressed) loads in parallel and never holds up the page: js/data.js waits for it. -->
+  <script id="data-js" src="data/data.js?v=202611150352" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -30,17 +41,19 @@
         "inLanguage": ["mn", "en"],
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "Pick a climate question and a Mongolian soum, see yearly NASA data, and test whether the trend is real with the Mann-Kendall test and Sen's slope.",
+        "url": "https://quindecim-theta.vercel.app/",
+        "image": "https://quindecim-theta.vercel.app/assets/brand/quindecim-og.png",
+        "description": "Pick a climate question and a Mongolian soum, see yearly NASA data, and test whether the trend is real with the Mann-Kendall test (corrected for year-to-year correlation, with a false discovery rate check across all soums) and Sen's slope.",
         "creator": { "@type": "Organization", "name": "Team Quindecim, NASA Space Apps Challenge 2026, Ulaanbaatar" }
       },
       {
         "@type": "Dataset",
         "name": "Seasonal climate and vegetation series for Mongolia's 337 soums",
-        "description": "One value per soum per year: summer NDVI (MODIS MOD13A2, 2001-2026), summer rainfall and summer and winter air temperature (NASA FLDAS, 1982-2026), first autumn frost (NASA POWER, 1981-2026).",
+        "description": "One value per soum per year, complete seasons only: summer NDVI over grassland only (MODIS MOD13A2 with MCD12Q1 land cover, 2001-2026), summer rainfall and summer and winter air temperature (NASA FLDAS, 1982-2026), first autumn frost (NASA POWER, 1981-2026).",
         "spatialCoverage": { "@type": "Place", "name": "Mongolia" },
         "temporalCoverage": "1981/2026",
         "variableMeasured": ["Summer NDVI", "Summer rainfall", "Summer air temperature", "Winter air temperature", "First autumn frost day"],
-        "isBasedOn": ["NASA MODIS MOD13A2", "NASA FLDAS Noah", "NASA POWER", "FAO GAUL 2025"]
+        "isBasedOn": ["NASA MODIS MOD13A2", "NASA MODIS MCD12Q1", "NASA FLDAS Noah", "NASA POWER", "FAO GAUL 2025"]
       }
     ]
   }
@@ -49,7 +62,7 @@
 <body id="top" class="is-loading">
   <a class="skip-link" href="#tool" data-i18n="skip"></a>
 
-  <!-- Loading screen: framed square with the mark drawing itself and a counter. -->
+  <!-- Loading screen: framed square with the mark drawing itself, for about a second. It never waits for the data. -->
   <div id="loader" class="loader" aria-hidden="true">
     <div class="loader-grid"></div>
     <div class="loader-box">
@@ -60,7 +73,6 @@
       </svg>
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     </div>
-    <p class="loader-count"><span id="loader-num">000</span>%</p>
   </div>
 
   <header class="site-header">
@@ -151,6 +163,7 @@
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="visually-hidden" data-i18n="back"></span>
         </button>
+        <p id="tool-loading" class="tool-loading" role="status"><span data-i18n="loading"></span></p>
         <p id="map-hint" class="map-hint" data-i18n="mapHintAimag"></p>
         <div id="map-legend" class="map-legend">
           <ul>
@@ -170,6 +183,7 @@
           </div>
           <div id="too-short" class="too-short" hidden></div>
           <div id="result-body">
+            <p id="plain-line" class="plain-line"></p>
             <figure class="chart">
               <div id="chart"></div>
               <figcaption class="chart-legend">
@@ -222,14 +236,13 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><div class="travel-disc"><img src="assets/brand/quindecim-mark.svg" alt=""></div></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="data/data.js?v=202611150118"></script>
-  <script src="js/stats.js?v=202611150118"></script>
-  <script src="js/variables.js?v=202611150118"></script>
-  <script src="js/i18n.js?v=202611150118"></script>
-  <script src="js/data.js?v=202611150118"></script>
-  <script src="js/map.js?v=202611150118"></script>
-  <script src="js/chart.js?v=202611150118"></script>
-  <script src="js/motion.js?v=202611150118"></script>
-  <script src="js/app.js?v=202611150118"></script>
+  <script src="js/stats.js?v=202611150352"></script>
+  <script src="js/variables.js?v=202611150352"></script>
+  <script src="js/i18n.js?v=202611150352"></script>
+  <script src="js/data.js?v=202611150352"></script>
+  <script src="js/map.js?v=202611150352"></script>
+  <script src="js/chart.js?v=202611150352"></script>
+  <script src="js/motion.js?v=202611150352"></script>
+  <script src="js/app.js?v=202611150352"></script>
 </body>
 </html>

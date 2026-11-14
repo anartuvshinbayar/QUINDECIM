@@ -1,7 +1,7 @@
 // Plain script (no modules) so the site also works when index.html is opened as a file.
 (function (Q) {
 // Motion in the style of loopsii.com, with no libraries:
-// loading counter, tile grid that reshuffles, rotating headline word, header that turns into a pill,
+// short loading screen, tile grid that reshuffles, rotating headline word, header that turns into a pill,
 // words rising into view, sections revealing on scroll.
 // Everything stops or shortens when the visitor has asked for reduced motion.
 
@@ -11,26 +11,17 @@ const $ = id => document.getElementById(id);
 const later = fn => setTimeout(fn, 34);
 
 // ---------- loader ----------
+// The loading screen covers only the page's own first moment: the mark draws itself (about one second, css/site.css
+// .loader-mark) and the screen slides away. It never waits for the NASA data, which keeps loading behind it and fills
+// the map when it arrives; if the page itself was slow to arrive, the screen goes at once.
 function runLoader(done) {
-  const num = $('loader-num');
-  // Timer based (not requestAnimationFrame) so it always finishes, even in a background tab.
-  const start = Date.now(), duration = reduced ? 100 : 1000;
-  let finished = false;
-  const finish = () => {
-    if (finished) return;
-    finished = true;
-    clearInterval(timer);
-    num.textContent = '100';
+  const MARK_MS = reduced ? 0 : 1000;
+  const wait = Math.max(reduced ? 0 : 150, MARK_MS - performance.now());
+  setTimeout(() => {
     document.body.classList.add('is-loaded');
     document.body.classList.remove('is-loading');
     done();
-  };
-  const timer = setInterval(() => {
-    const p = Math.min(1, (Date.now() - start) / duration);
-    num.textContent = String(Math.round((1 - Math.pow(1 - p, 3)) * 100)).padStart(3, '0');
-    if (p >= 1) setTimeout(finish, reduced ? 0 : 120);
-  }, 30);
-  setTimeout(finish, duration + 1200);   // safety net
+  }, wait);
 }
 
 // ---------- hero tiles ----------

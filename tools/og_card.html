@@ -1,0 +1,87 @@
+<!doctype html>
+<!-- The social preview image (assets/brand/quindecim-og.png, 1200 x 630): the summer temperature map with the site's
+     own verdicts. Rebuild it after the data changes:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+       --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=8000 --allow-file-access-from-files \
+       --screenshot="$PWD/assets/brand/quindecim-og.png" "file://$PWD/tools/og_card.html"
+     (run from the repository folder) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quindecim social card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=block">
+<style>
+  :root { --milk: #F6F1E7; --ink: #15213B; --muted: #5B6375; --clay: #B9431C; --clay-soft: #EDBFAB; --blue: #3A68BD; --line: #CFC8BA; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--milk); font-family: "Montserrat", system-ui, sans-serif; color: var(--ink); }
+  .card { position: relative; width: 1200px; height: 630px; }
+  .band { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; background: url("../assets/tiles/alkhan-border.svg") repeat-x left center / 60px 36px; }
+  .left { position: absolute; left: 64px; top: 56px; width: 470px; }
+  .lockup { height: 46px; display: block; }
+  h1 { font-size: 58px; line-height: 1.08; margin: 44px 0 0; letter-spacing: -.02em; }
+  h1 .w { color: var(--clay); }
+  .sub { font-size: 23px; font-weight: 600; margin: 22px 0 0; line-height: 1.35; }
+  .mn { font-size: 19px; font-weight: 500; color: var(--muted); margin: 6px 0 0; }
+  .fact { position: absolute; left: 64px; bottom: 74px; width: 470px; font-size: 17px; font-weight: 600; line-height: 1.4; padding-left: 14px; border-left: 4px solid var(--clay); }
+  .fact small { display: block; font-weight: 500; color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .map { position: absolute; right: 36px; top: 70px; width: 610px; height: 440px; }
+  .map path { stroke: var(--milk); stroke-width: 0.9; stroke-linejoin: round; }
+  .map .aimag { fill: none; stroke: var(--milk); stroke-width: 2.4; }
+  .legend { position: absolute; right: 64px; bottom: 74px; display: flex; gap: 18px; font-size: 14px; font-weight: 600; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="left">
+    <img class="lockup" src="../assets/brand/quindecim-lockup.svg" alt="">
+    <h1>Is it getting <span class="w">hotter?</span></h1>
+    <p class="sub">Climate trends for every soum in Mongolia, tested on NASA data</p>
+    <p class="mn">Сум бүрийн уур амьсгалын чиг хандлага</p>
+  </div>
+  <p class="fact" id="fact"></p>
+  <svg class="map" id="map" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="legend">
+    <span><i style="background: var(--clay)"></i>Real warming</span>
+    <span><i style="background: var(--clay-soft)"></i>Possible</span>
+    <span><i style="background: #E6DFD1"></i>Not proven</span>
+  </div>
+  <div class="band"></div>
+</div>
+<script src="../data/data.js"></script>
+<script src="../js/stats.js"></script>
+<script>
+  // Summer temperature, full record, with the same verdicts as the site (Hamed-Rao corrected Mann-Kendall + FDR).
+  const D = window.QUINDECIM_DATA, S = Q.stats, VAR = 'temp_summer';
+  const results = {};
+  for (const [id, pk] of Object.entries(D.series[VAR])) {
+    const years = pk.slice(1).map((_, i) => pk[0] + i), vals = pk.slice(1).map(v => (v == null ? NaN : v));
+    results[id] = S.analyze(years, vals);
+  }
+  const ok = Object.values(results).filter(r => r.ok), q = S.fdr(ok.map(r => r.mk.p));
+  ok.forEach((r, i) => { r.level = S.verdictLevel(r.mk.p, q[i]); });
+  const realUp = ok.filter(r => r.level === 'real' && r.direction === 'up').length;
+  const first = Math.min(...ok.map(r => r.first)), last = Math.max(...ok.map(r => r.last));
+  document.getElementById('fact').innerHTML =
+    `In ${realUp} of ${ok.length} soums, summers have really warmed since ${first}.` +
+    `<small>NASA FLDAS ${first}–${last}. Mann-Kendall test corrected for year-to-year correlation, checked for chance across all soums.</small>`;
+
+  // Map: equirectangular, x stretched by cos(mid latitude), as on the site.
+  const rings = g => (g.type === 'Polygon' ? g.coordinates : g.coordinates.flat());
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  for (const [, g] of D.aimags) for (const r of rings(g)) for (const [x, y] of r) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+  const k = Math.cos((minY + maxY) / 2 * Math.PI / 180), U = 1000 / ((maxX - minX) * k);
+  const svg = document.getElementById('map');
+  svg.setAttribute('viewBox', `0 0 1000 ${((maxY - minY) * U).toFixed(1)}`);
+  const d = g => rings(g).map(r => 'M' + r.map(([x, y]) => `${((x - minX) * k * U).toFixed(1)},${((maxY - y) * U).toFixed(1)}`).join('L') + 'Z').join('');
+  const fill = r => !r || !r.ok ? '#E6DFD1' : r.level === 'real' ? (r.direction === 'up' ? '#B9431C' : '#3A68BD')
+    : r.level === 'possible' ? (r.direction === 'up' ? '#EDBFAB' : '#B8C9E7') : '#E6DFD1';
+  let html = '';
+  for (const [id, , , , g] of D.soums) html += `<path d="${d(g)}" fill="${fill(results[id])}"/>`;
+  for (const [, g] of D.aimags) html += `<path class="aimag" d="${d(g)}"/>`;
+  svg.innerHTML = html;
+  document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

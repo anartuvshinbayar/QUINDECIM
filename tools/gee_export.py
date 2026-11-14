@@ -3,7 +3,11 @@
 Writes:
   data/soums.geojson          soum boundaries (FAO GAUL 2025 level 2, simplified)
   data/parts/<variable>.csv   one file per variable: soum_id,variable,year,value
+  data/grassland.csv          grassland area per soum (greenness is measured on grassland only)
   data/data.csv               all parts merged (what the site reads)
+
+Only complete seasons are exported: a year is included once the source covers the whole season
+(June to August for summer, December to February for winter), so the newest year is never partial.
 
 Usage:
   pip install earthengine-api      (once; then sign in with ee.Authenticate())
@@ -21,7 +25,10 @@ PARTS = DATA / "parts"
 
 GAUL = "FAO/GAUL/2025/level2"
 MODIS_NDVI = "MODIS/061/MOD13A2"
+MODIS_LC = "MODIS/061/MCD12Q1"
 FLDAS = "NASA/FLDAS/NOAH01/C/GL/M/V001"
+GRASSLAND = 10           # IGBP land cover class "Grasslands" (LC_Type1)
+MIN_GRASS_KM2 = 10       # a soum with less grassland than this gets no greenness value
 
 
 def soums_fc():
@@ -91,15 +98,17 @@ def export_aimags():
     print(f"aimags.geojson: {len(feats)} aimags, {out.stat().st_size / 1e6:.2f} MB")
 
 
-def reduce_years(variable, years, image_for_year, scale):
-    """Stack one band per year and reduce over every soum in one call."""
+def reduce_years(variable, years, image_for_year, scale, crs=None, keep=None):
+    """Stack one band per year and reduce over every soum in one call. keep: soum ids to write (default all)."""
     stack = ee.Image.cat([image_for_year(y).rename(f"y{y}") for y in years])
-    table = stack.reduceRegions(collection=soums_fc(), reducer=ee.Reducer.mean(), scale=scale, tileScale=4)
+    table = stack.reduceRegions(collection=soums_fc(), reducer=ee.Reducer.mean(), scale=scale, crs=crs, tileScale=4)
     table = table.map(lambda f: ee.Feature(None, f.toDictionary([f"y{y}" for y in years]).set("soum_id", ee.Number(f.get("GAUL2_CODE")).format("%d"))))
     feats = table.getInfo()["features"]
     rows = []
     for f in feats:
         p = f["properties"]
+        if keep is not None and p["soum_id"] not in keep:
+            continue
         for y in years:
             v = p.get(f"y{y}")
             if v is not None:
@@ -112,13 +121,53 @@ def reduce_years(variable, years, image_for_year, scale):
     print(f"{variable}: {len(feats)} soums, years {years[0]}-{years[-1]}, {len(rows)} values")
 
 
+def ndvi_projection():
+    """The MODIS sinusoidal 1 km grid (926.6 m pixels) the NDVI product comes in."""
+    return ee.ImageCollection(MODIS_NDVI).first().select("NDVI").projection()
+
+
+def grassland_mask():
+    """1 km NDVI pixels that are grassland: MODIS land cover (MCD12Q1, IGBP class 10) in most years 2001 onward,
+    covering at least half of the pixel. The same pixels are used for every year, so a trend can never come from a
+    change in which land is measured. Desert, water, forest, fields and towns are left out."""
+    lc = ee.ImageCollection(MODIS_LC).select("LC_Type1")
+    usual = lc.mode().setDefaultProjection(lc.first().projection())      # each 500 m pixel's most common class
+    share = usual.eq(GRASSLAND).reduceResolution(ee.Reducer.mean(), maxPixels=64).reproject(ndvi_projection())
+    return share.gte(0.5)
+
+
+def export_grassland():
+    """Land and grassland area (km2) per soum, from the same mask the greenness values use."""
+    proj = ndvi_projection()
+    km2 = ee.Image.pixelArea().divide(1e6)
+    stack = ee.Image.cat([km2.rename("land"), km2.updateMask(grassland_mask()).rename("grass")])
+    table = stack.reduceRegions(collection=soums_fc(), reducer=ee.Reducer.sum(), crs=proj, scale=proj.nominalScale().getInfo(), tileScale=4)
+    table = table.map(lambda f: ee.Feature(None, {"soum_id": ee.Number(f.get("GAUL2_CODE")).format("%d"),
+                                                  "land": f.get("land"), "grass": f.get("grass")}))
+    rows = sorted((p["soum_id"], round(p["land"] or 0, 1), round(p["grass"] or 0, 1))
+                  for p in (f["properties"] for f in table.getInfo()["features"]))
+    with open(DATA / "grassland.csv", "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["soum_id", "land_km2", "grass_km2"])
+        w.writerows(rows)
+    print(f"grassland.csv: {len(rows)} soums, {sum(1 for r in rows if r[2] < MIN_GRASS_KM2)} with less than {MIN_GRASS_KM2} km2 of grassland")
+    return {r[0] for r in rows if r[2] >= MIN_GRASS_KM2}
+
+
 def ndvi_summer():
-    col = ee.ImageCollection(MODIS_NDVI).select("NDVI")
+    """June to August mean NDVI over each soum's grassland only (see grassland_mask). Composites flagged as snow or
+    cloud (SummaryQA 2 or 3) are dropped first."""
+    col = ee.ImageCollection(MODIS_NDVI)
     last = last_full_year(MODIS_NDVI, 9)
+    grass = grassland_mask()
+    keep = export_grassland()
+    def clear(i):
+        return i.select("NDVI").updateMask(i.select("SummaryQA").lte(1))
     def img(y):
-        return col.filterDate(f"{y}-06-01", f"{y}-09-01").mean().multiply(0.0001)
+        return col.filterDate(f"{y}-06-01", f"{y}-09-01").map(clear).mean().multiply(0.0001).updateMask(grass)
     # 1 km product: real soum-level values.
-    reduce_years("ndvi_summer", list(range(2001, last + 1)), img, 1000)
+    proj = ndvi_projection()
+    reduce_years("ndvi_summer", list(range(2001, last + 1)), img, proj.nominalScale().getInfo(), crs=proj, keep=keep)
 
 
 def fldas(band):

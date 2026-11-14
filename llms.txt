@@ -2,11 +2,11 @@
 
 > A bilingual (Mongolian and English) web tool that tests whether climate and vegetation in each of Mongolia's 337 soums are really changing. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective".
 
-The user picks a question, a soum and a range of years. The site shows one value per year, the trend line, and a verdict from the Mann-Kendall test: real trend (p < 0.05), possible trend (0.05 to 0.10) or not proven. Sen's slope gives the rate per decade; a straight-line fit with a t-test and 95% confidence interval is shown as a second opinion. All statistics run in the browser.
+The user picks a question, a soum and a range of years. The site shows one plain sentence, one value per year, the trend line, and a verdict from the Mann-Kendall test corrected for year-to-year correlation (Hamed & Rao 1998), checked for chance across all soums with the Benjamini-Hochberg false discovery rate: real trend (q < 0.05), possible trend (p < 0.10) or not proven. Sen's slope gives the rate per decade; a straight-line fit with a t-test and 95% confidence interval (effective sample size for correlated years) is shown as a second opinion. All statistics run in the browser.
 
 ## Questions and data
 
-- Summer greenness: NASA MODIS MOD13A2 NDVI, 1 km, June to August mean, 2001 to 2026, soum level
+- Summer greenness: NASA MODIS MOD13A2 NDVI, 1 km, June to August mean over grassland only (MODIS MCD12Q1 land cover, the same pixels every year), 2001 to 2026, soum level
 - Summer rainfall: NASA FLDAS Noah land model, June to August total, 1982 to 2026, regional estimate
 - Summer temperature: NASA FLDAS, June to August mean, 1982 to 2026, regional estimate
 - Winter temperature: NASA FLDAS, December to February mean labelled by the January year, 1983 to 2026, regional estimate
@@ -21,4 +21,4 @@ The user picks a question, a soum and a range of years. The site shows one value
 
 ## Limits
 
-Straight-line trends only. Neighbouring years can depend on each other. With many soums and questions, about 1 test in 20 looks real by chance. A trend is not a cause.
+Every year shown is a complete season. Straight-line trends only. Neighbouring soums share weather, so their results are not independent. A trend is not a cause.
