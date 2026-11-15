@@ -4,7 +4,7 @@
 
 The user picks a question, a soum and a range of years. The site shows one plain sentence, one value per year, the trend line, and a verdict from the Mann-Kendall test corrected for year-to-year correlation (Hamed & Rao 1998), checked for chance across all soums with the Benjamini-Hochberg false discovery rate: real trend (q < 0.05), possible trend (p < 0.10) or not proven. Sen's slope gives the rate per decade; a straight-line fit with a t-test and 95% confidence interval (effective sample size for correlated years) is shown as a second opinion. All statistics run in the browser.
 
-The map shows the 22 aimags (and, zoomed in, an aimag's soums), shaded by the direction and size of their trend (filled = real, striped = possible, pale = not proven), next to a summary for the whole country. Any result can be saved as a picture (in Mongolian or English) to post on Facebook or send on Messenger, and every soum's result can be downloaded as one CSV table.
+The map shows the 22 aimags (and, zoomed in, an aimag's soums), shaded by the direction and size of their trend (filled = real, striped = possible, pale = not proven), next to a summary for the whole country. Any result can be saved as a picture (in the language chosen on the site: English by default, or Mongolian) to post on Facebook or send on Messenger, and every soum's result can be downloaded as one CSV table.
 
 ## Questions and data
 

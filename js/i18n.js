@@ -107,7 +107,7 @@ const STRINGS = {
     // Share as image.
     shareImage: 'Share as image', cardTitle: 'Share as image',
     cardHint: 'Post it on Facebook or send it on Messenger.',
-    cardSave: 'Save image', cardShare: 'Share', cardClose: 'Close', cardLang: 'Card language',
+    cardSave: 'Save image', cardShare: 'Share', cardClose: 'Close',
     cardSource: 'Source', cardSoum: '{soum} soum, {aimag} aimag', cardAimag: '{aimag} aimag (average of its soums)',
     cardCounts: 'Real trend: {real} soums · Possible: {possible} · Not proven: {notProven}',
     chartBand: '95% confidence band',
@@ -211,7 +211,7 @@ const STRINGS = {
     downloadAll: 'Бүх сумын өгөгдөл татах (CSV)',
     shareImage: 'Зураг болгон хуваалцах', cardTitle: 'Зураг болгон хуваалцах',
     cardHint: 'Facebook-т нийтлэх эсвэл Messenger-ээр илгээх боломжтой.',
-    cardSave: 'Зураг хадгалах', cardShare: 'Хуваалцах', cardClose: 'Хаах', cardLang: 'Зургийн хэл',
+    cardSave: 'Зураг хадгалах', cardShare: 'Хуваалцах', cardClose: 'Хаах',
     cardSource: 'Эх сурвалж', cardSoum: '{aimag} аймгийн {soum} сум', cardAimag: '{aimag} аймаг (сумдын дундаж)',
     cardCounts: 'Бодит чиг хандлага: {real} сум · Магадгүй: {possible} · Батлагдаагүй: {notProven}',
     chartBand: '95% итгэх интервал',

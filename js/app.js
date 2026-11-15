@@ -13,7 +13,8 @@ const $ = id => document.getElementById(id);
 // Flow: the country (the aimags on the map, the country's summary in the panel) -> click an aimag (zoom, its soums
 // appear, its result in the panel) -> click a soum.
 const DEFAULT_VAR = 'ndvi_summer';
-const state = { lang: 'mn', varId: DEFAULT_VAR, aimag: null, soumId: null, from: null, to: null };
+// English by default (judges and visitors first); MN in the header switches, and a link keeps the choice (lang=mn).
+const state = { lang: 'en', varId: DEFAULT_VAR, aimag: null, soumId: null, from: null, to: null };
 let DATA, map, lastResultKey = '';
 
 const t = key => STRINGS[state.lang][key];
@@ -26,14 +27,14 @@ const soumName = s => soumNameL(s, state.lang);
 const soumLabel = s => `${soumName(s)}, ${aimagName(s.aimag)}`;
 const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
 
-// ---------- URL state: #v=ndvi_summer&a=Dundgovi&s=12345&from=2001&to=2025&lang=en ----------
+// ---------- URL state: #v=ndvi_summer&a=Dundgovi&s=12345&from=2001&to=2025&lang=mn ----------
 
 // Read in two steps: the language and question right away (the page is drawn before the data has arrived), the
 // place and years once the data is there to check them against.
 function readHash(withData) {
   const p = new URLSearchParams(location.hash.slice(1));
   if (!withData) {
-    if (p.get('lang') === 'en') state.lang = 'en';
+    if (LANGS.includes(p.get('lang'))) state.lang = p.get('lang');
     if (byId[p.get('v')]) state.varId = p.get('v');
     return;
   }
@@ -56,7 +57,7 @@ function writeHash() {
   if (state.aimag) p.set('a', state.aimag);
   if (state.soumId) p.set('s', state.soumId);
   p.set('from', state.from); p.set('to', state.to);
-  if (state.lang !== 'mn') p.set('lang', state.lang);
+  if (state.lang !== 'en') p.set('lang', state.lang);
   history.replaceState(null, '', '#' + p.toString());
 }
 
@@ -132,8 +133,8 @@ function fmtChange(v, c, L) {
   const sign = c > 0 ? '+' : c < 0 ? '−' : '';
   const a = Math.abs(c);
   if (v.display === 'percent') return `${sign}${a.toFixed(0)}%`;
-  if (v.id.startsWith('temp')) return `${sign}${a.toFixed(1)} °C`;
-  return `${sign}${a.toFixed(0)} ${v.unitName ? v.unitName[L] : v.unit}`;
+  if (v.id.startsWith('temp')) return `${sign}${a.toFixed(1)}\u00A0°C`;
+  return `${sign}${a.toFixed(0)}\u00A0${v.unitName ? v.unitName[L] : v.unit}`;
 }
 const tick = x => (x > 0 ? '+' : x < 0 ? '−' : '') + String(Math.abs(x));
 
@@ -616,8 +617,8 @@ function downloadAllCsv(v) {
 }
 
 // ---------- share as image (js/share.js draws it) ----------
-// The card is in Mongolian unless switched: it is made for Facebook and Messenger, where Mongolian communities share.
-let cardLang = 'mn', cardFile = null, cardUrl = '';
+// The card is in the language chosen on the site (MN or EN in the header), for Facebook and Messenger.
+let cardFile = null, cardUrl = '';
 const siteAddress = () => (document.querySelector('link[rel="canonical"]')?.href || location.href).replace(/^https?:\/\//, '').replace(/[/#?].*$/, '');
 function cardDraw(L) {
   const v = byId[state.varId], S = STRINGS[L], pal = palette();
@@ -659,7 +660,7 @@ function cardDraw(L) {
     draw: images => Q.share.placeCard(o, images) };
 }
 async function showCard() {
-  const card = cardDraw(cardLang);
+  const card = cardDraw(state.lang);
   await Q.share.fontsReady();
   const blob = await Q.share.toBlob(card.draw);
   if (cardUrl) URL.revokeObjectURL(cardUrl);
@@ -671,11 +672,9 @@ async function showCard() {
   $('card-save').download = card.name;
   // Phones: the share sheet (Facebook, Messenger, ...). Elsewhere saving the picture is the way.
   $('card-share').hidden = !(navigator.canShare && navigator.canShare({ files: [cardFile] }));
-  document.querySelectorAll('.card-lang-button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === cardLang));
 }
 async function openCard() {
   if (!DATA) return;
-  cardLang = 'mn';
   $('share-image').disabled = true;
   try {
     await showCard();
@@ -760,11 +759,6 @@ function wire() {
   $('share-image').addEventListener('click', openCard);
   $('card-close').addEventListener('click', () => $('card-dialog').close());
   $('card-dialog').addEventListener('click', e => { if (e.target === $('card-dialog')) $('card-dialog').close(); });   // outside the card
-  document.querySelectorAll('.card-lang-button').forEach(b => b.addEventListener('click', () => {
-    if (cardLang === b.dataset.lang) return;
-    cardLang = b.dataset.lang;
-    showCard().catch(err => console.error('Could not draw the image', err));
-  }));
   $('card-share').addEventListener('click', async () => {
     try { await navigator.share({ files: [cardFile] }); }
     catch (err) { /* closed the share sheet, or sharing is not allowed: saving still works */ }

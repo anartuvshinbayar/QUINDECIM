@@ -26,7 +26,7 @@ function fontsReady() {
 function lines(ctx, text, maxW) {
   const out = [];
   let line = '';
-  for (const word of String(text).split(/\s+/).filter(Boolean)) {
+  for (const word of String(text).split(/[ \t\r\n]+/).filter(Boolean)) {   // a no-break space keeps a number with its unit
     const test = line ? `${line} ${word}` : word;
     if (!line || ctx.measureText(test).width <= maxW) line = test;
     else { out.push(line); line = word; }

@@ -60,8 +60,8 @@ const VARIABLES = [
     up: { en: 'hotter', mn: 'дулаарсан' }, down: { en: 'cooler', mn: 'сэрүүссэн' },
     newest: { en: 'The newest year, {y}, is a complete June to August season.', mn: 'Хамгийн сүүлийн {y} он бол 6–8 сарын бүтэн улирал.' },
     plain: {
-      up: { en: 'Summers in {place} have warmed about {x} °C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x} градусаар дулаарсан.' },
-      down: { en: 'Summers in {place} have cooled about {x} °C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x} градусаар сэрүүссэн.' },
+      up: { en: 'Summers in {place} have warmed about {x}\u00A0°C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x}\u00A0градусаар дулаарсан.' },
+      down: { en: 'Summers in {place} have cooled about {x}\u00A0°C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x}\u00A0градусаар сэрүүссэн.' },
       same: { en: 'Summer temperatures in {place} have barely changed since {first}.', mn: '{place} зуны температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
     steps: [1, 2],
@@ -81,8 +81,8 @@ const VARIABLES = [
     up: { en: 'milder', mn: 'зөөлөрсөн' }, down: { en: 'colder', mn: 'хүйтэрсэн' },
     newest: { en: 'The newest year, {y}, is the complete winter from December {y0} to February {y}.', mn: 'Хамгийн сүүлийн {y} он бол {y0} оны 12 сараас {y} оны 2 сар хүртэлх бүтэн өвөл.' },
     plain: {
-      up: { en: 'Winters in {place} have become about {x} °C milder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x} градусаар зөөлөрсөн.' },
-      down: { en: 'Winters in {place} have become about {x} °C colder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x} градусаар хүйтэрсэн.' },
+      up: { en: 'Winters in {place} have become about {x}\u00A0°C milder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x}\u00A0градусаар зөөлөрсөн.' },
+      down: { en: 'Winters in {place} have become about {x}\u00A0°C colder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x}\u00A0градусаар хүйтэрсэн.' },
       same: { en: 'Winter temperatures in {place} have barely changed since {first}.', mn: '{place} өвлийн температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
     steps: [0.5, 1],
@@ -102,8 +102,8 @@ const VARIABLES = [
     up: { en: 'later', mn: 'хойшилсон' }, down: { en: 'earlier', mn: 'урагшилсан' },
     newest: { en: 'The newest year, {y}, is complete: a year counts only once its first frost has come.', mn: 'Хамгийн сүүлийн {y} он бүрэн: тухайн оны анхны хяруу орсны дараа л тооцдог.' },
     plain: {
-      up: { en: 'The first autumn frost in {place} now comes about {x} {days} later than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x} хоногоор хойшилсон.' },
-      down: { en: 'The first autumn frost in {place} now comes about {x} {days} earlier than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x} хоногоор урагшилсан.' },
+      up: { en: 'The first autumn frost in {place} now comes about {x}\u00A0{days} later than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x}\u00A0хоногоор хойшилсон.' },
+      down: { en: 'The first autumn frost in {place} now comes about {x}\u00A0{days} earlier than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x}\u00A0хоногоор урагшилсан.' },
       same: { en: 'The first autumn frost in {place} still comes at about the same time as in {first}.', mn: '{place} намрын анхны хяруу орох хугацаа {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
     steps: [7, 14],

@@ -11,7 +11,8 @@ for its own result:
 one plain sentence ("Summer greenness in this soum has risen about 20% since 2001. This is very unlikely to be chance."),
 the yearly data, the trend, and an honest verdict (**real trend**, **possible trend** or **not proven**).
 The small arrow goes back to all aimags. **Share as image** makes a picture of the result (a soum's or aimag's chart,
-or the country's map) in Mongolian, for Facebook and Messenger.
+or the country's map) in the language chosen on the site, for Facebook and Messenger.
+The site opens in English; MN in the header switches to Mongolian, and a shared link keeps the choice (`lang=mn`).
 Built for students and teachers in Mongolia, in Mongolian and English.
 
 ## Run it
@@ -38,7 +39,7 @@ visitors' browsers load the new files instead of an old cached copy.
 | `js/stats.js` | Mann-Kendall with the Hamed & Rao correction, Sen's slope, linear fit with effective sample size, t-test, 95% CI and band, Benjamini-Hochberg false discovery rate. No DOM, testable in node |
 | `js/app.js` | State and flow (country, aimag, soum), nationwide check, map shades, country summary, plain-language sentence, question tabs, result panel, breadcrumb, URL sharing, CSV downloads (one place, or every soum), no-shift language switch |
 | `js/map.js` | Two-level SVG map: aimags shaded by their trend, smooth zoom into one aimag and its soums, stripes for possible trends, label placement |
-| `js/share.js` | Share as image: draws a 1080 x 1350 card (the place's sentence, verdict and chart, or the country's map and key) on a canvas, in Mongolian or English |
+| `js/share.js` | Share as image: draws a 1080 x 1350 card (the place's sentence, verdict and chart, or the country's map and key) on a canvas, in the site's language |
 | `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |
 | `js/i18n.js` | All text in Mongolian and English, plus the glossary |
