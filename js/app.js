@@ -514,6 +514,8 @@ function fillSearch() {
 function renderStatic() {
   document.documentElement.lang = state.lang;
   document.title = t('docTitle');
+  // Links to the methods page open it in the language chosen here.
+  document.querySelectorAll('a[href^="methods.html"]').forEach(a => a.setAttribute('href', state.lang === 'mn' ? 'methods.html?lang=mn' : 'methods.html'));
   $('hero-title').setAttribute('aria-label', t('heroAria'));   // the visible headline rotates; this is its steady name
   document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
   document.querySelectorAll('.lang-button').forEach(b => {

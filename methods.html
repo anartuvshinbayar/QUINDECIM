@@ -7,6 +7,8 @@
   <meta name="description" content="How Quindecim tests whether the climate is really changing in each of Mongolia's 337 soums and districts: the NASA data, the trend tests, the check for chance, what we found, a check against weather stations, and every result to download.">
   <meta name="theme-color" content="#F6F1E7">
   <link rel="canonical" href="https://quindecim-theta.vercel.app/methods.html">
+  <link rel="alternate" hreflang="en" href="https://quindecim-theta.vercel.app/methods.html">
+  <link rel="alternate" hreflang="mn" href="https://quindecim-theta.vercel.app/methods.html?lang=mn">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Quindecim">
   <meta property="og:title" content="Methods and data · Quindecim">
@@ -19,8 +21,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <!-- A plain page: everything is in the HTML, nothing needs JavaScript. The tables marked "static:" are written from
-       the data by tools/static_pages.js (run it after the data or the statistics change). -->
+  <!-- A plain page: everything is in the HTML, in English and Mongolian side by side (lang="en" / lang="mn"); nothing needs
+       JavaScript to read it. The MN / EN switch only chooses which language is shown. The blocks marked "static:" are
+       written from the data by tools/static_pages.js (run it after the data or the statistics change). -->
+  <script>document.documentElement.lang = /[?&]lang=mn/.test(location.search) ? "mn" : "en";</script>
   <style>
     :root { --milk: #F6F1E7; --ink: #15213B; --muted: #5B6375; --blue: #3A68BD; --line: #CFC8BA; --line-soft: #E4DED2; --green: #2E7A57; --clay: #B9431C; }
     * { box-sizing: border-box; }
@@ -51,30 +55,57 @@
     code { font-size: .88em; background: rgba(228, 222, 210, .7); padding: 1px 5px; border-radius: 4px; }
     footer { border-top: 1px solid var(--line-soft); padding: 24px 20px 40px; font-size: .88rem; color: var(--muted); }
     footer div { max-width: 960px; margin: 0 auto; }
-    @media (max-width: 600px) { .bar nav { gap: 14px; font-size: .88rem; } .bar img { height: 26px; } }
+    /* Two languages in one page: the switch sets the lang of <html>, and only that language's blocks are shown. */
+    html[lang="en"] body [lang="mn"], html[lang="mn"] body [lang="en"] { display: none; }
+    .lang-switch { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .5); }
+    .lang-button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; }
+    .lang-button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+    .lang-button .flag { width: 20px; height: 10px; border-radius: 2px; outline: 1px solid rgba(0, 0, 0, .15); }
+    .bar-right { display: flex; align-items: center; gap: 18px; }
+    @media (max-width: 700px) { .bar-right { gap: 10px; } .bar nav { display: none; } .bar img { height: 26px; } }
   </style>
 </head>
 <body>
   <header>
     <div class="bar">
-      <a href="./"><img src="assets/brand/quindecim-lockup.svg" alt="Quindecim" width="163" height="32"></a>
-      <nav aria-label="Main"><a href="./#tool">The tool</a><a href="#data">Data</a><a href="#findings">Findings</a></nav>
+      <a href="./" data-tool><img src="assets/brand/quindecim-lockup.svg" alt="Quindecim" width="163" height="32"></a>
+      <div class="bar-right">
+        <nav aria-label="Main"><a href="./#tool" data-tool><span lang="en">The tool</span><span lang="mn">Хэрэгсэл</span></a><a href="#data"><span lang="en">Data</span><span lang="mn">Өгөгдөл</span></a><a href="#findings"><span lang="en">Findings</span><span lang="mn">Олдвор</span></a></nav>
+        <div class="lang-switch" role="group" aria-label="Language / Хэл">
+          <button type="button" class="lang-button" data-lang="mn" aria-label="Монгол" aria-pressed="false">
+            <svg class="flag" viewBox="0 0 30 15" aria-hidden="true"><rect width="30" height="15" fill="#C4272F"/><rect x="10" width="10" height="15" fill="#015197"/><g fill="#F9CF02"><path d="M5 1.2c.6.8.6 1.5 0 2-.6-.5-.6-1.2 0-2z"/><circle cx="5" cy="4.6" r="0.9"/><path d="M3.6 5.6a1.4 1.4 0 0 0 2.8 0a1.6 1.6 0 0 1-2.8 0z"/><rect x="3.6" y="6.6" width="2.8" height="0.5"/><rect x="3.6" y="11.6" width="2.8" height="0.5"/><rect x="2.4" y="6.6" width="0.6" height="5.5"/><rect x="7" y="6.6" width="0.6" height="5.5"/><circle cx="5" cy="9.35" r="1.2"/></g></svg>
+            <span>MN</span>
+          </button>
+          <button type="button" class="lang-button" data-lang="en" aria-label="English" aria-pressed="true">
+            <svg class="flag" viewBox="0 0 60 30" aria-hidden="true"><clipPath id="uk-clip"><rect width="60" height="30"/></clipPath><g clip-path="url(#uk-clip)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2.4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></g></svg>
+            <span>EN</span>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <main>
-    <p class="note">Quindecim · NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective" · Team Quindecim, Ulaanbaatar</p>
-    <h1>How Quindecim works</h1>
-    <p class="lede">Quindecim answers one question for each of Mongolia's 337 soums and districts: is the climate here really changing, or is it just a few unusual years? This page explains the data, the tests and their limits, and links every result, so anyone can check our work.</p>
-    <ul class="toc">
+    <p class="note" lang="en">Quindecim · NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective" · Team Quindecim, Ulaanbaatar</p>
+    <p class="note" lang="mn">Quindecim · NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective" · Quindecim баг, Улаанбаатар</p>
+    <h1 lang="en">How Quindecim works</h1>
+    <h1 lang="mn">Quindecim хэрхэн ажилладаг вэ</h1>
+    <p class="lede" lang="en">Quindecim answers one question for each of Mongolia's 337 soums and districts: is the climate here really changing, or is it just a few unusual years? This page explains the data, the tests and their limits, and links every result, so anyone can check our work.</p>
+    <p class="lede" lang="mn">Quindecim Монгол орны 337 сум, дүүрэг тус бүрд нэг асуултад хариулдаг: энд уур амьсгал үнэхээр өөрчлөгдөж байна уу, эсвэл хэдэн ер бусын жил л байна уу? Энэ хуудас өгөгдөл, шинжилгээ, хязгаарлалтыг тайлбарлаж, үр дүн бүрийг холбосон тул хэн ч бидний ажлыг шалгаж үзэж болно.</p>
+    <ul class="toc" lang="en">
       <li><a href="#brief">In brief</a></li><li><a href="#data">The data</a></li><li><a href="#areas">The 337 areas</a></li>
       <li><a href="#tests">How a trend is judged</a></li><li><a href="#findings">What we found</a></li>
       <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#downloads">Downloads</a></li>
     </ul>
+    <ul class="toc" lang="mn">
+      <li><a href="#brief">Товчхон</a></li><li><a href="#data">Өгөгдөл</a></li><li><a href="#areas">337 нутаг дэвсгэр</a></li>
+      <li><a href="#tests">Чиг хандлагыг хэрхэн дүгнэдэг</a></li><li><a href="#findings">Юу олсон бэ</a></li>
+      <li><a href="#stations">Цаг уурын станцууд</a></li><li><a href="#limits">Хязгаарлалт</a></li><li><a href="#downloads">Татаж авах</a></li>
+    </ul>
 
-    <section id="brief" class="brief" aria-label="In brief">
+    <section id="brief" class="brief" aria-label="In brief / Товчхон">
 <!-- static:brief:start -->
-      <ul>
+      <ul lang="en">
         <li>In 117 of 333 soums, summer greenness has really risen since 2001.</li>
         <li>In 11 of 337 soums, summer rainfall has really fallen since 1982.</li>
         <li>In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one.</li>
@@ -84,13 +115,24 @@
         <li>Greener is not always healthier pasture: the greening since 2001 mostly follows wetter summers after the dry early 2000s (summer rain really rose in 173 soums over the same years).</li>
         <li>The statistics match independent Python code to within 0.0000001, and the summer temperature data follow ten weather stations closely.</li>
       </ul>
+      <ul lang="mn">
+        <li>333 сумаас 117 суманд зуны ногоорол 2001 оноос хойш бодитоор нэмэгдсэн.</li>
+        <li>337 сумаас 11 суманд зуны хур тунадас 1982 оноос хойш бодитоор буурсан.</li>
+        <li>337 сумаас 197 суманд зун 1982 оноос хойш бодитоор дулаарсан, ердийн суманд ойролцоогоор 2.0 °C.</li>
+        <li>1983 оноос хойш өвлийн температур бодитоор өөрчлөгдсөн сум алга.</li>
+        <li>1981 оноос хойш намрын анхны хяруу орох хугацаа бодитоор өөрчлөгдсөн сум алга.</li>
+        <li>Үр дүн бүр нь жилүүдийн хоорондын хамаарлаар залруулсан Манн-Кендаллын шинжилгээ, бүх 337 нутаг дэвсгэрийг хамтад нь шалгах санамсаргүй тохиолдлын шалгуураас (хуурамч нээлтийн түвшин) гарсан бөгөөд нэг энгийн өгүүлбэрээр хэлэгддэг.</li>
+        <li>Ногоорсон нь бэлчээр сайжирсан гэсэн үг биш: 2001 оноос хойших ногоорол голчлон 2000-аад оны эхний хуурай жилүүдийн дараах чийглэг зунтай холбоотой (ижил жилүүдэд зуны хур тунадас 173 суманд бодитоор нэмэгдсэн).</li>
+        <li>Статистик нь бие даасан Python кодтой 0.0000001-ийн нарийвчлалаар таардаг, мөн зуны температурын өгөгдөл арван цаг уурын станцыг нягт дагадаг.</li>
+      </ul>
 <!-- static:brief:end -->
     </section>
 
-    <h2 id="data">The data</h2>
-    <p>One value per area per year, for five questions. Only complete seasons are used: the newest year, 2026, is the full June to August 2026 for the summer questions and December 2025 to February 2026 for winter, and a frost year counts only once its frost has come.</p>
+    <h2 id="data"><span lang="en">The data</span><span lang="mn">Өгөгдөл</span></h2>
+    <p lang="en">One value per area per year, for five questions. Only complete seasons are used: the newest year, 2026, is the full June to August 2026 for the summer questions and December 2025 to February 2026 for winter, and a frost year counts only once its frost has come.</p>
+    <p lang="mn">Таван асуулт тус бүрд нутаг дэвсгэр бүрийн жил бүрийн нэг утга. Зөвхөн бүрэн улирлыг ашигладаг: хамгийн сүүлийн 2026 он нь зуны асуултуудад 2026 оны 6–8 сар бүтнээрээ, өвлийн асуултад 2025 оны 12 сараас 2026 оны 2 сар хүртэл бөгөөд хяруу ирсний дараа л тухайн жилийн хяруу тооцогдоно.</p>
 <!-- static:questions:start -->
-    <div class="table"><table>
+    <div class="table" lang="en"><table>
       <thead><tr><th>Question</th><th>NASA data</th><th>Season</th><th>Years</th><th>What one value covers</th><th>Data confidence</th></tr></thead>
       <tbody>
         <tr><td><strong>Summer greenness</strong><br><code>ndvi_summer</code></td><td><a href="https://lpdaac.usgs.gov/products/mod13a2v061/">MODIS MOD13A2 v061</a></td><td>June to August average</td><td>2001–2026</td><td>Satellite pixels of 1 km (NASA MODIS), averaged over the grassland in each soum.</td><td>High (measured from space every 16 days, the most direct of the five)</td></tr>
@@ -100,32 +142,57 @@
         <tr><td><strong>First autumn frost</strong><br><code>first_frost</code></td><td><a href="https://power.larc.nasa.gov/">NASA POWER daily, T2M_MIN</a></td><td>First day after 1 July below 0 °C (day of year)</td><td>1981–2026</td><td>One NASA POWER grid cell (0.5° × 0.625°, about 55 × 47 km) at the soum centre; neighbouring soums often share it.</td><td>Medium (one coarse cell and a daily minimum below 0 °C give the general timing, not the exact frost day in one valley)</td></tr>
       </tbody>
     </table></div>
+    <div class="table" lang="mn"><table>
+      <thead><tr><th>Асуулт</th><th>NASA-гийн өгөгдөл</th><th>Улирал</th><th>Он</th><th>Нэг утга юуг хамарсан бэ</th><th>Өгөгдлийн найдвартай байдал</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Зуны ногоорол</strong><br><code>ndvi_summer</code></td><td><a href="https://lpdaac.usgs.gov/products/mod13a2v061/">MODIS MOD13A2 v061</a></td><td>6–8 сарын дундаж</td><td>2001–2026</td><td>НАСА-гийн MODIS хиймэл дагуулын 1 км пиксел, сум бүрийн бэлчээр дээрх дундаж.</td><td>Өндөр (16 хоног тутам сансраас хэмждэг, тавуулангаас хамгийн шууд хэмжилт)</td></tr>
+        <tr><td><strong>Зуны хур тунадас</strong><br><code>rain_summer</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>6–8 сарын нийлбэр</td><td>1982–2026</td><td>Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.</td><td>Харьцангуй бага (загвараас гаргасан хур тунадас тавуулангаас хамгийн тодорхойгүй тул чиг хандлагыг болгоомжтой уншина уу)</td></tr>
+        <tr><td><strong>Зуны агаарын температур</strong><br><code>temp_summer</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>6–8 сарын дундаж</td><td>1982–2026</td><td>Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.</td><td>Сайн (арван цаг уурын станцтай жил бүр хамт өсч буурдаг ч тэдний хэмжсэнээс бага дулаарал харуулдаг тул дулаарлын тоо нь болгоомжтой)</td></tr>
+        <tr><td><strong>Өвлийн агаарын температур</strong><br><code>temp_winter</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>12–2 сарын дундаж, 1 сарын оноор</td><td>1983–2026</td><td>Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.</td><td>Дунд (загвар хүйтэн хотгорын өвлийн инверсийг алгасдаг тул цаг уурын станцаас дулаан гардаг, Увсын хотгорт 13 °C хүртэл; ихэнх станцын адил өвлийн тодорхой чиг хандлага харуулдаггүй)</td></tr>
+        <tr><td><strong>Намрын анхны хяруу</strong><br><code>first_frost</code></td><td><a href="https://power.larc.nasa.gov/">NASA POWER daily, T2M_MIN</a></td><td>7 сарын 1-ээс хойш 0 °C-аас доош орсон анхны өдөр</td><td>1981–2026</td><td>Сумын төв дээрх НАСА POWER-ийн нэг нүд (0.5° × 0.625°, ойролцоогоор 55 × 47 км); хөрш сумд ихэвчлэн хуваалцана.</td><td>Дунд (нэг том нүд болон 0 °C-аас доош хамгийн бага температур ерөнхий хугацааг харуулна, нэг хөндийн яг хяруу орох өдрийг биш)</td></tr>
+      </tbody>
+    </table></div>
 <!-- static:questions:end -->
-    <p><strong>Greenness is measured over grassland only.</strong> A whole-soum average would mix in desert, water, forest, fields and towns. We keep the 1 km pixels that MODIS land cover (MCD12Q1, class 10 "Grasslands") calls grassland in most years since 2001, and use the same pixels every year, so a trend can never come from a change in which land is measured. Composites flagged as snow or cloud are dropped. Four areas have under 10 km² of grassland and get no greenness value.</p>
-    <p><strong>Why these seasons.</strong> Summer rain and greenness decide the pasture that herds live on; winter temperature matters for dzud, the harsh winters that kill livestock; the first autumn frost ends the growing season.</p>
+    <p lang="en"><strong>Greenness is measured over grassland only.</strong> A whole-soum average would mix in desert, water, forest, fields and towns. We keep the 1 km pixels that MODIS land cover (MCD12Q1, class 10 "Grasslands") calls grassland in most years since 2001, and use the same pixels every year, so a trend can never come from a change in which land is measured. Composites flagged as snow or cloud are dropped. Four areas have under 10 km² of grassland and get no greenness value.</p>
+    <p lang="mn"><strong>Ногоорлыг зөвхөн өвслөг газраар хэмждэг.</strong> Сумын бүх нутгийн дундаж нь цөл, ус, ой, тариалан, хот суурныг хольж авна. Бид MODIS-ийн газрын бүрхэвч (MCD12Q1, 10-р анги «Өвслөг газар») 2001 оноос хойш ихэнх жилд өвслөг гэж ангилсан 1 км-ийн пикселүүдийг үлдээж, жил бүр яг ижил пикселүүдийг ашигладаг тул чиг хандлага хэмжиж буй газар солигдсоноос хэзээ ч үүсэхгүй. Цас, үүлтэй гэж тэмдэглэгдсэн нийлмэл зургуудыг хаядаг. Дөрвөн нутаг дэвсгэрт өвслөг газар 10 км²-ээс бага тул ногоорлын утга өгөөгүй.</p>
+    <p lang="en"><strong>Why these seasons.</strong> Summer rain and greenness decide the pasture that herds live on; winter temperature matters for dzud, the harsh winters that kill livestock; the first autumn frost ends the growing season.</p>
+    <p lang="mn"><strong>Яагаад эдгээр улирал вэ.</strong> Зуны хур тунадас, ногоорол нь сүрэг мал амьдардаг бэлчээрийг тодорхойлдог; өвлийн температур нь мал үхүүлдэг хатуу өвөл буюу зудад чухал; намрын анхны хяруу ургалтын улирлыг дуусгадаг.</p>
 
-    <h2 id="areas">The 337 areas</h2>
-    <p>Mongolia officially has 330 soums and Ulaanbaatar has 9 districts, 339 in all. We use the FAO GAUL 2025 boundaries, the standard global set of administrative areas, which draw 328 soums and Ulaanbaatar's 9 districts: 337 areas. On the site they are all called soums. An aimag's result uses the average of its soums for each year (years where at least half of them have a value); Ulaanbaatar is counted with the 21 aimags, making 22.</p>
+    <h2 id="areas"><span lang="en">The 337 areas</span><span lang="mn">337 нутаг дэвсгэр</span></h2>
+    <p lang="en">Mongolia officially has 330 soums and Ulaanbaatar has 9 districts, 339 in all. We use the FAO GAUL 2025 boundaries, the standard global set of administrative areas, which draw 328 soums and Ulaanbaatar's 9 districts: 337 areas. On the site they are all called soums. An aimag's result uses the average of its soums for each year (years where at least half of them have a value); Ulaanbaatar is counted with the 21 aimags, making 22.</p>
+    <p lang="mn">Монгол Улс албан ёсоор 330 сумтай, Улаанбаатар 9 дүүрэгтэй, нийт 339. Бид дэлхийн стандарт захиргааны хилийн багц FAO GAUL 2025-ыг ашигладаг бөгөөд энэ нь 328 сум ба Улаанбаатарын 9 дүүргийг зурсан: нийт 337 нутаг дэвсгэр. Сайт дээр бүгдийг сум гэж нэрлэдэг. Аймгийн үр дүн нь сумдынх нь жил бүрийн дундаж (сумдын дор хаяж тал хувь нь утгатай жилүүдийн) дээр тулгуурлана; Улаанбаатарыг 21 аймагтай хамт тооцож, нийт 22 болгодог.</p>
 
-    <h2 id="tests">How a trend is judged</h2>
-    <p>The same rules apply to every area and every question.</p>
+    <h2 id="tests"><span lang="en">How a trend is judged</span><span lang="mn">Чиг хандлагыг хэрхэн дүгнэдэг</span></h2>
+    <p lang="en">The same rules apply to every area and every question.</p>
+    <p lang="mn">Нутаг дэвсгэр, асуулт бүрт ижил дүрэм үйлчилнэ.</p>
     <ol>
-      <li><strong>At least 20 yearly values</strong>, otherwise the site says there is not enough data. One value per year means there is no seasonal cycle to remove.</li>
-      <li><strong>Mann-Kendall test</strong> for the direction and the p value: it compares every year with every later year and counts ups against downs, so one extreme year cannot make a trend.</li>
-      <li><strong>Correction for year-to-year correlation</strong> (Hamed and Rao 1998). A dry year is often followed by another, and such runs make the plain test find too many trends. The correction widens the test's uncertainty when the years are correlated; it is only ever used to make the test stricter.</li>
-      <li><strong>Check for chance across all areas.</strong> With 337 areas, about 17 would pass p &lt; 0.05 by luck alone. Every area also gets a Benjamini-Hochberg false discovery rate q value among all areas (aimags among all aimags) for the same question and years.</li>
-      <li><strong>Verdict.</strong> A <em>real trend</em> if q &lt; 0.05 (and p &lt; 0.05); a <em>possible trend</em> if p &lt; 0.10 but not real; otherwise <em>not proven</em>. "Not proven" is a real answer: the change over these years is no bigger than the usual ups and downs.</li>
-      <li><strong>Rate.</strong> Sen's slope (the middle of all year-to-year slopes) gives the rate per decade. A straight-line fit with a t-test and a 95% confidence interval, using an effective sample size for correlated years (Santer et al. 2000), gives a second opinion; if the two disagree, the site says so.</li>
-      <li><strong>In plain words.</strong> Every result starts with one sentence: the change along the trend line from the first year to the last, and whether it could be chance.</li>
-      <li><strong>On the map</strong>, the colour depth is the size of the change and the fill is how sure it is: solid for a real trend, striped for a possible one, pale for not proven. A large change that could be chance never shows as a strong colour.</li>
+      <li lang="en"><strong>At least 20 yearly values</strong>, otherwise the site says there is not enough data. One value per year means there is no seasonal cycle to remove.</li>
+      <li lang="mn"><strong>Дор хаяж 20 жилийн утга</strong> хэрэгтэй, эс бөгөөс сайт өгөгдөл хангалтгүй гэж хэлнэ. Жилд нэг утга байдаг тул арилгах улирлын мөчлөг байхгүй.</li>
+      <li lang="en"><strong>Mann-Kendall test</strong> for the direction and the p value: it compares every year with every later year and counts ups against downs, so one extreme year cannot make a trend.</li>
+      <li lang="mn"><strong>Манн-Кендаллын шинжилгээ</strong> нь чиглэл ба p утгыг өгнө: жил бүрийг дараагийн жил бүртэй харьцуулж өсөлт, бууралтыг тоолдог тул нэг ер бусын жил чиг хандлага үүсгэж чадахгүй.</li>
+      <li lang="en"><strong>Correction for year-to-year correlation</strong> (Hamed and Rao 1998). A dry year is often followed by another, and such runs make the plain test find too many trends. The correction widens the test's uncertainty when the years are correlated; it is only ever used to make the test stricter.</li>
+      <li lang="mn"><strong>Жилүүдийн хоорондын хамаарлын залруулга</strong> (Хамед ба Рао, 1998). Хуурай жилийн дараа ихэнхдээ дахиад хуурай жил ирдэг бөгөөд ийм дараалал энгийн шинжилгээг хэт олон чиг хандлага олоход хүргэдэг. Залруулга нь жилүүд хоорондоо төстэй үед шинжилгээний тодорхойгүй байдлыг өргөсгөдөг; зөвхөн шинжилгээг илүү хатуу болгоход л ашиглагдана.</li>
+      <li lang="en"><strong>Check for chance across all areas.</strong> With 337 areas, about 17 would pass p &lt; 0.05 by luck alone. Every area also gets a Benjamini-Hochberg false discovery rate q value among all areas (aimags among all aimags) for the same question and years.</li>
+      <li lang="mn"><strong>Бүх нутаг дэвсгэрийг хамтад нь шалгах санамсаргүй тохиолдлын шалгуур.</strong> 337 нутаг дэвсгэрээс 17 орчим нь зөвхөн азаар p &lt; 0.05 болно. Тиймээс нутаг дэвсгэр бүр ижил асуулт, ижил жилүүдийн хувьд бүх нутаг дэвсгэр (аймаг бол бүх аймаг) дундаа Бенжамини-Хохбергийн хуурамч нээлтийн түвшний q утгыг мөн авна.</li>
+      <li lang="en"><strong>Verdict.</strong> A <em>real trend</em> if q &lt; 0.05 (and p &lt; 0.05); a <em>possible trend</em> if p &lt; 0.10 but not real; otherwise <em>not proven</em>. "Not proven" is a real answer: the change over these years is no bigger than the usual ups and downs.</li>
+      <li lang="mn"><strong>Дүгнэлт.</strong> q &lt; 0.05 (мөн p &lt; 0.05) бол <em>бодит чиг хандлага</em>; p &lt; 0.10 боловч бодит биш бол <em>магадгүй чиг хандлага</em>; бусад тохиолдолд <em>батлагдаагүй</em>. «Батлагдаагүй» нь бодит хариулт: эдгээр жилд өөрчлөлт нь ердийн хэлбэлзлээс илүү биш.</li>
+      <li lang="en"><strong>Rate.</strong> Sen's slope (the middle of all year-to-year slopes) gives the rate per decade. A straight-line fit with a t-test and a 95% confidence interval, using an effective sample size for correlated years (Santer et al. 2000), gives a second opinion; if the two disagree, the site says so.</li>
+      <li lang="mn"><strong>Хурд.</strong> Сений налуу (жилээс жилийн бүх налууны дундаж утга) нь 10 жилд ногдох хурдыг өгнө. Шулуун шугамын тохируулга (t-шинжилгээ, 95% итгэх интервал, хамааралтай жилүүдэд үр ашигт түүврийн хэмжээ: Сантер нар, 2000) хоёр дахь санал болдог; хоёр нь зөрвөл сайт үүнийг хэлнэ.</li>
+      <li lang="en"><strong>In plain words.</strong> Every result starts with one sentence: the change along the trend line from the first year to the last, and whether it could be chance.</li>
+      <li lang="mn"><strong>Энгийн үгээр.</strong> Үр дүн бүр нэг өгүүлбэрээр эхэлнэ: эхний жилээс сүүлийн жил хүртэл чиг хандлагын шугамын дагуух өөрчлөлт, мөн санамсаргүй байж болох эсэх.</li>
+      <li lang="en"><strong>On the map</strong>, the colour depth is the size of the change and the fill is how sure it is: solid for a real trend, striped for a possible one, pale for not proven. A large change that could be chance never shows as a strong colour.</li>
+      <li lang="mn"><strong>Газрын зураг дээр</strong> өнгөний гүн нь өөрчлөлтийн хэмжээг, дүүргэлт нь итгэлтэй байдлыг харуулна: бодит чиг хандлага бүтэн өнгөтэй, магадгүй нь судалтай, батлагдаагүй нь цайвар. Санамсаргүй байж болох том өөрчлөлт хэзээ ч хүчтэй өнгөөр харагдахгүй.</li>
     </ol>
-    <p><strong>Checked.</strong> All statistics run in the browser (<a href="js/stats.js"><code>js/stats.js</code></a>, no libraries). A test script runs 15 series (ties, an extreme year, strongly correlated years, alternating years, a gap) through it and through independent Python code (SciPy, and pymannkendall where installed); they agree to within 0.0000001.</p>
-    <p class="note">Each result states its own period. Records differ in length (greenness from 2001, the others from the early 1980s), so a 26-year and a 45-year trend are not directly comparable.</p>
+    <p lang="en"><strong>Checked.</strong> All statistics run in the browser (<a href="js/stats.js"><code>js/stats.js</code></a>, no libraries). A test script runs 15 series (ties, an extreme year, strongly correlated years, alternating years, a gap) through it and through independent Python code (SciPy, and pymannkendall where installed); they agree to within 0.0000001.</p>
+    <p lang="mn"><strong>Шалгасан.</strong> Бүх статистик хөтөч дотроо ажилладаг (<a href="js/stats.js"><code>js/stats.js</code></a>, ямар ч сангүй). Тест скрипт 15 цувааг (давхцсан утга, ер бусын жил, хүчтэй хамааралтай жилүүд, ээлжлэн хэлбэлзэх жилүүд, дутуу жил) энэ кодоор болон бие даасан Python кодоор (SciPy, суулгасан бол pymannkendall) туршдаг; тэд 0.0000001-ийн нарийвчлалаар таардаг.</p>
+    <p class="note" lang="en">Each result states its own period. Records differ in length (greenness from 2001, the others from the early 1980s), so a 26-year and a 45-year trend are not directly comparable.</p>
+    <p class="note" lang="mn">Үр дүн бүр өөрийн хугацааг заадаг. Бичлэгийн урт харилцан адилгүй (ногоорол 2001 оноос, бусад нь 1980-аад оны эхнээс) тул 26 жилийн болон 45 жилийн чиг хандлагыг шууд харьцуулах боломжгүй.</p>
 
-    <h2 id="findings">What we found</h2>
-    <p>Each area's full record, after the check for chance across all areas:</p>
+    <h2 id="findings"><span lang="en">What we found</span><span lang="mn">Юу олсон бэ</span></h2>
+    <p lang="en">Each area's full record, after the check for chance across all areas:</p>
+    <p lang="mn">Нутаг дэвсгэр бүрийн бүтэн бичлэг, бүх нутаг дэвсгэрийг хамтад нь шалгах санамсаргүй тохиолдлын шалгуурын дараа:</p>
 <!-- static:findings:start -->
-    <div class="table"><table>
+    <div class="table" lang="en"><table>
       <thead><tr><th>Question</th><th>Years</th><th class="num">Areas tested</th><th class="num">Real trend</th><th class="num">Possible</th><th class="num">Not proven</th></tr></thead>
       <tbody>
         <tr><td>Summer greenness</td><td>2001–2026</td><td class="num">333</td><td class="num">117 greener, 0 browner</td><td class="num">85</td><td class="num">131</td></tr>
@@ -135,24 +202,43 @@
         <tr><td>First autumn frost</td><td>1981–2026</td><td class="num">337</td><td class="num">0 later, 0 earlier</td><td class="num">56</td><td class="num">281</td></tr>
       </tbody>
     </table></div>
-    <p>In 117 of 333 soums, summer greenness has really risen since 2001. In 11 of 337 soums, summer rainfall has really fallen since 1982. In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one. No soum shows a real change in winter temperature since 1983. No soum shows a real change in the date of the first autumn frost since 1981.</p>
-    <p class="note">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>
+    <p lang="en">In 117 of 333 soums, summer greenness has really risen since 2001. In 11 of 337 soums, summer rainfall has really fallen since 1982. In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one. No soum shows a real change in winter temperature since 1983. No soum shows a real change in the date of the first autumn frost since 1981.</p>
+    <p class="note" lang="en">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>
+    <div class="table" lang="mn"><table>
+      <thead><tr><th>Асуулт</th><th>Он</th><th class="num">Шалгасан нутаг дэвсгэр</th><th class="num">Бодит чиг хандлага</th><th class="num">Магадгүй</th><th class="num">Батлагдаагүй</th></tr></thead>
+      <tbody>
+        <tr><td>Зуны ногоорол</td><td>2001–2026</td><td class="num">333</td><td class="num">117 ногоорсон, 0 шарласан</td><td class="num">85</td><td class="num">131</td></tr>
+        <tr><td>Зуны хур тунадас</td><td>1982–2026</td><td class="num">337</td><td class="num">7 чийглэг болсон, 11 хуурайшсан</td><td class="num">56</td><td class="num">263</td></tr>
+        <tr><td>Зуны агаарын температур</td><td>1982–2026</td><td class="num">337</td><td class="num">197 дулаарсан, 0 сэрүүссэн</td><td class="num">91</td><td class="num">49</td></tr>
+        <tr><td>Өвлийн агаарын температур</td><td>1983–2026</td><td class="num">337</td><td class="num">0 зөөлөрсөн, 0 хүйтэрсэн</td><td class="num">2</td><td class="num">335</td></tr>
+        <tr><td>Намрын анхны хяруу</td><td>1981–2026</td><td class="num">337</td><td class="num">0 хойшилсон, 0 урагшилсан</td><td class="num">56</td><td class="num">281</td></tr>
+      </tbody>
+    </table></div>
+    <p lang="mn">333 сумаас 117 суманд зуны ногоорол 2001 оноос хойш бодитоор нэмэгдсэн. 337 сумаас 11 суманд зуны хур тунадас 1982 оноос хойш бодитоор буурсан. 337 сумаас 197 суманд зун 1982 оноос хойш бодитоор дулаарсан, ердийн суманд ойролцоогоор 2.0 °C. 1983 оноос хойш өвлийн температур бодитоор өөрчлөгдсөн сум алга. 1981 оноос хойш намрын анхны хяруу орох хугацаа бодитоор өөрчлөгдсөн сум алга.</p>
+    <p class="note" lang="mn">Тоонууд нь 337 сум, дүүргийнх (ногоорлын хувьд 333: дөрвөн нутагт өвслөг газар хэт бага). Энд байгаа тоо бүр <a href="data/results.csv"><code>data/results.csv</code></a>-д байгаа бөгөөд сайт дээрх газрын зураг газар тус бүрээр нь харуулна.</p>
 <!-- static:findings:end -->
 
-    <h3 id="greening">Is the greening real, and what does it mean?</h3>
+    <h3 id="greening"><span lang="en">Is the greening real, and what does it mean?</span><span lang="mn">Ногоорол бодит юу, мөн юу гэсэн үг вэ?</span></h3>
 <!-- static:greening:start -->
-    <p>Greenness rises and falls with rain: the yearly correlation between them is positive in 332 of 333 soums (median 0.52), so the greenness record behaves as it should.</p>
-    <p>Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +44%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.</p>
-    <p>So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.</p>
-    <p>Results depend on the period. Over 2001–2026 alone, 0 soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.</p>
-    <p>Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from 293 distinct NASA POWER cells for 337 soums: soums in the same cell share one series.</p>
+    <p lang="en">Greenness rises and falls with rain: the yearly correlation between them is positive in 332 of 333 soums (median 0.52), so the greenness record behaves as it should.</p>
+    <p lang="en">Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +64%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.</p>
+    <p lang="en">So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.</p>
+    <p lang="en">Results depend on the period. Over 2001–2026 alone, 0 soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.</p>
+    <p lang="en">Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from 293 distinct NASA POWER cells for 337 soums: soums in the same cell share one series.</p>
+    <p lang="mn">Ногоорол хур тунадсыг дагаж өсч буурдаг: хоёрын жил бүрийн хамаарал 333 сумын 332-д эерэг (медиан 0.52), иймээс ногоорлын бичлэг өөрөө зөв ажиллаж байна.</p>
+    <p lang="mn">Ногоорлын бичлэгтэй ижил жилүүдэд, 2001–2026 онд, зуны хур тунадас 173 суманд бодитоор нэмэгдэж (медиан өөрчлөлт +64%), 8 суманд буурсан. 2000-аад оны эхэн хуурай байсан: зуны хур тунадас дунджаар 2001–2008 онд 131 мм, 1982–1999 онд 156 мм, 2019–2026 онд 169 мм байв. Зуны NDVI-ийн дундаж ижил үеүүдийн хооронд 0.336-оос 0.380 болж өссөн.</p>
+    <p lang="mn">Тиймээс 2001 оноос хойших ногооролтын ихэнх нь хуурай эхлэлийн дараа газар сэргэж, зун чийглэг болсонтой холбоотой. Ногоорсон нь бэлчээр эрүүл болсон гэсэн үг албагүй: NDVI нь газар сансраас хэр ногоон харагддагийг хэмждэг, тэжээлийн чанар, ургамлын төрөл зүйл, хэдэн мал тэжээхийг биш.</p>
+    <p lang="mn">Үр дүн хугацаанаас хамаарна. Зөвхөн 2001–2026 онд бодитоор дулаарсан сум 0 байна; 197 суманд олдсон дулаарал нь 1980-аад оны эхнээс хойших өөрчлөлт бөгөөд жил бүрийн их хэлбэлзлийн ард оршино. Тийм учраас үр дүн бүр өөрийн жилүүдийг заадаг, газрын зураг дээр жилүүдийг өөрчилж болно.</p>
+    <p lang="mn">Хуваалцсан нүд: FLDAS-ийн утгыг сум бүрийн өөрийн талбайгаар дунджилдаг тул сум бүр өөрийн цувааг авдаг ч хөршүүд их төстэй. Анхны хяруугийн өгөгдөл 337 сумын хувьд NASA POWER-ийн 293 өөр нүднээс ирдэг: нэг нүдэнд байгаа сумд нэг цуваа хуваалцана.</p>
 <!-- static:greening:end -->
 
-    <h2 id="stations">Checked against weather stations</h2>
+    <h2 id="stations"><span lang="en">Checked against weather stations</span><span lang="mn">Цаг уурын станцтай харьцуулсан шалгалт</span></h2>
 <!-- static:stations:start -->
-    <p>A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
-    <p>Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.93) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.2 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's &quot;not proven&quot; for winters.</p>
-    <div class="table"><table>
+    <p lang="en">A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
+    <p lang="mn">Газрын загвар нь термометрийн хэмжсэнтэй хэр таарч байгаагаараа л сайн. Бид FLDAS-ийг Монгол даяарх арван цаг уурын станцтай (NOAA GHCN-Daily) харьцуулсан: станц бүрийг өөрийн байрлах нутагтай, ижил улиралтай (улирал нь дор хаяж 80 өдрийн утгатай бол тооцно).</p>
+    <p lang="en">Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.92) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.0 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's &quot;not proven&quot; for winters.</p>
+    <p lang="mn">Зун: FLDAS жил бүр станцуудыг дагаж өсч буурдаг (хамаарал 0.73–0.96, медиан 0.92) ба 10 станцын 10-д станцуудын адил дулаарсан; гэвч 10 станцын 10-д станцаас бага дулаарсан (FLDAS 10 жилд +0.2–+0.5 °C, станцууд +0.5–+0.8 °C), тиймээс сайтын зуны дулааралтын тоо болгоомжтой. Өвөл: FLDAS станцуудаас дулаахан гарч, өвлийн хүйтэн агаар суудаг баруун хотгоруудад 12.6 °C хүртэл зөрнө (медиан +3.0 °C); FLDAS 10 станцын 0-д, станцууд өөрсдөө 2-д өвлийн тодорхой чиг хандлага үзүүлдэг нь сайтын өвлийн «батлагдаагүй» дүгнэлттэй нийцнэ.</p>
+    <div class="table" lang="en"><table>
       <thead><tr><th>Station</th><th>Area</th><th>Years</th><th class="num">Summer correlation</th><th class="num">Summer trend, station</th><th class="num">Summer trend, FLDAS</th><th class="num">Winter correlation</th><th class="num">Winter difference, FLDAS − station</th></tr></thead>
       <tbody>
         <tr><td>Ulaangom</td><td>Tarialan, Uvs</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.8 °C/decade</td><td class="num">+0.5 °C/decade</td><td class="num">0.75</td><td class="num">+12.6 °C</td></tr>
@@ -167,38 +253,73 @@
         <tr><td>Choibalsan</td><td>Kherlen, Dornod</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.5 °C/decade</td><td class="num">+0.3 °C/decade</td><td class="num">0.87</td><td class="num">+2.4 °C</td></tr>
       </tbody>
     </table></div>
-    <p class="note">Correlation of the yearly values (1 = they rise and fall together). Trend: Sen's slope over the same years. The station data are in <a href="data/stations.csv"><code>data/stations.csv</code></a> (built by <code>tools/stations.py</code>).</p>
+    <div class="table" lang="mn"><table>
+      <thead><tr><th>Станц</th><th>Нутаг</th><th>Он</th><th class="num">Зуны хамаарал</th><th class="num">Зуны хандлага, станц</th><th class="num">Зуны хандлага, FLDAS</th><th class="num">Өвлийн хамаарал</th><th class="num">Өвлийн зөрүү, FLDAS − станц</th></tr></thead>
+      <tbody>
+        <tr><td>Улаангом</td><td>Тариалан, Увс</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.8 °C/10 жил</td><td class="num">+0.5 °C/10 жил</td><td class="num">0.75</td><td class="num">+12.6 °C</td></tr>
+        <tr><td>Ховд</td><td>Ховд, Ховд</td><td>1982–2026</td><td class="num">0.95</td><td class="num">+0.8 °C/10 жил</td><td class="num">+0.5 °C/10 жил</td><td class="num">0.55</td><td class="num">+6.0 °C</td></tr>
+        <tr><td>Мөрөн</td><td>Мөрөн, Хөвсгөл</td><td>1982–2026</td><td class="num">0.96</td><td class="num">+0.7 °C/10 жил</td><td class="num">+0.5 °C/10 жил</td><td class="num">0.53</td><td class="num">+3.2 °C</td></tr>
+        <tr><td>Улиастай</td><td>Алдархаан, Завхан</td><td>1982–2026</td><td class="num">0.94</td><td class="num">+0.8 °C/10 жил</td><td class="num">+0.4 °C/10 жил</td><td class="num">0.90</td><td class="num">+5.2 °C</td></tr>
+        <tr><td>Арвайхээр</td><td>Арвайхээр, Өвөрхангай</td><td>1982–2026</td><td class="num">0.81</td><td class="num">+0.6 °C/10 жил</td><td class="num">+0.2 °C/10 жил</td><td class="num">0.89</td><td class="num">−0.1 °C</td></tr>
+        <tr><td>Улаанбаатар (нисэх буудал)</td><td>Хан-Уул, Улаанбаатар</td><td>1982–2025</td><td class="num">0.91</td><td class="num">+0.5 °C/10 жил</td><td class="num">+0.3 °C/10 жил</td><td class="num">0.75</td><td class="num">+4.3 °C</td></tr>
+        <tr><td>Мандалговь</td><td>Сайнцагаан, Дундговь</td><td>1982–2026</td><td class="num">0.84</td><td class="num">+0.6 °C/10 жил</td><td class="num">+0.2 °C/10 жил</td><td class="num">0.82</td><td class="num">+0.9 °C</td></tr>
+        <tr><td>Даланзадгад</td><td>Даланзадгад, Өмнөговь</td><td>1982–2026</td><td class="num">0.73</td><td class="num">+0.5 °C/10 жил</td><td class="num">+0.2 °C/10 жил</td><td class="num">0.87</td><td class="num">+1.2 °C</td></tr>
+        <tr><td>Сайншанд</td><td>Сайншанд, Дорноговь</td><td>1982–2026</td><td class="num">0.85</td><td class="num">+0.5 °C/10 жил</td><td class="num">+0.3 °C/10 жил</td><td class="num">0.82</td><td class="num">+2.8 °C</td></tr>
+        <tr><td>Чойбалсан</td><td>Хэрлэн, Дорнод</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.5 °C/10 жил</td><td class="num">+0.3 °C/10 жил</td><td class="num">0.87</td><td class="num">+2.4 °C</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" lang="en">Correlation of the yearly values (1 = they rise and fall together). Trend: Sen's slope over the same years. The station data are in <a href="data/stations.csv"><code>data/stations.csv</code></a> (built by <code>tools/stations.py</code>).</p>
+    <p class="note" lang="mn">Жилийн утгуудын хамаарал (1 = хамт өсч буурдаг). Хандлага: ижил жилүүд дэх Сений налуу. Станцын өгөгдөл <a href="data/stations.csv"><code>data/stations.csv</code></a>-д байгаа (<code>tools/stations.py</code>-аар бүтээсэн).</p>
 <!-- static:stations:end -->
 
-    <h2 id="limits">Limits</h2>
+    <h2 id="limits"><span lang="en">Limits</span><span lang="mn">Хязгаарлалт</span></h2>
     <ul>
-      <li>Straight-line trends only: a change that sped up or reversed is summarised as one rate.</li>
-      <li>Neighbouring areas share weather, and often share the same model cell (FLDAS about 11 × 8 km, POWER about 55 × 47 km), so their results are not independent. The corrections make the verdicts stricter, not perfect.</li>
-      <li>Rainfall from a land model is the least certain of the five questions; read rainfall trends with care.</li>
-      <li>Winter temperatures from FLDAS differ from weather stations in cold basins, where winter inversions trap cold air (see the station check above). Trends are more reliable than absolute winter values.</li>
-      <li>The first frost uses one coarse grid cell at the soum centre: good for the general timing, not for the exact frost day in one valley.</li>
-      <li>A trend is not a cause.</li>
-      <li>The Mongolian text and soum names are being checked by a native speaker.</li>
+      <li lang="en">Straight-line trends only: a change that sped up or reversed is summarised as one rate.</li>
+      <li lang="mn">Зөвхөн шулуун шугаман чиг хандлага: хурдссан эсвэл эргэсэн өөрчлөлт нэг хурд болж товчлогдоно.</li>
+      <li lang="en">Neighbouring areas share weather, and often share the same model cell (FLDAS about 11 × 8 km, POWER about 55 × 47 km), so their results are not independent. The corrections make the verdicts stricter, not perfect.</li>
+      <li lang="mn">Хөрш нутгууд ижил цаг агаартай, ихэнхдээ загварын нэг нүдийг хуваалцдаг (FLDAS ойролцоогоор 11 × 8 км, POWER ойролцоогоор 55 × 47 км) тул тэдний үр дүн бие даасан биш. Залруулга дүгнэлтийг хатуу болгодог ч төгс болгодоггүй.</li>
+      <li lang="en">Rainfall from a land model is the least certain of the five questions; read rainfall trends with care.</li>
+      <li lang="mn">Газрын загвараас гарсан хур тунадас нь таван асуултаас хамгийн найдваргүй нь; хур тунадасны чиг хандлагыг болгоомжтой уншина уу.</li>
+      <li lang="en">Winter temperatures from FLDAS differ from weather stations in cold basins, where winter inversions trap cold air (see the station check above). Trends are more reliable than absolute winter values.</li>
+      <li lang="mn">FLDAS-ийн өвлийн температур өвлийн хүйтэн агаар суудаг хотгоруудад цаг уурын станцаас зөрдөг (дээрх станцын шалгалтыг үзнэ үү). Өвлийн үнэмлэхүй утгаас чиг хандлага нь илүү найдвартай.</li>
+      <li lang="en">The first frost uses one coarse grid cell at the soum centre: good for the general timing, not for the exact frost day in one valley.</li>
+      <li lang="mn">Анхны хяруу нь сумын төвийн нэг том торыг ашигладаг: ерөнхий цагийг мэдэхэд сайн, нэг хөндийд хяруу орсон яг өдрийг мэдэхэд тохирохгүй.</li>
+      <li lang="en">A trend is not a cause.</li>
+      <li lang="mn">Чиг хандлага нь шалтгаан биш.</li>
+      <li lang="en">The Mongolian text and soum names are being checked by a native speaker.</li>
+      <li lang="mn">Монгол хэл болон сумын нэрсийг төрөлх хэлтэн шалгаж байна.</li>
     </ul>
 
-    <h2 id="downloads">Downloads</h2>
+    <h2 id="downloads"><span lang="en">Downloads</span><span lang="mn">Татаж авах</span></h2>
     <ul>
-      <li><a href="data/results.csv"><code>data/results.csv</code></a>: the trend test result for every area, aimag and question (full record), with the plain-language sentence.</li>
-      <li><a href="data/data.csv"><code>data/data.csv</code></a>: every yearly value (area, question, year, value).</li>
-      <li><a href="data/stations.csv"><code>data/stations.csv</code></a>: seasonal temperatures at the ten weather stations.</li>
-      <li><a href="data/grassland.csv"><code>data/grassland.csv</code></a>: land and grassland area per soum.</li>
-      <li><a href="data/soums.geojson"><code>data/soums.geojson</code></a> and <a href="data/aimags.geojson"><code>data/aimags.geojson</code></a>: the boundaries.</li>
-      <li><a href="llms.txt"><code>llms.txt</code></a>: a plain-text summary for AI assistants.</li>
+      <li lang="en"><a href="data/results.csv"><code>data/results.csv</code></a>: the trend test result for every area, aimag and question (full record), with the plain-language sentence.</li>
+      <li lang="mn"><a href="data/results.csv"><code>data/results.csv</code></a>: нутаг дэвсгэр, аймаг, асуулт бүрийн (бүтэн бичлэг) чиг хандлагын шалгалтын үр дүн, энгийн өгүүлбэрийн хамт.</li>
+      <li lang="en"><a href="data/data.csv"><code>data/data.csv</code></a>: every yearly value (area, question, year, value).</li>
+      <li lang="mn"><a href="data/data.csv"><code>data/data.csv</code></a>: жил бүрийн бүх утга (нутаг дэвсгэр, асуулт, он, утга).</li>
+      <li lang="en"><a href="data/stations.csv"><code>data/stations.csv</code></a>: seasonal temperatures at the ten weather stations.</li>
+      <li lang="mn"><a href="data/stations.csv"><code>data/stations.csv</code></a>: арван цаг уурын станцын улирлын температур.</li>
+      <li lang="en"><a href="data/grassland.csv"><code>data/grassland.csv</code></a>: land and grassland area per soum.</li>
+      <li lang="mn"><a href="data/grassland.csv"><code>data/grassland.csv</code></a>: сум тус бүрийн газар ба өвслөг газрын талбай.</li>
+      <li lang="en"><a href="data/soums.geojson"><code>data/soums.geojson</code></a> and <a href="data/aimags.geojson"><code>data/aimags.geojson</code></a>: the boundaries.</li>
+      <li lang="mn"><a href="data/soums.geojson"><code>data/soums.geojson</code></a> болон <a href="data/aimags.geojson"><code>data/aimags.geojson</code></a>: хил хязгаар.</li>
+      <li lang="en"><a href="llms.txt"><code>llms.txt</code></a>: a plain-text summary for AI assistants.</li>
+      <li lang="mn"><a href="llms.txt"><code>llms.txt</code></a>: хиймэл оюун туслахуудад зориулсан энгийн текст хураангуй.</li>
     </ul>
 
-    <h2 id="references">Sources and references</h2>
+    <h2 id="references"><span lang="en">Sources and references</span><span lang="mn">Эх сурвалж ба ашигласан бүтээл</span></h2>
     <ul>
-      <li>NASA MODIS MOD13A2 v061 vegetation indices: <a href="https://lpdaac.usgs.gov/products/mod13a2v061/">LP DAAC</a></li>
-      <li>NASA MODIS MCD12Q1 v061 land cover: <a href="https://lpdaac.usgs.gov/products/mcd12q1v061/">LP DAAC</a></li>
-      <li>NASA FLDAS Noah land surface model, monthly 0.1°: <a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">GES DISC</a></li>
-      <li>NASA POWER daily data: <a href="https://power.larc.nasa.gov/">power.larc.nasa.gov</a></li>
-      <li>FAO GAUL 2025 boundaries: <a href="https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2025_level2">Earth Engine catalog</a></li>
-      <li>Weather stations: NOAA <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">GHCN-Daily</a></li>
+      <li lang="en">NASA MODIS MOD13A2 v061 vegetation indices: <a href="https://lpdaac.usgs.gov/products/mod13a2v061/">LP DAAC</a></li>
+      <li lang="mn">NASA MODIS MOD13A2 v061 ургамлын индекс: <a href="https://lpdaac.usgs.gov/products/mod13a2v061/">LP DAAC</a></li>
+      <li lang="en">NASA MODIS MCD12Q1 v061 land cover: <a href="https://lpdaac.usgs.gov/products/mcd12q1v061/">LP DAAC</a></li>
+      <li lang="mn">NASA MODIS MCD12Q1 v061 газрын бүрхэвч: <a href="https://lpdaac.usgs.gov/products/mcd12q1v061/">LP DAAC</a></li>
+      <li lang="en">NASA FLDAS Noah land surface model, monthly 0.1°: <a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">GES DISC</a></li>
+      <li lang="mn">NASA FLDAS Noah газрын гадаргын загвар, сар бүр, 0.1°: <a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">GES DISC</a></li>
+      <li lang="en">NASA POWER daily data: <a href="https://power.larc.nasa.gov/">power.larc.nasa.gov</a></li>
+      <li lang="mn">NASA POWER өдрийн өгөгдөл: <a href="https://power.larc.nasa.gov/">power.larc.nasa.gov</a></li>
+      <li lang="en">FAO GAUL 2025 boundaries: <a href="https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2025_level2">Earth Engine catalog</a></li>
+      <li lang="mn">FAO GAUL 2025 хил хязгаар: <a href="https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2025_level2">Earth Engine catalog</a></li>
+      <li lang="en">Weather stations: NOAA <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">GHCN-Daily</a></li>
+      <li lang="mn">Цаг уурын станцууд: NOAA <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">GHCN-Daily</a></li>
       <li>Hamed, K. H. and Rao, A. R. (1998). A modified Mann-Kendall trend test for autocorrelated data. Journal of Hydrology 204, 182-196. <a href="https://doi.org/10.1016/S0022-1694(97)00125-X">doi</a></li>
       <li>Benjamini, Y. and Hochberg, Y. (1995). Controlling the false discovery rate. Journal of the Royal Statistical Society B 57, 289-300. <a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x">doi</a></li>
       <li>Santer, B. D. et al. (2000). Statistical significance of trends and trend differences in layer-average atmospheric temperature time series. Journal of Geophysical Research 105, 7337-7356. <a href="https://doi.org/10.1029/1999JD901105">doi</a></li>
@@ -206,7 +327,25 @@
   </main>
 
   <footer>
-    <div>Team Quindecim · NASA Space Apps Challenge 2026 · Ulaanbaatar. Code under the <a href="LICENSE">MIT License</a>. <a href="./">Back to the tool</a>.</div>
+    <div lang="en">Team Quindecim · NASA Space Apps Challenge 2026 · Ulaanbaatar. Code under the <a href="LICENSE">MIT License</a>. <a href="./" data-tool>Back to the tool</a>.</div>
+    <div lang="mn">Quindecim баг · NASA Space Apps Challenge 2026 · Улаанбаатар. Код нь <a href="LICENSE">MIT лицензтэй</a>. <a href="./" data-tool>Хэрэгсэл рүү буцах</a>.</div>
   </footer>
+
+  <script>
+    // MN / EN: show one language, keep it in the address (?lang=mn) so a shared link opens the same language, and carry it
+    // to the tool (which reads #lang=mn).
+    (function () {
+      var root = document.documentElement, TITLES = { en: 'Methods and data · Quindecim', mn: 'Арга зүй ба өгөгдөл · Quindecim' };
+      function show(l, remember) {
+        root.lang = l;
+        document.title = TITLES[l];
+        document.querySelectorAll('.lang-button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
+        document.querySelectorAll('a[data-tool]').forEach(function (a) { a.setAttribute('href', l === 'mn' ? './#lang=mn' : './'); });
+        if (remember) { try { var u = new URL(location.href); if (l === 'mn') u.searchParams.set('lang', 'mn'); else u.searchParams.delete('lang'); history.replaceState(null, '', u); } catch (e) {} }
+      }
+      document.querySelectorAll('.lang-button').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.lang, true); }); });
+      show(/[?&]lang=mn/.test(location.search) ? 'mn' : 'en', false);
+    })();
+  </script>
 </body>
 </html>

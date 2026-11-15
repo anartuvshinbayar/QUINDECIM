@@ -1,6 +1,6 @@
 # Quindecim
 
-**Is the climate in your soum really changing?** Quindecim tests 25 to 45 years of NASA data for every one of Mongolia's 337 soums and says, in plain words, whether a trend is real or could be chance.
+**Is the climate in your soum really changing?** Quindecim tests 26 to 46 years of NASA data for every one of Mongolia's 337 soums and says, in plain words, whether a trend is real or could be chance.
 
 **Live site: https://quindecim-theta.vercel.app/** (English and Mongolian)
 

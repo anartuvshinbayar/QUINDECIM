@@ -72,7 +72,7 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
     const count = k => Object.values(soums).filter(r => verdictKey(r) === k).length;
     const tested = Object.values(soums).filter(r => r.ok).length;
     const reals = Object.values(soums).filter(r => verdictKey(r).startsWith('real')).map(r => changeOf(v, r)).sort((a, b) => a - b);
-    runs.push({ v, lo, hi, soums, aimags, tested, median: reals.length ? reals[Math.floor(reals.length / 2)] : NaN,
+    runs.push({ v, lo, hi, soums, aimags, tested, median: reals.length ? (reals.length % 2 ? reals[reals.length >> 1] : (reals[(reals.length >> 1) - 1] + reals[reals.length >> 1]) / 2) : NaN,
       c: { realUp: count('real-up'), realDown: count('real-down'), possible: count('possible-up') + count('possible-down'),
            possibleUp: count('possible-up'), possibleDown: count('possible-down'), notProven: count('not-proven') } });
   }
@@ -96,12 +96,13 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
   const rainSince = over('rain_summer', g0, g1), warmSince = over('temp_summer', g0, g1);
   const meanOf = (vid, a, b) => { let sum = 0, n = 0; for (const s of D.soums) { const t = D.series[vid][s.id]; if (!t) continue;
     t.years.forEach((y, i) => { if (y >= a && y <= b && Number.isFinite(t.values[i])) { sum += t.values[i]; n++; } }); } return sum / n; };
-  const sorted = a => [...a].sort((x, y) => x - y), middle = a => sorted(a)[a.length >> 1];
+  const sorted = a => [...a].sort((x, y) => x - y), middle = a => { const s = sorted(a), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
   const frostCells = new Set(D.soums.filter(s => D.series.first_frost[s.id]).map(s => D.series.first_frost[s.id].values.join(','))).size;
   const checks = {
     corrPositive: ndviRain.filter(x => x > 0).length, corrTotal: ndviRain.length, corrMedian: middle(ndviRain).toFixed(2),
     rainUp: rainSince.filter(r => verdictKey(r) === 'real-up').length, rainDown: rainSince.filter(r => verdictKey(r) === 'real-down').length,
-    rainMedian: Math.round(middle(rainSince.map(r => changeOf(byIdOf('rain_summer'), r)))),
+    // median among the soums that really got wetter (not all soums)
+    rainMedian: Math.round(middle(rainSince.filter(r => verdictKey(r) === 'real-up').map(r => changeOf(byIdOf('rain_summer'), r)))),
     rainEarly: Math.round(meanOf('rain_summer', g0, g0 + 7)), rainLate: Math.round(meanOf('rain_summer', g1 - 7, g1)),
     rainBefore: Math.round(meanOf('rain_summer', D.yearRange.rain_summer[0], g0 - 2)),
     ndviEarly: meanOf('ndvi_summer', g0, g0 + 7).toFixed(3), ndviLate: meanOf('ndvi_summer', g1 - 7, g1).toFixed(3),
@@ -112,8 +113,16 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
     `Greenness rises and falls with rain: the yearly correlation between them is positive in ${checks.corrPositive} of ${checks.corrTotal} soums (median ${checks.corrMedian}), so the greenness record behaves as it should.`,
     `Over the same years as the greenness record, ${g0}–${g1}, summer rain really rose in ${checks.rainUp} soums (median change +${checks.rainMedian}%) and fell in ${checks.rainDown}. The early 2000s were dry: ${checks.rainEarly} mm of summer rain on average in ${g0}–${g0 + 7}, against ${checks.rainBefore} mm in ${D.yearRange.rain_summer[0]}–${g0 - 2} and ${checks.rainLate} mm in ${g1 - 7}–${g1}. Average summer NDVI rose from ${checks.ndviEarly} to ${checks.ndviLate} between the same periods.`,
     `So most of the greening since ${g0} is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.`,
-    `Results depend on the period. Over ${g0}–${g1} alone, ${checks.warmSince} soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.`,
+    `Results depend on the period. Over ${g0}–${g1} alone, ${checks.warmSince} soums show real summer warming; the warming found in ${runs.find(r => r.v.id === 'temp_summer').c.realUp} soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.`,
     `Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from ${checks.frostCells} distinct NASA POWER cells for ${checks.frostSoums} soums: soums in the same cell share one series.`,
+  ];
+
+  const greeningTextMn = [
+    `Ногоорол хур тунадсыг дагаж өсч буурдаг: хоёрын жил бүрийн хамаарал ${checks.corrTotal} сумын ${checks.corrPositive}-д эерэг (медиан ${checks.corrMedian}), иймээс ногоорлын бичлэг өөрөө зөв ажиллаж байна.`,
+    `Ногоорлын бичлэгтэй ижил жилүүдэд, ${g0}–${g1} онд, зуны хур тунадас ${checks.rainUp} суманд бодитоор нэмэгдэж (медиан өөрчлөлт +${checks.rainMedian}%), ${checks.rainDown} суманд буурсан. 2000-аад оны эхэн хуурай байсан: зуны хур тунадас дунджаар ${g0}–${g0 + 7} онд ${checks.rainEarly} мм, ${D.yearRange.rain_summer[0]}–${g0 - 2} онд ${checks.rainBefore} мм, ${g1 - 7}–${g1} онд ${checks.rainLate} мм байв. Зуны NDVI-ийн дундаж ижил үеүүдийн хооронд ${checks.ndviEarly}-оос ${checks.ndviLate} болж өссөн.`,
+    `Тиймээс ${g0} оноос хойших ногооролтын ихэнх нь хуурай эхлэлийн дараа газар сэргэж, зун чийглэг болсонтой холбоотой. Ногоорсон нь бэлчээр эрүүл болсон гэсэн үг албагүй: NDVI нь газар сансраас хэр ногоон харагддагийг хэмждэг, тэжээлийн чанар, ургамлын төрөл зүйл, хэдэн мал тэжээхийг биш.`,
+    `Үр дүн хугацаанаас хамаарна. Зөвхөн ${g0}–${g1} онд бодитоор дулаарсан сум ${checks.warmSince} байна; ${runs.find(r => r.v.id === 'temp_summer').c.realUp} суманд олдсон дулаарал нь 1980-аад оны эхнээс хойших өөрчлөлт бөгөөд жил бүрийн их хэлбэлзлийн ард оршино. Тийм учраас үр дүн бүр өөрийн жилүүдийг заадаг, газрын зураг дээр жилүүдийг өөрчилж болно.`,
+    `Хуваалцсан нүд: FLDAS-ийн утгыг сум бүрийн өөрийн талбайгаар дунджилдаг тул сум бүр өөрийн цувааг авдаг ч хөршүүд их төстэй. Анхны хяруугийн өгөгдөл ${checks.frostSoums} сумын хувьд NASA POWER-ийн ${checks.frostCells} өөр нүднээс ирдэг: нэг нүдэнд байгаа сумд нэг цуваа хуваалцана.`,
   ];
 
   // ---------- data/results.csv ----------
@@ -156,11 +165,11 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
     };
     const ids = [...new Set(recs.map(r => r.station_id))];
     stations = ids.map(id => { const r0 = recs.find(r => r.station_id === id);
-      return { id, name: r0.station, soum: r0.soum, aimag: r0.aimag, summer: compare(id, 'summer', 'temp_summer'), winter: compare(id, 'winter', 'temp_winter') }; });
+      return { id, name: r0.station, soumId: r0.soum_id, soum: r0.soum, aimag: r0.aimag, summer: compare(id, 'summer', 'temp_summer'), winter: compare(id, 'winter', 'temp_winter') }; });
   }
-  const med = a => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+  const med = a => { const s = [...a].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
   const f1 = x => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(1), f2 = x => x.toFixed(2);
-  let stationSummary = '';
+  let stationSummary = '', stationSummaryMn = '';
   if (stations) {
     const S = stations.map(s => s.summer), W = stations.map(s => s.winter);
     const warmBoth = S.filter(x => x.station.rate > 0 && x.model.rate > 0).length;
@@ -174,6 +183,13 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
       + `${Math.max(...W.map(x => x.bias)).toFixed(1)} °C in the cold western basins where winter inversions trap cold air `
       + `(median ${f1(med(W.map(x => x.bias)))} °C); FLDAS shows a clear winter trend at ${winterModelClear} of ${W.length} stations and `
       + `the stations themselves at ${winterClear}, which matches the site's "not proven" for winters.`;
+    const sg = x => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(1);
+    stationSummaryMn = `Зун: FLDAS жил бүр станцуудыг дагаж өсч буурдаг (хамаарал ${f2(Math.min(...S.map(x => x.r)))}–${f2(Math.max(...S.map(x => x.r)))}, медиан ${f2(med(S.map(x => x.r)))}) `
+      + `ба ${S.length} станцын ${warmBoth}-д станцуудын адил дулаарсан; гэвч ${S.length} станцын ${lessWarm}-д станцаас бага дулаарсан `
+      + `(FLDAS 10 жилд ${sg(Math.min(...S.map(x => x.model.rate)))}–${sg(Math.max(...S.map(x => x.model.rate)))} °C, станцууд ${sg(Math.min(...S.map(x => x.station.rate)))}–${sg(Math.max(...S.map(x => x.station.rate)))} °C), `
+      + `тиймээс сайтын зуны дулааралтын тоо болгоомжтой. Өвөл: FLDAS станцуудаас дулаахан гарч, өвлийн хүйтэн агаар суудаг баруун хотгоруудад `
+      + `${Math.max(...W.map(x => x.bias)).toFixed(1)} °C хүртэл зөрнө (медиан ${f1(med(W.map(x => x.bias)))} °C); FLDAS ${W.length} станцын ${winterModelClear}-д, `
+      + `станцууд өөрсдөө ${winterClear}-д өвлийн тодорхой чиг хандлага үзүүлдэг нь сайтын өвлийн «батлагдаагүй» дүгнэлттэй нийцнэ.`;
   }
 
   // ---------- shared pieces ----------
@@ -186,6 +202,11 @@ const byIdOf = id => VARIABLES.find(v => v.id === id);
     const s = (n ? v.nation[dir].en : v.nation.none.en).replace(/\{(\w+)\}/g, (_, k) => ({ n, total: tested, first: lo })[k]);
     return Number.isFinite(median) && n && v.id === 'temp_summer' ? s.replace(/\.$/, `, by about ${Math.abs(median).toFixed(1)} °C in a typical one.`) : s;
   };
+  const headlineMn = run => {
+    const { v, c, tested, lo, median } = run, dir = c.realUp >= c.realDown ? 'up' : 'down', n = dir === 'up' ? c.realUp : c.realDown;
+    const t = (n ? v.nation[dir].mn : v.nation.none.mn).replace(/\{(\w+)\}/g, (_, k) => ({ n, total: tested, first: lo })[k]);
+    return Number.isFinite(median) && n && v.id === 'temp_summer' ? t.replace(/\.$/, `, ердийн суманд ойролцоогоор ${Math.abs(median).toFixed(1)} °C.`) : t;
+  };
   const findingsTable = `    <div class="table"><table>
       <thead><tr><th>Question</th><th>Years</th><th class="num">Areas tested</th><th class="num">Real trend</th><th class="num">Possible</th><th class="num">Not proven</th></tr></thead>
       <tbody>
@@ -196,34 +217,66 @@ ${findingsRows.map(({ v, lo, hi, tested, c }) => `        <tr><td>${esc(v.name.e
 
   // ---------- methods.html ----------
   let m = read('methods.html');
-  m = between(m, 'brief', `      <ul>
+  const cap = x => x.charAt(0).toLocaleUpperCase() + x.slice(1);
+  const nameMn = id => (D.soumById[id] || {}).name_mn;
+  const STATION_MN = { Ulaangom: 'Улаангом', Khovd: 'Ховд', 'Mörön': 'Мөрөн', Uliastai: 'Улиастай', Arvaikheer: 'Арвайхээр', 'Ulaanbaatar (airport)': 'Улаанбаатар (нисэх буудал)',
+    Mandalgovi: 'Мандалговь', Dalanzadgad: 'Даланзадгад', Sainshand: 'Сайншанд', Choibalsan: 'Чойбалсан' };
+  m = between(m, 'brief', `      <ul lang="en">
 ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
         <li>Every result comes from a Mann-Kendall test corrected for year-to-year correlation and a check for chance across all 337 areas (false discovery rate), and is said in one plain sentence.</li>
         <li>Greener is not always healthier pasture: the greening since ${g0} mostly follows wetter summers after the dry early 2000s (summer rain really rose in ${checks.rainUp} soums over the same years).</li>
         <li>The statistics match independent Python code to within 0.0000001${stations ? ', and the summer temperature data follow ten weather stations closely' : ''}.</li>
+      </ul>
+      <ul lang="mn">
+${runs.map(r => `        <li>${esc(headlineMn(r))}</li>`).join('\n')}
+        <li>Үр дүн бүр нь жилүүдийн хоорондын хамаарлаар залруулсан Манн-Кендаллын шинжилгээ, бүх 337 нутаг дэвсгэрийг хамтад нь шалгах санамсаргүй тохиолдлын шалгуураас (хуурамч нээлтийн түвшин) гарсан бөгөөд нэг энгийн өгүүлбэрээр хэлэгддэг.</li>
+        <li>Ногоорсон нь бэлчээр сайжирсан гэсэн үг биш: ${g0} оноос хойших ногоорол голчлон 2000-аад оны эхний хуурай жилүүдийн дараах чийглэг зунтай холбоотой (ижил жилүүдэд зуны хур тунадас ${checks.rainUp} суманд бодитоор нэмэгдсэн).</li>
+        <li>Статистик нь бие даасан Python кодтой 0.0000001-ийн нарийвчлалаар таардаг${stations ? ', мөн зуны температурын өгөгдөл арван цаг уурын станцыг нягт дагадаг' : ''}.</li>
       </ul>`);
-  m = between(m, 'questions', `    <div class="table"><table>
-      <thead><tr><th>Question</th><th>NASA data</th><th>Season</th><th>Years</th><th>What one value covers</th><th>Data confidence</th></tr></thead>
+  const questionsTable = lang => `    <div class="table" lang="${lang}"><table>
+      <thead><tr>${(lang === 'en' ? ['Question', 'NASA data', 'Season', 'Years', 'What one value covers', 'Data confidence']
+        : ['Асуулт', 'NASA-гийн өгөгдөл', 'Улирал', 'Он', 'Нэг утга юуг хамарсан бэ', 'Өгөгдлийн найдвартай байдал']).map(h => `<th>${h}</th>`).join('')}</tr></thead>
       <tbody>
-${runs.map(({ v, lo, hi }) => `        <tr><td><strong>${esc(v.name.en)}</strong><br><code>${v.id}</code></td><td><a href="${LINKS[v.id][1]}">${esc(LINKS[v.id][0])}</a></td>`
-  + `<td>${esc(v.season.en)}</td><td>${lo}–${hi}</td><td>${esc(v.resolution.en)}</td><td>${esc(v.confidence.en[0].toUpperCase() + v.confidence.en.slice(1))}</td></tr>`).join('\n')}
+${runs.map(({ v, lo, hi }) => `        <tr><td><strong>${esc(v.name[lang])}</strong><br><code>${v.id}</code></td><td><a href="${LINKS[v.id][1]}">${esc(LINKS[v.id][0])}</a></td>`
+  + `<td>${esc(v.season[lang])}</td><td>${lo}–${hi}</td><td>${esc(v.resolution[lang])}</td><td>${esc(cap(v.confidence[lang]))}</td></tr>`).join('\n')}
       </tbody>
-    </table></div>`);
-  m = between(m, 'findings', findingsTable + `
-    <p>${runs.map(r => esc(headline(r))).join(' ')}</p>
-    <p class="note">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>`);
-  m = between(m, 'greening', greeningText.map(t => `    <p>${esc(t)}</p>`).join('\n'));
-  m = between(m, 'stations', !stations ? '    <p>Not yet run: <code>python3 tools/stations.py</code>.</p>' : `    <p>A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
-    <p>${esc(stationSummary)}</p>
-    <div class="table"><table>
+    </table></div>`;
+  m = between(m, 'questions', questionsTable('en') + '\n' + questionsTable('mn'));
+  const findingsTableMn = `    <div class="table" lang="mn"><table>
+      <thead><tr><th>Асуулт</th><th>Он</th><th class="num">Шалгасан нутаг дэвсгэр</th><th class="num">Бодит чиг хандлага</th><th class="num">Магадгүй</th><th class="num">Батлагдаагүй</th></tr></thead>
+      <tbody>
+${findingsRows.map(({ v, lo, hi, tested, c }) => `        <tr><td>${esc(v.name.mn)}</td><td>${lo}–${hi}</td><td class="num">${tested}</td>`
+  + `<td class="num">${c.realUp} ${esc(v.up.mn)}, ${c.realDown} ${esc(v.down.mn)}</td><td class="num">${c.possible}</td><td class="num">${c.notProven}</td></tr>`).join('\n')}
+      </tbody>
+    </table></div>`;
+  m = between(m, 'findings', findingsTable.replace('<div class="table">', '<div class="table" lang="en">') + `
+    <p lang="en">${runs.map(r => esc(headline(r))).join(' ')}</p>
+    <p class="note" lang="en">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>
+` + findingsTableMn + `
+    <p lang="mn">${runs.map(r => esc(headlineMn(r))).join(' ')}</p>
+    <p class="note" lang="mn">Тоонууд нь 337 сум, дүүргийнх (ногоорлын хувьд 333: дөрвөн нутагт өвслөг газар хэт бага). Энд байгаа тоо бүр <a href="data/results.csv"><code>data/results.csv</code></a>-д байгаа бөгөөд сайт дээрх газрын зураг газар тус бүрээр нь харуулна.</p>`);
+  m = between(m, 'greening', greeningText.map(t => `    <p lang="en">${esc(t)}</p>`).join('\n') + '\n' + greeningTextMn.map(t => `    <p lang="mn">${esc(t)}</p>`).join('\n'));
+  const stationRows = lang => stations.map(s => `        <tr><td>${esc(lang === 'mn' ? STATION_MN[s.name] || s.name : s.name)}</td><td>${lang === 'mn' ? esc(`${nameMn(s.soumId) || s.soum}, ${Q.variables.AIMAG_MN[s.aimag] || s.aimag}`) : esc(`${s.soum}, ${s.aimag}`)}</td><td>${s.summer.first}–${s.summer.last}</td>`
+    + `<td class="num">${f2(s.summer.r)}</td><td class="num">${f1(s.summer.station.rate)} ${lang === 'mn' ? '°C/10 жил' : '°C/decade'}</td><td class="num">${f1(s.summer.model.rate)} ${lang === 'mn' ? '°C/10 жил' : '°C/decade'}</td>`
+    + `<td class="num">${f2(s.winter.r)}</td><td class="num">${f1(s.winter.bias)} °C</td></tr>`).join('\n');
+  m = between(m, 'stations', !stations ? '    <p>Not yet run: <code>python3 tools/stations.py</code>.</p>' : `    <p lang="en">A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
+    <p lang="mn">Газрын загвар нь термометрийн хэмжсэнтэй хэр таарч байгаагаараа л сайн. Бид FLDAS-ийг Монгол даяарх арван цаг уурын станцтай (NOAA GHCN-Daily) харьцуулсан: станц бүрийг өөрийн байрлах нутагтай, ижил улиралтай (улирал нь дор хаяж 80 өдрийн утгатай бол тооцно).</p>
+    <p lang="en">${esc(stationSummary)}</p>
+    <p lang="mn">${esc(stationSummaryMn)}</p>
+    <div class="table" lang="en"><table>
       <thead><tr><th>Station</th><th>Area</th><th>Years</th><th class="num">Summer correlation</th><th class="num">Summer trend, station</th><th class="num">Summer trend, FLDAS</th><th class="num">Winter correlation</th><th class="num">Winter difference, FLDAS − station</th></tr></thead>
       <tbody>
-${stations.map(s => `        <tr><td>${esc(s.name)}</td><td>${esc(s.soum)}, ${esc(s.aimag)}</td><td>${s.summer.first}–${s.summer.last}</td>`
-  + `<td class="num">${f2(s.summer.r)}</td><td class="num">${f1(s.summer.station.rate)} °C/decade</td><td class="num">${f1(s.summer.model.rate)} °C/decade</td>`
-  + `<td class="num">${f2(s.winter.r)}</td><td class="num">${f1(s.winter.bias)} °C</td></tr>`).join('\n')}
+${stationRows('en')}
       </tbody>
     </table></div>
-    <p class="note">Correlation of the yearly values (1 = they rise and fall together). Trend: Sen's slope over the same years. The station data are in <a href="data/stations.csv"><code>data/stations.csv</code></a> (built by <code>tools/stations.py</code>).</p>`);
+    <div class="table" lang="mn"><table>
+      <thead><tr><th>Станц</th><th>Нутаг</th><th>Он</th><th class="num">Зуны хамаарал</th><th class="num">Зуны хандлага, станц</th><th class="num">Зуны хандлага, FLDAS</th><th class="num">Өвлийн хамаарал</th><th class="num">Өвлийн зөрүү, FLDAS − станц</th></tr></thead>
+      <tbody>
+${stationRows('mn')}
+      </tbody>
+    </table></div>
+    <p class="note" lang="en">Correlation of the yearly values (1 = they rise and fall together). Trend: Sen's slope over the same years. The station data are in <a href="data/stations.csv"><code>data/stations.csv</code></a> (built by <code>tools/stations.py</code>).</p>
+    <p class="note" lang="mn">Жилийн утгуудын хамаарал (1 = хамт өсч буурдаг). Хандлага: ижил жилүүд дэх Сений налуу. Станцын өгөгдөл <a href="data/stations.csv"><code>data/stations.csv</code></a>-д байгаа (<code>tools/stations.py</code>-аар бүтээсэн).</p>`);
   write('methods.html', m);
 
   // ---------- index.html: English text in the HTML, and the summary for readers without JavaScript ----------
@@ -239,7 +292,7 @@ ${stations.map(s => `        <tr><td>${esc(s.name)}</td><td>${esc(s.soum)}, ${es
   h = h.replace(/(<(\w+)\b[^>]*\bdata-i18n="(\w+)"[^>]*>)([^<]*)(<\/\2>)/g, (all, open, tag, key, inner, close) =>
     (typeof EN[key] === 'string' ? `${open}${esc(EN[key])}${close}` : all));
   h = between(h, 'summary', `      <h2 id="about-title">Quindecim in brief</h2>
-      <p>Quindecim is a bilingual (English and Mongolian) web tool that answers one question for each of Mongolia's 337 soums and districts: is the climate really changing there, or is it just a few unusual years? It turns 25 to 45 years of NASA data into five questions and gives every place an honest verdict in one plain sentence. Built by Team Quindecim, Ulaanbaatar, for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective".</p>
+      <p>Quindecim is a bilingual (English and Mongolian) web tool that answers one question for each of Mongolia's 337 soums and districts: is the climate really changing there, or is it just a few unusual years? It turns 26 to 46 years of NASA data into five questions and gives every place an honest verdict in one plain sentence. Built by Team Quindecim, Ulaanbaatar, for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective".</p>
       <h3>What it found</h3>
       <ul>
 ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
@@ -259,7 +312,7 @@ ${runs.map(({ v, lo, hi }) => `        <li>${esc(v.name.en)}: ${esc(LINKS[v.id][
       </ul>
       <h3>Features</h3>
       <ul>
-        <li>A map of the 22 aimags shaded by the direction and size of their trend; tap an aimag to see its soums, tap a soum for its chart and tests.</li>
+        <li>A map of the 21 aimags and Ulaanbaatar shaded by the direction and size of their trend; tap an aimag to see its soums, tap a soum for its chart and tests.</li>
         <li>A summary of the whole country, with the largest real changes.</li>
         <li>Share any result as a link or as an image for Facebook and Messenger; download the numbers as CSV.</li>
         <li>Works on phones and slow connections; the page is usable before the data has arrived.</li>
@@ -282,7 +335,7 @@ ${GLOSSARY.map(g => `        <dt>${esc(g.en[0])}</dt><dd>${esc(g.en[1])}</dd>`).
   // ---------- llms.txt ----------
   write('llms.txt', `# Quindecim: is the climate in your soum really changing?
 
-> A bilingual (English and Mongolian) web tool that tests whether climate and vegetation are really changing in each of Mongolia's 337 soums and districts, using 25 to 45 years of NASA data. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Live: ${SITE}
+> A bilingual (English and Mongolian) web tool that tests whether climate and vegetation are really changing in each of Mongolia's 337 soums and districts, using 26 to 46 years of NASA data. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Live: ${SITE}
 
 ## What it found (each area's full record, after the check for chance across all areas)
 

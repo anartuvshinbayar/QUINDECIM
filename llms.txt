@@ -1,6 +1,6 @@
 # Quindecim: is the climate in your soum really changing?
 
-> A bilingual (English and Mongolian) web tool that tests whether climate and vegetation are really changing in each of Mongolia's 337 soums and districts, using 25 to 45 years of NASA data. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Live: https://quindecim-theta.vercel.app/
+> A bilingual (English and Mongolian) web tool that tests whether climate and vegetation are really changing in each of Mongolia's 337 soums and districts, using 26 to 46 years of NASA data. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Live: https://quindecim-theta.vercel.app/
 
 ## What it found (each area's full record, after the check for chance across all areas)
 
@@ -17,7 +17,7 @@
 - First autumn frost: 0 later, 0 earlier (real trends of 337 areas, 1981–2026); 56 possible, 281 not proven.
 
 - Greenness rises and falls with rain: the yearly correlation between them is positive in 332 of 333 soums (median 0.52), so the greenness record behaves as it should.
-- Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +44%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.
+- Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +64%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.
 - So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.
 - Results depend on the period. Over 2001–2026 alone, 0 soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.
 - Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from 293 distinct NASA POWER cells for 337 soums: soums in the same cell share one series.
@@ -30,7 +30,7 @@
 - Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.
 - Every result is also given as one plain sentence, for example: "Summers in this soum have warmed about 1.8 °C since 1982. This is very unlikely to be chance."
 - The statistics agree with SciPy and an independent Python version to within 0.0000001.
-- Checked against ten weather stations (NOAA GHCN-Daily). Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.93) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.2 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's "not proven" for winters.
+- Checked against ten weather stations (NOAA GHCN-Daily). Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.92) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.0 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's "not proven" for winters.
 
 ## Data
 
