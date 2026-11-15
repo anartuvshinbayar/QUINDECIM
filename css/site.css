@@ -196,12 +196,10 @@ main > .tool { z-index: 5; }
 /* The stage: the map fills it; the result panel slides in from the right.
    It is the glass panel that rises over the blurred logo (js/motion.js): a see-through milk fill, backdrop blur,
    a 1px light border, a soft shadow and round corners. Every piece of chrome on it is the same glass. */
-.stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .62); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
+.stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .86); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
   position: relative; height: clamp(440px, calc(100svh - 86px - var(--extras-room, 64px)), 1000px); overflow: hidden;
   border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
   box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
-.stage-bar, .map-legend, .map-back, .result-panel { -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
 /* Once the panel has settled, nothing behind the glass moves relative to it, so its blur is baked into the logo instead
    (js/motion.js: CALM): the map can zoom without the page being blurred again on every frame. It looks the same. */
 .stage.is-calm, .stage.is-calm .stage-bar, .stage.is-calm .map-legend, .stage.is-calm .map-back, .stage.is-calm .result-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -257,7 +255,7 @@ main > .tool { z-index: 5; }
 .ring-hover { stroke-width: 2; }
 .ring-selected { stroke-width: 3; }
 .layer-labels { pointer-events: none; transition: opacity .4s; }
-.aimag-label.is-tiny, .aimag-label.is-cramped, .soum-label.is-hidden { display: none; }
+.aimag-label.is-tiny, .aimag-label.is-cramped, .soum-label.is-hidden, .aimag-label.is-clash, .soum-label.is-clash { display: none; }
 .soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; }
 .aimag-label { fill: var(--ink); font-family: var(--font); font-weight: 600; paint-order: stroke; stroke: rgba(251, 248, 242, .85); stroke-width: .25em; stroke-linejoin: round; }
 .stage.is-zoomed .layer-labels { opacity: 0; visibility: hidden; transition: opacity .4s, visibility 0s .4s; }
@@ -467,7 +465,7 @@ main > .tool { z-index: 5; }
 .short { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)) 0; scroll-margin-top: 70px; }
 .short-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
 .short-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
-.short-card { padding: clamp(16px, 2vw, 24px); border: 1px solid var(--line); border-radius: 12px; background: #FBF8F2; }
+.short-card { padding: clamp(16px, 2vw, 24px); border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
 .short-card h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--ink); }
 .short-card p { margin: 0; font-size: .95rem; line-height: 1.55; }
 .short-more { margin: 14px 0 0; font-weight: 600; }
@@ -478,7 +476,7 @@ main > .tool { z-index: 5; }
 /* Compact cards, all the same size, so the whole glossary fits on one screen: a coloured block with the number and a
    figure, then the term (up to two lines) and the start of its meaning. On phones only the term. */
 .glossary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.gcard { display: grid; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #FBF8F2; text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.gcard { display: grid; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--glass-edge); border-radius: 22px; overflow: hidden; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
 .gcard:hover { border-color: var(--c); }
 .gcard:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .gcard-top { position: relative; display: block; background: var(--c); color: #fff; overflow: hidden; }
@@ -491,7 +489,7 @@ main > .tool { z-index: 5; }
 .gcard-text { font-size: .78rem; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 760px) {
   .glossary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .gcard { grid-template-columns: 24px minmax(0, 1fr); height: 54px; border-radius: 12px; }
+  .gcard { grid-template-columns: 24px minmax(0, 1fr); height: 54px; border-radius: 16px; box-shadow: none; }
   .gcard-top svg { display: none; }
   .gcard-n { left: 0; right: 0; bottom: auto; top: 50%; transform: translateY(-50%); text-align: center; font-size: .72rem; }
   .gcard-body { padding: 4px 6px 4px 8px; }
@@ -501,7 +499,7 @@ main > .tool { z-index: 5; }
 }
 .gcard.is-open { border-color: var(--c); box-shadow: 0 0 0 2px var(--c); }
 /* The open term: a compact strip under its row, meaning left, worked example right. */
-.term-detail { grid-column: 1 / -1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px 24px; align-items: start; padding: 14px 52px 14px 18px; border-left: 4px solid var(--c); border-radius: 14px; background: #FBF8F2; box-shadow: 0 10px 30px -22px rgba(21, 33, 59, .35); animation: term-in .25s var(--ease); }
+.term-detail { grid-column: 1 / -1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px 24px; align-items: start; padding: 14px 52px 14px 18px; border-left: 4px solid var(--c); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); animation: term-in .25s var(--ease); }
 @keyframes term-in { from { opacity: 0; transform: translateY(-6px); } }
 .term-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
 .term-text p { margin: 0; font-size: .95rem; line-height: 1.5; }

@@ -35,6 +35,7 @@ function labelPoint(polys) {   // polys: array of rings in world units [[x, y], 
   return { x: best[0], y: best[1], room: bestD };
 }
 
+let declutterCtx = null;
 function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabel, soumTitle }) {
   // Projection to "world units": equirectangular with x stretched by cos(mid latitude).
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -184,6 +185,25 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     if (zoomed) for (const id of DATA_IDS(current.aimag)) {
       const L = sLabels[id];
       L.el.classList.toggle('is-hidden', L.room * f.s < (wide ? 15 : 18));   // only where the name has room
+    }
+    // Names that would print on top of each other: the bigger place keeps its name, the other is hidden here (it still
+    // shows on hover). Measured where the names are drawn, on screen.
+    {
+      const zoomIds = zoomed ? DATA_IDS(current.aimag) : [];
+      const all = zoomed ? zoomIds.map(id => sLabels[id].el) : Object.values(labels);
+      all.forEach(el => el.classList.remove('is-clash'));
+      const shown = (zoomed ? zoomIds.map(id => ({ el: sLabels[id].el, room: sLabels[id].room, px: 10.5 }))
+        : Object.values(labels).map(el => ({ el, room: +el.dataset.room, px: 11.5 })))
+        .filter(s => !s.el.classList.contains('is-tiny') && !s.el.classList.contains('is-cramped') && !s.el.classList.contains('is-hidden'));
+      declutterCtx = declutterCtx || document.createElement('canvas').getContext('2d');
+      const family = getComputedStyle(gLabels).fontFamily, kept = [];
+      for (const s of shown.sort((a, b) => b.room - a.room)) {
+        declutterCtx.font = `600 ${s.px}px ${family}`;
+        const x = f.tx + +s.el.getAttribute('x') * f.s, y = f.ty + +s.el.getAttribute('y') * f.s;
+        const hw = declutterCtx.measureText(s.el.textContent).width / 2 + 3, hh = s.px * 0.62 + 2;
+        if (kept.some(k => Math.abs(k.x - x) < hw + k.hw && Math.abs(k.y - y) < hh + k.hh)) { s.el.classList.add('is-clash'); continue; }
+        kept.push({ x, y, hw, hh });
+      }
     }
     if (!animate) setTimeout(() => g.classList.remove("no-anim"), 50);
   }

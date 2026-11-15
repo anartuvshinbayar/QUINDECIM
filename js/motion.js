@@ -36,14 +36,14 @@ const POOL = {
   twinPink: F('#EDD3C6', 'twin', '#B9431C'), sunGrey: F('#D7DAE0', 'sun', '#3A68BD'), cloudSage: F('#D2DBCF', 'cloud', '#2E7A57'),
   windClay: F('#B9431C', 'wind', CREAM), swirlBlue: F('#3A68BD', 'swirl', CREAM), aaruulSage: F('#D2DBCF', 'aaruul', '#2E7A57'),
   sunPink: F('#EDD3C6', 'sun', '#B9431C'), aaruulInk: F('#15213B', 'aaruul', CREAM), windSage: F('#D2DBCF', 'wind', '#2E7A57'),
-  crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'), ring: T('seal-hammer'),
+  crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'),
   meander: T('alkhan-square'), keyband: T('alkhan-band'),
   blue: S('#3A68BD'), ink: S('#15213B'), green: S('#2E7A57'), clay: S('#B9431C'), sage: S('#D2DBCF'), grey: S('#D7DAE0'), pink: S('#EDD3C6'),
 };
 // 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
 const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
 const LAYOUT = `
-  crest     twinPink quarter    _       seal    sunGrey ring   keyband   _     horns    quarter
+  crest     twinPink quarter    _       seal    sunGrey _      keyband   _     horns    quarter
   cloudSage meander  _          windClay quarter L      green  swirlBlue seal  _        grey
   _         blue     aaruulSage meander sunPink green   _      aaruulInk clay  windSage crest`.trim().split(/\s+/).map(k => (k === '_' ? null : k));
 let gridCols = COLS;
@@ -100,7 +100,7 @@ function startTiles() {
 // so the grid always returns to its designed layout. The logo slot (L) is never entered.
 // Timing: a slide takes 0.5s (ease-in-out), then 0.2s of rest; while the page scrolls, steps come faster.
 // It runs only while the tiles are on screen and the tab is visible.
-const SLIDE = { ms: 500, hold: 200, fastMs: 340, fastHold: 40, forward: 3, upDown: 5, run: 2, scrollMs: 250, introMs: 1600 };
+const SLIDE = { ms: 900, hold: 2600, fastMs: 600, fastHold: 400, forward: 3, upDown: 5, run: 2, perStep: 1, scrollMs: 250, introMs: 1600 };
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 let slides = null, slideSeen = true, lastScroll = -1e9;
 function startSlides(grid) {
@@ -163,6 +163,7 @@ function planSlides(s) {
   for (let i = holes.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [holes[i], holes[j]] = [holes[j], holes[i]]; }
   const used = new Set(), moves = [];
   for (const [c, r] of holes) {
+    if (moves.length >= SLIDE.perStep) break;   // one slide per step: the grid stays calm
     // A neighbour that can slide into this hole; [dx, dy] points from the hole to it.
     const options = DIRS.filter(([dx, dy]) => {
       const n = at.get(key(c + dx, r + dy));
@@ -221,10 +222,10 @@ function initTraveler() {
   // It rises faster than the page scrolls (RISE: half a screen of scrolling for a whole screen of rise), so the reveal
   // is short; it is held lower by a transform that shrinks to nothing at the resting place. Meanwhile the logo stays
   // pinned behind it, blurring and dimming. All of it follows the scroll position.
-  const HOLD = 0.12, RISE = 0.5, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
+  const HOLD = 0.12, RISE = 0.5, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
   // Settled, the glass (css .stage: blur 14px, saturate 1.15) stops blurring the page; the logo carries that blur itself.
   // Two blurs add up as sqrt(16^2 + 14^2) = 21.3px, so it looks the same.
-  const CALM = 'blur(21.3px) saturate(1.15)';
+  const CALM = 'url(#q-grain)';
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
@@ -250,7 +251,7 @@ function initTraveler() {
   function reveal(p) {
     const on = p > 0;
     if (on || veiled) {
-      disc.style.filter = !on ? '' : p >= 1 ? CALM : `blur(${(BLUR * smooth(p)).toFixed(2)}px)`;
+      disc.style.filter = !on ? '' : CALM;   // grain, not blur: the logo stays crisp behind the glass
       disc.style.opacity = on ? (1 - (1 - DIM) * smooth(p)).toFixed(3) : '';
     }
     t.classList.toggle('is-veiled', on);   // no CSS transition on filter/opacity while they follow the scroll
@@ -308,7 +309,7 @@ function initTraveler() {
   // Glide: a quick, smooth scroll to y. Wheel or trackpad movement in the same direction is held back during the
   // glide and until the flick has died out, so it cannot push past the resting place; movement the other way, a key,
   // or a new touch takes over. A glide asked for while a finger is still on the screen starts when it lifts.
-  let gliding = false, glideDir = 0, hold = false, holdT = 0, holdUntil = 0, touching = false, pending = null;
+  let gliding = false, glideDir = 0, hold = false, holdT = 0, holdUntil = 0, touching = false, pending = null, heldPx = 0;
   // Hold for at least ms more (a catch at the tool asks for longer than the end of a glide).
   const settle = (ms = 180) => {
     holdUntil = Math.max(holdUntil, performance.now() + ms);
@@ -337,7 +338,7 @@ function initTraveler() {
   function catchAt(y, dir) {
     if (touching) { pending = y; return; }   // a finger is still on the screen: settle there once it lifts
     scrollTo({ top: y, behavior: 'instant' });
-    gliding = false; hold = true; glideDir = dir; settle(CATCH_MS);
+    gliding = false; hold = true; glideDir = dir; heldPx = 0; settle(CATCH_MS);
   }
   function glide(y) {
     if (touching) { pending = y; return; }
@@ -345,7 +346,7 @@ function initTraveler() {
     const from = scrollY, dist = y - from;
     if (Math.abs(dist) < 2) return;
     const start = performance.now(), ms = Math.min(700, 320 + Math.abs(dist) * 0.2);
-    gliding = hold = true; glideDir = Math.sign(dist);
+    gliding = hold = true; glideDir = Math.sign(dist); heldPx = 0;
     const step = now => {
       if (!gliding) return;
       const p = Math.min(1, (now - start) / ms);
@@ -356,13 +357,18 @@ function initTraveler() {
   }
   addEventListener('wheel', e => {
     userScroll = true;
-    if (!gliding && !hold && wide.matches && !reduced && Math.abs(scrollY - toolRest()) < 2 && !scrollsInside(e.target, e.deltaY)) {
+    // Only going down is held at the tool (so the map stays put while the page moves on); going up is never held here.
+    if (e.deltaY > 0 && !gliding && !hold && wide.matches && !reduced && Math.abs(scrollY - toolRest()) < 2 && !scrollsInside(e.target, e.deltaY)) {
       stuck += Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
       clearTimeout(stuckT); stuckT = setTimeout(() => { stuck = 0; }, 450);   // a pause starts the count again
       if (stuck < STICK) { e.preventDefault(); return; }
     }
     if (!gliding && !hold) return;
     if (Math.sign(e.deltaY) !== glideDir) { takeOver(); return; }
+    // The wheel is held back for at most 200px of scrolling, then it goes on as usual. (Renewing the hold on every tick
+    // kept a long scroll up blocked for as long as the wheel turned.)
+    heldPx += Math.abs(e.deltaY);
+    if (heldPx > 200) { takeOver(); return; }
     e.preventDefault();
     if (!gliding) settle();
   }, { passive: false });
@@ -466,7 +472,7 @@ function startRotator(words, before, after, colors = []) {
       fit();
       later(() => word.classList.remove('is-entering'));
     }, 450);
-  }, 2400);
+  }, 5000);
 }
 
 // ---------- split headings into words ----------
