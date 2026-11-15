@@ -213,9 +213,24 @@ function initTraveler() {
   // Glide: a quick, smooth scroll to y. Wheel or trackpad movement in the same direction is held back during the
   // glide and until the flick has died out, so it cannot push past the resting place; movement the other way, a key,
   // or a new touch takes over. A glide asked for while a finger is still on the screen starts when it lifts.
-  let gliding = false, glideDir = 0, hold = false, holdT = 0, touching = false, pending = null;
-  const settle = () => { clearTimeout(holdT); holdT = setTimeout(() => { hold = false; }, 180); };
-  const takeOver = () => { gliding = false; hold = false; };
+  let gliding = false, glideDir = 0, hold = false, holdT = 0, holdUntil = 0, touching = false, pending = null;
+  // Hold for at least ms more (a catch at the tool asks for longer than the end of a glide).
+  const settle = (ms = 180) => {
+    holdUntil = Math.max(holdUntil, performance.now() + ms);
+    clearTimeout(holdT); holdT = setTimeout(() => { hold = false; }, holdUntil - performance.now());
+  };
+  const takeOver = () => { gliding = false; hold = false; holdUntil = 0; };
+  // A scroll by wheel, trackpad or finger (not a link, a key or a glide): only those are caught at the tool.
+  let userScroll = false;
+  // The tool's resting place catches the scroll: a flick that would carry past it (down from the reveal, or up from the
+  // page below) stops there, with the questions, years and search in view, and the rest of that flick is held back.
+  // The next scroll goes on as usual.
+  const CATCH_MS = 650;
+  function catchAt(y, dir) {
+    if (touching) { pending = y; return; }   // a finger is still on the screen: settle there once it lifts
+    scrollTo({ top: y, behavior: 'instant' });
+    gliding = false; hold = true; glideDir = dir; settle(CATCH_MS);
+  }
   function glide(y) {
     if (touching) { pending = y; return; }
     if (reduced) { scrollTo({ top: y, behavior: 'instant' }); return; }
@@ -232,13 +247,15 @@ function initTraveler() {
     requestAnimationFrame(step);
   }
   addEventListener('wheel', e => {
+    userScroll = true;
     if (!gliding && !hold) return;
     if (Math.sign(e.deltaY) !== glideDir) { takeOver(); return; }
     e.preventDefault();
     if (!gliding) settle();
   }, { passive: false });
   addEventListener('touchstart', () => { touching = true; takeOver(); }, { passive: true });
-  const lift = () => { touching = false; if (pending != null) { const y = pending; pending = null; glide(y); } else { clearTimeout(idleT); idleT = setTimeout(settleGap, 160); } };
+  addEventListener('touchmove', () => { userScroll = true; }, { passive: true });
+  const lift = () => { touching = false; if (pending != null) { const y = pending; pending = null; glide(y); } else { clearTimeout(idleT); idleT = setTimeout(idle, 160); } };
   addEventListener('touchend', lift, { passive: true });
   addEventListener('touchcancel', lift, { passive: true });
   addEventListener('keydown', takeOver);
@@ -254,15 +271,25 @@ function initTraveler() {
     raf = shown === target ? 0 : requestAnimationFrame(tick);
   };
   // Two places to stop above the hold: the top (the hero) and the hold. The stretch between them always ends at one.
+  // The panel's rise never stops half-way either: going down it finishes (the tool in place), going up it goes back.
   let idleT = 0, lastDir = 1;
   function settleGap() {
-    if (gliding || touching || pending != null || reduced) return;
+    if (gliding || touching || pending != null) return;
     const y = scrollY, g = geo();
-    if (!g || y <= g.leave || y >= g.holdStart - 2) return;    // in the hero, or in the hold / reveal: fine to stop
+    if (!g) return;
+    if (!reduced && y > g.riseStart + 1 && y < g.riseEnd - 2) { glide(lastDir > 0 || g.riseEnd - y < 40 ? g.riseEnd : g.holdStart); return; }
+    if (reduced || y <= g.leave || y >= g.holdStart - 2) return;    // in the hero, or in the hold / reveal: fine to stop
     glide(g.holdStart - y < 40 || lastDir > 0 ? g.holdStart : 0);   // going down: the logo alone; else the top
   }
+  const idle = () => { userScroll = false; settleGap(); };   // scrolling has stopped
   const follow = () => {
-    const y = scrollY, g = geo();
+    let y = scrollY;
+    const g = geo();
+    // Passing the tool's resting place in one scroll (not a jump: a link or a reload moves further): stop there.
+    if (g && userScroll && !gliding && Math.abs(y - lastY) < innerHeight) {
+      const rest = g.riseEnd;
+      if ((lastY < rest - 1 && y > rest + 1) || (lastY > rest + 1 && y < rest - 1)) { catchAt(rest, Math.sign(y - lastY)); y = scrollY; }
+    }
     if (g && !reduced) {
       const up = y < lastY - 1, down = y > lastY;
       if (up) lastDir = -1; else if (down) lastDir = 1;
@@ -280,7 +307,7 @@ function initTraveler() {
     }
     lastY = y;
     target = y;
-    clearTimeout(idleT); idleT = setTimeout(settleGap, 160);   // scrolling stopped in the stretch: finish the move
+    clearTimeout(idleT); idleT = setTimeout(idle, 160);   // scrolling stopped in the stretch or the rise: finish the move
     if (!raf) raf = requestAnimationFrame(tick);
   };
 
