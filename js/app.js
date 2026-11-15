@@ -212,19 +212,34 @@ function extrasSet(l) {
   document.querySelectorAll('#result-extras [data-i18n]').forEach(el => { el.textContent = STRINGS[l][el.dataset.i18n]; });
   $('download').textContent = STRINGS[l][state.aimag ? 'download' : 'downloadAll'];
 }
-// Each button under the result as wide as its longer language, and the row as tall as its taller language, so a
-// language switch moves no button. Run again when the view changes (the download button's label differs).
+// The buttons under the result: each as wide as its longest label (both languages, the country and a place), and the
+// row as tall as its tallest version, so neither a language switch nor a new place moves a button. On wide screens the
+// map box leaves room for this row (css .stage: --extras-room), so the tool and its buttons fit on one screen.
 function holdExtras() {
-  const row = $('result-extras'), buttons = [...row.querySelectorAll(':scope > .button')];
+  const row = $('result-extras'), details = $('details-extra'), buttons = [...row.querySelectorAll(':scope > .button')];
+  const wasHidden = details.hidden;
+  const show = (l, place) => {   // the row as it is in language l, for the country or for a place
+    extrasSet(l);
+    $('download').textContent = STRINGS[l][place ? 'download' : 'downloadAll'];
+    details.hidden = !place;
+  };
+  const versions = LANGS.flatMap(l => [[l, false], [l, true]]);
   buttons.forEach(b => { b.style.minWidth = ''; });
   row.style.minHeight = '';
   const widths = buttons.map(() => 0);
-  for (const l of LANGS) { extrasSet(l); buttons.forEach((b, i) => { widths[i] = Math.max(widths[i], b.getBoundingClientRect().width); }); }
+  for (const [l, place] of versions) { show(l, place); buttons.forEach((b, i) => { widths[i] = Math.max(widths[i], b.getBoundingClientRect().width); }); }
   buttons.forEach((b, i) => { b.style.minWidth = Math.ceil(widths[i]) + 'px'; });
   let height = 0;
-  for (const l of LANGS) { extrasSet(l); height = Math.max(height, row.getBoundingClientRect().height); }
+  for (const [l, place] of versions) { show(l, place); height = Math.max(height, row.getBoundingClientRect().height); }
+  details.hidden = wasHidden;
   extrasSet(state.lang);
   row.style.minHeight = Math.ceil(height) + 'px';
+  if (!height) return;   // not shown yet (the data is still loading)
+  const room = Math.ceil(height) + 24 + 'px';   // the row, its 12px gap above, 12px below
+  if ($('tool').style.getPropertyValue('--extras-room') !== room) {
+    $('tool').style.setProperty('--extras-room', room);
+    if (map) map.layout(false);   // the map box changed height
+  }
 }
 // On phones the result card sits in the page flow: hold it at the height of its taller language, so a language switch
 // moves nothing below it. (On wide screens it is a fixed card beside the map.) It is drawn in both languages to measure.

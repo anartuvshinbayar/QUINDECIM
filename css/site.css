@@ -184,11 +184,14 @@ main > .tool { z-index: 5; }
    It is the glass panel that rises over the blurred logo (js/motion.js): a see-through milk fill, backdrop blur,
    a 1px light border, a soft shadow and round corners. Every piece of chrome on it is the same glass. */
 .stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .62); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
-  position: relative; height: clamp(460px, calc(100svh - 86px), 1000px); overflow: hidden;
+  position: relative; height: clamp(440px, calc(100svh - 86px - var(--extras-room, 64px)), 1000px); overflow: hidden;
   border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4);
   -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
   box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
 .stage-bar, .map-legend, .map-back, .result-panel { -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
+/* Once the panel has settled, nothing behind the glass moves relative to it, so its blur is baked into the logo instead
+   (js/motion.js: CALM): the map can zoom without the page being blurred again on every frame. It looks the same. */
+.stage.is-calm, .stage.is-calm .stage-bar, .stage.is-calm .map-legend, .stage.is-calm .map-back, .stage.is-calm .result-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }
 /* While the panel rises the map is still fading in and takes no clicks, so nothing can catch the scroll. */
 .map-svg { opacity: var(--map-in, 1); }
 .stage.is-rising .map-svg { pointer-events: none; }
@@ -226,12 +229,13 @@ main > .tool { z-index: 5; }
 .aimag, .soum { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; cursor: pointer; transition: fill .5s var(--ease), stroke .2s, opacity .6s var(--ease); }
 .aimag { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: 1.6; }   /* fill: set by js/map.js */
 .aimag:focus, .soum:focus, .map-svg:focus { outline: none; }   /* the keyboard focus style is the dark outline below */
-.aimag.is-away { opacity: 0; pointer-events: none; }
+/* Faded out, then hidden: shapes nobody sees are not painted on every frame of a zoom. */
+.aimag.is-away { opacity: 0; visibility: hidden; pointer-events: none; transition: fill .5s var(--ease), stroke .2s, opacity .6s var(--ease), visibility 0s .6s; }
 /* Under its soums, the open aimag takes the border colour, so the soft corners leave no coloured specks. */
 .aimag.is-open { pointer-events: none; fill: var(--milk); stroke: var(--milk); transition-delay: .45s; }
 /* Soums show only for the open aimag. Their fill is set by js/map.js. */
-.soum-group { opacity: 0; pointer-events: none; transition: opacity .5s var(--ease); }
-.soum-group.is-active { opacity: 1; pointer-events: auto; transition-delay: .45s; }
+.soum-group { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s var(--ease), visibility 0s .5s; }
+.soum-group.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .5s var(--ease) .45s, visibility 0s .45s; }
 .soum { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: 1; }
 .layer-rings { pointer-events: none; }
 /* Hover and selection outlines: separate lines above all shapes (js/map.js), so neighbours never cover half of them. */
@@ -243,7 +247,7 @@ main > .tool { z-index: 5; }
 .aimag-label.is-tiny, .aimag-label.is-cramped, .soum-label.is-hidden { display: none; }
 .soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; }
 .aimag-label { fill: var(--ink); font-family: var(--font); font-weight: 600; paint-order: stroke; stroke: rgba(251, 248, 242, .85); stroke-width: .25em; stroke-linejoin: round; }
-.stage.is-zoomed .layer-labels { opacity: 0; }
+.stage.is-zoomed .layer-labels { opacity: 0; visibility: hidden; transition: opacity .4s, visibility 0s .4s; }
 [data-verdict="real-up"] { --v: var(--verdict-real-up); }
 [data-verdict="possible-up"] { --v: var(--verdict-possible-up); }
 [data-verdict="not-proven"] { --v: var(--verdict-not-proven); }
@@ -399,6 +403,7 @@ main > .tool { z-index: 5; }
 .footer-logo img { height: 32px; width: auto; }
 .footer-inner p { margin: 0; font-size: .9rem; opacity: .9; }
 .footer-top { justify-self: start; margin-top: 16px; font-weight: 600; }
+.footer-license a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {

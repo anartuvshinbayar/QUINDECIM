@@ -132,6 +132,9 @@ function initTraveler() {
   // is short; it is held lower by a transform that shrinks to nothing at the resting place. Meanwhile the logo stays
   // pinned behind it, blurring and dimming. All of it follows the scroll position.
   const HOLD = 0.12, RISE = 0.5, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
+  // Settled, the glass (css .stage: blur 14px, saturate 1.15) stops blurring the page; the logo carries that blur itself.
+  // Two blurs add up as sqrt(16^2 + 14^2) = 21.3px, so it looks the same.
+  const CALM = 'blur(21.3px) saturate(1.15)';
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
@@ -157,7 +160,7 @@ function initTraveler() {
   function reveal(p) {
     const on = p > 0;
     if (on || veiled) {
-      disc.style.filter = on ? `blur(${(BLUR * smooth(p)).toFixed(2)}px)` : '';
+      disc.style.filter = !on ? '' : p >= 1 ? CALM : `blur(${(BLUR * smooth(p)).toFixed(2)}px)`;
       disc.style.opacity = on ? (1 - (1 - DIM) * smooth(p)).toFixed(3) : '';
     }
     t.classList.toggle('is-veiled', on);   // no CSS transition on filter/opacity while they follow the scroll
@@ -167,6 +170,7 @@ function initTraveler() {
     if (now === settled) return;
     settled = now;
     stage.classList.toggle('is-rising', !now);
+    stage.classList.toggle('is-calm', now);   // css: no live glass blur once settled
     if (now) dispatchEvent(new Event('q:panel-settled'));   // js/app.js re-fits the map
   }
 
@@ -187,6 +191,7 @@ function initTraveler() {
     const drop = reduced ? 0 : Math.max(0, g.riseEnd - s) * (1 / RISE - 1);
     stage.style.transform = drop > 0.5 ? `translate3d(0, ${drop.toFixed(1)}px, 0)` : '';
     if (reduced) {   // no reveal: the panel simply crossfades in once it is well into the screen
+      stage.classList.add('is-calm');   // the logo stays in its tile, so there is nothing behind the glass to blur
       stage.classList.toggle('is-faded', s < g.riseStart + g.vh * 0.2);
       return;
     }
@@ -225,7 +230,20 @@ function initTraveler() {
   // The tool's resting place catches the scroll: a flick that would carry past it (down from the reveal, or up from the
   // page below) stops there, with the questions, years and search in view, and the rest of that flick is held back.
   // The next scroll goes on as usual.
-  const CATCH_MS = 650;
+  const CATCH_MS = 1000;
+  // Wide screens, at the tool: small wheel or trackpad movements are taken up before the page moves on (STICK px in a
+  // row), so the map stays put unless the scroll is meant. Not on phones, where the result sits below the map and
+  // is read by scrolling; never inside something that scrolls itself (the result card, the image dialog).
+  const STICK = 260, wide = matchMedia('(min-width: 761px)');
+  let stuck = 0, stuckT = 0;
+  const scrollsInside = (el, dy) => {
+    for (; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+      const oy = getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1
+        && (dy > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0)) return true;
+    }
+    return false;
+  };
   function catchAt(y, dir) {
     if (touching) { pending = y; return; }   // a finger is still on the screen: settle there once it lifts
     scrollTo({ top: y, behavior: 'instant' });
@@ -248,6 +266,11 @@ function initTraveler() {
   }
   addEventListener('wheel', e => {
     userScroll = true;
+    if (!gliding && !hold && wide.matches && !reduced && Math.abs(scrollY - toolRest()) < 2 && !scrollsInside(e.target, e.deltaY)) {
+      stuck += Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+      clearTimeout(stuckT); stuckT = setTimeout(() => { stuck = 0; }, 450);   // a pause starts the count again
+      if (stuck < STICK) { e.preventDefault(); return; }
+    }
     if (!gliding && !hold) return;
     if (Math.sign(e.deltaY) !== glideDir) { takeOver(); return; }
     e.preventDefault();

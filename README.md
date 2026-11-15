@@ -13,7 +13,7 @@ the yearly data, the trend, and an honest verdict (**real trend**, **possible tr
 The small arrow goes back to all aimags. **Share as image** makes a picture of the result (a soum's or aimag's chart,
 or the country's map) in the language chosen on the site, for Facebook and Messenger.
 The site opens in English; MN in the header switches to Mongolian, and a shared link keeps the choice (`lang=mn`).
-Built for students and teachers in Mongolia, in Mongolian and English.
+Built for students and teachers in Mongolia, in Mongolian and English. Open source under the MIT License (`LICENSE`, linked in the footer).
 
 ## Run it
 
