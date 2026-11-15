@@ -79,8 +79,9 @@ html.js:has(> body.is-loading), .js body.is-loading { overflow: hidden; }
 .brand img { height: 36px; width: auto; }
 .main-nav { display: flex; gap: 28px; margin: 0 auto; font-weight: 500; }
 .main-nav a { text-decoration: none; position: relative; white-space: nowrap; }
-.main-nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 2px; background: var(--blue); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
-.main-nav a:hover::after { transform: scaleX(1); }
+/* Hover: an underline under the word itself (the link box is held at its longer language's width). */
+.main-nav a { text-decoration: underline 2px transparent; text-underline-offset: 6px; transition: text-decoration-color .25s var(--ease); }
+.main-nav a:hover, .main-nav a:focus-visible { text-decoration-color: var(--blue); }
 /* Loopsii-style: after scrolling, the header becomes a floating pill. */
 .site-header.is-scrolled { padding-top: 10px; }
 .site-header.is-scrolled .header-inner { min-height: 50px; padding: 0 8px 0 18px; border-radius: 999px; box-shadow: 0 6px 30px rgba(21, 33, 59, .12); max-width: 1080px; }
@@ -393,7 +394,10 @@ main > .tool { z-index: 5; }
 .too-short { margin: 24px 0; padding: 16px; border: 1.5px dashed var(--clay); color: var(--clay); font-weight: 600; }
 
 /* Extras sit at the bottom right, under the map and the result. */
-.result-extras { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 10px 14px; margin-top: 12px; animation: cell-in .5s .4s var(--ease) backwards; }
+.result-extras { margin-top: 12px; animation: cell-in .5s .4s var(--ease) backwards; }
+.extras-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 14px; }
+.extras-toggles, .extras-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.extras-actions { gap: 10px 14px; margin-left: auto; }
 .result-extras .button { padding: 8px 14px; font-size: .85rem; }
 .result-extras .button:disabled { opacity: .45; cursor: default; }
 /* A button with an icon on its left (Share). */
@@ -412,9 +416,12 @@ main > .tool { z-index: 5; }
 .card-hint { margin: 10px 0 12px; font-size: .85rem; color: var(--muted); }
 .card-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
 .card-actions .button { padding: 9px 16px; font-size: .88rem; cursor: pointer; }
-.extra { order: -1; }
-.extra summary { cursor: pointer; font-weight: 600; font-size: .88rem; color: var(--blue); padding: 8px 0; }
-.extra[open] { flex-basis: 100%; order: 2; border-top: 1px solid var(--line); }
+/* Toggles for the numbers and the limits: a small triangle that turns when open; the panel opens below the row. */
+.extra-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 8px 0; border: 0; background: none; font: inherit; font-weight: 600; font-size: .88rem; color: var(--blue); cursor: pointer; }
+.extra-toggle::before { content: ""; border: 5px solid transparent; border-left: 7px solid currentColor; border-right: 0; transition: transform .2s; }
+.extra-toggle[aria-expanded="true"]::before { transform: rotate(90deg); }
+.extra-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+.extra-panel { margin-top: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
 .stats-table { margin: 4px 0 8px; border-collapse: collapse; font-size: .82rem; }
 .stats-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 3px 14px 3px 0; vertical-align: top; }
 .limits-list { margin: 4px 0 8px; padding-left: 18px; font-size: .82rem; color: var(--muted); }
@@ -539,7 +546,8 @@ main > .tool { z-index: 5; }
   .map-back { position: relative; top: auto; left: 12px; margin: 8px 0 -46px; }
   .map-hint { position: relative; top: auto; left: auto; margin: 8px 12px 0; }
   .noscript { position: relative; inset: auto; margin: 12px; order: 3; }
-  .result-extras { flex-direction: column; align-items: stretch; }   /* one per row: nothing rewraps when the language changes */
+  .extras-bar, .extras-actions, .extras-toggles { flex-direction: column; align-items: stretch; }   /* one per row: nothing rewraps when the language changes */
+  .extras-actions { margin-left: 0; }
   .brand img { height: 30px; }
   /* Result on a phone: the verdict badge goes under the name when both do not fit, and the cells stack. */
   .result-head { flex-wrap: wrap; }

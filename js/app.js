@@ -278,7 +278,7 @@ function extrasSet(l) {
 // row as tall as its tallest version, so neither a language switch nor a new place moves a button. On wide screens the
 // map box leaves room for this row (css .stage: --extras-room), so the tool and its buttons fit on one screen.
 function holdExtras() {
-  const row = $('result-extras'), details = $('details-extra'), buttons = [...row.querySelectorAll(':scope > .button')];
+  const row = $('extras-bar'), details = $('details-extra'), buttons = [...row.querySelectorAll('.button, .extra-toggle')];
   const wasHidden = details.hidden;
   const show = (l, place) => {   // the row as it is in language l, for the country or for a place
     extrasSet(l);
@@ -559,6 +559,7 @@ function renderResult(v) {
   const badge = $('verdict-badge');
   $('nation-body').hidden = !country;
   $('details-extra').hidden = country;
+  $('extra-numbers').hidden = country || $('details-extra').getAttribute('aria-expanded') !== 'true';
   holdExtras();   // the download button's label differs between the country and a place
   $('share-image').disabled = !country && !r.ok;
   if (country) {
@@ -929,6 +930,13 @@ function wire() {
   addEventListener('keydown', e => {
     if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open) goOverview();
   });
+
+  // Toggles under the map: each opens its panel below the row.
+  [['details-extra', 'extra-numbers'], ['limits-toggle', 'extra-limits']].forEach(([b, p]) => $(b).addEventListener('click', () => {
+    const open = $(b).getAttribute('aria-expanded') !== 'true';
+    $(b).setAttribute('aria-expanded', open);
+    $(p).hidden = !open;
+  }));
 
   // Stories (trial).
   $('story-close').addEventListener('click', () => $('story-dialog').close());
