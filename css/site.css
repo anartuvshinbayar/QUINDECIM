@@ -74,7 +74,11 @@ html.js:has(> body.is-loading), .js body.is-loading { overflow: hidden; }
 @keyframes pop { to { transform: scale(1); } }
 
 /* ---------- header ---------- */
-.site-header { position: sticky; top: 0; z-index: 50; padding: 0 var(--gutter); transition: padding .4s var(--ease); }
+/* The header keeps its full height in the page flow (min-height) while it turns into the slimmer pill, so nothing
+   under it moves when it changes; before, the page slid up 16px and scroll anchoring fought it (jitter). Only the
+   pill itself takes clicks, not the empty strip under it. */
+.site-header { position: sticky; top: 0; z-index: 50; min-height: 76px; padding: 0 var(--gutter); transition: padding .4s var(--ease); pointer-events: none; }
+.header-inner { pointer-events: auto; }
 .header-inner { max-width: var(--wrap); margin: 0 auto; display: flex; align-items: center; gap: 24px; min-height: 76px; background: var(--milk); transition: min-height .4s var(--ease), padding .4s var(--ease), border-radius .4s var(--ease), box-shadow .4s var(--ease), max-width .4s var(--ease); }
 .brand img { height: 36px; width: auto; }
 .main-nav { display: flex; gap: 28px; margin: 0 auto; font-weight: 500; }
@@ -554,6 +558,7 @@ main > .tool { z-index: 5; }
   .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 84px); gap: 3svh; }
   .band { height: 24px; background-size: 40px 24px; animation-name: band-s; }
   .header-inner { min-height: 60px; }
+  .site-header { min-height: 60px; }
   .hero-copy { grid-template-columns: 1fr; padding: 0 6px; }
   .hero-title { font-size: clamp(2rem, min(12.5vw, 7.5svh), 3.6rem); }
   .hero-side { justify-items: start; text-align: left; }
