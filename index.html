@@ -25,9 +25,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611150352">
+  <link rel="stylesheet" href="css/site.css?v=202611151033">
   <!-- The data (0.84 MB, about 250 KB compressed) loads in parallel and never holds up the page: js/data.js waits for it. -->
-  <script id="data-js" src="data/data.js?v=202611150352" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
+  <script id="data-js" src="data/data.js?v=202611151033" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -165,13 +165,18 @@
         </button>
         <p id="tool-loading" class="tool-loading" role="status"><span data-i18n="loading"></span></p>
         <p id="map-hint" class="map-hint" data-i18n="mapHintAimag"></p>
-        <div id="map-legend" class="map-legend">
-          <ul>
-            <li><span class="swatch" data-verdict="real-up"></span><span id="legend-real-up"></span></li>
-            <li><span class="swatch" data-verdict="possible-up"></span><span id="legend-possible-up"></span></li>
-            <li><span class="swatch" data-verdict="not-proven"></span><span id="legend-not-proven"></span></li>
-            <li><span class="swatch" data-verdict="possible-down"></span><span id="legend-possible-down"></span></li>
-            <li><span class="swatch" data-verdict="real-down"></span><span id="legend-real-down"></span></li>
+        <!-- Map key: the colour depth is the size of the change, filled / striped / pale is how sure it is. -->
+        <div id="map-legend" class="map-legend" hidden>
+          <p id="legend-title" class="legend-title"></p>
+          <div class="legend-scale" aria-hidden="true">
+            <div id="legend-ramp" class="legend-ramp"></div>
+            <div id="legend-ticks" class="legend-ticks"></div>
+          </div>
+          <p class="legend-ends"><span id="legend-down"></span><span id="legend-up"></span></p>
+          <ul class="legend-sure">
+            <li><span class="swatch" id="swatch-real"></span><span id="legend-real"></span></li>
+            <li><span class="swatch" id="swatch-possible"></span><span id="legend-possible"></span></li>
+            <li><span class="swatch" id="swatch-not-proven"></span><span id="legend-not-proven"></span></li>
           </ul>
         </div>
 
@@ -199,11 +204,22 @@
             <p id="source-line" class="source-line"></p>
             <p id="disagree-note" class="note" data-i18n="disagree" hidden></p>
           </div>
+          <!-- Before a place is picked: the whole country for the chosen question and years. -->
+          <div id="nation-body" class="nation-body" hidden>
+            <p id="nation-sub" class="nation-sub"></p>
+            <p id="nation-line" class="plain-line"></p>
+            <div id="nation-bar" class="nation-bar" aria-hidden="true"></div>
+            <ul id="nation-counts" class="nation-counts"></ul>
+            <h4 id="nation-top-title" class="nation-top-title" data-i18n="nationTop"></h4>
+            <ol id="nation-top" class="nation-top"></ol>
+            <p id="nation-note" class="note"></p>
+            <p id="nation-source" class="source-line"></p>
+          </div>
         </aside>
       </div>
 
       <div id="result-extras" class="result-extras" hidden>
-        <details class="extra">
+        <details id="details-extra" class="extra">
           <summary data-i18n="details"></summary>
           <table class="stats-table"><tbody id="stats-rows"></tbody></table>
         </details>
@@ -211,9 +227,30 @@
           <summary data-i18n="limitsTitle"></summary>
           <ul id="limits-list" class="limits-list"></ul>
         </details>
+        <button id="share-image" type="button" class="button button-primary" data-i18n="shareImage"></button>
         <button id="download" type="button" class="button button-outline" data-i18n="download"></button>
         <button id="share" type="button" class="button button-outline" data-i18n="share"></button>
       </div>
+
+      <!-- Share as image: a picture of the result for Facebook or Messenger (js/share.js draws it). -->
+      <dialog id="card-dialog" class="card-dialog" aria-labelledby="card-title">
+        <div class="card-head">
+          <h3 id="card-title" data-i18n="cardTitle"></h3>
+          <button id="card-close" type="button" class="card-close"><span class="visually-hidden" data-i18n="cardClose"></span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+        </div>
+        <img id="card-img" class="card-img" alt="">
+        <p class="card-hint" data-i18n="cardHint"></p>
+        <div class="card-actions">
+          <div class="card-lang" role="group" aria-labelledby="card-lang-label">
+            <span id="card-lang-label" class="visually-hidden" data-i18n="cardLang"></span>
+            <button type="button" class="card-lang-button" data-lang="mn">MN</button>
+            <button type="button" class="card-lang-button" data-lang="en">EN</button>
+          </div>
+          <a id="card-save" class="button button-outline" data-i18n="cardSave"></a>
+          <button id="card-share" type="button" class="button button-primary" data-i18n="cardShare" hidden></button>
+        </div>
+      </dialog>
     </section>
 
     <section id="glossary" class="glossary" aria-labelledby="h-glossary">
@@ -236,13 +273,14 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><div class="travel-disc"><img src="assets/brand/quindecim-mark.svg" alt=""></div></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="js/stats.js?v=202611150352"></script>
-  <script src="js/variables.js?v=202611150352"></script>
-  <script src="js/i18n.js?v=202611150352"></script>
-  <script src="js/data.js?v=202611150352"></script>
-  <script src="js/map.js?v=202611150352"></script>
-  <script src="js/chart.js?v=202611150352"></script>
-  <script src="js/motion.js?v=202611150352"></script>
-  <script src="js/app.js?v=202611150352"></script>
+  <script src="js/stats.js?v=202611151033"></script>
+  <script src="js/variables.js?v=202611151033"></script>
+  <script src="js/i18n.js?v=202611151033"></script>
+  <script src="js/data.js?v=202611151033"></script>
+  <script src="js/map.js?v=202611151033"></script>
+  <script src="js/chart.js?v=202611151033"></script>
+  <script src="js/motion.js?v=202611151033"></script>
+  <script src="js/share.js?v=202611151033"></script>
+  <script src="js/app.js?v=202611151033"></script>
 </body>
 </html>

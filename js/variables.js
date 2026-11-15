@@ -4,6 +4,8 @@
 // display: 'percent' shows the rate as % of the period average per decade; 'absolute' shows units per decade.
 // level: 'soum' = genuinely soum-level data; 'regional' = coarse model cells shared by nearby soums.
 // newest: what the newest year covers (always a complete season). plain: the one-sentence result (js/app.js).
+// steps: the map's three shades of change along the trend line over the chosen years (in % for percent questions, else
+// in units): up to steps[0], up to steps[1], more. nation: the sentence for all of Mongolia ({n} of {total} soums).
 const VARIABLES = [
   {
     id: 'ndvi_summer', display: 'percent', unit: 'NDVI', decimals: 3,
@@ -20,6 +22,12 @@ const VARIABLES = [
       down: { en: 'Summer greenness in {place} has fallen about {x}% since {first}.', mn: '{place} зуны ногоорол {first} оноос хойш ойролцоогоор {x} хувиар буурсан.' },
       same: { en: 'Summer greenness in {place} has barely changed since {first}.', mn: '{place} зуны ногоорол {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    steps: [15, 30],
+    nation: {
+      up: { en: 'In {n} of {total} soums, summer greenness has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны ногоорол {first} оноос хойш бодитоор нэмэгдсэн.' },
+      down: { en: 'In {n} of {total} soums, summer greenness has really fallen since {first}.', mn: '{total} сумаас {n} суманд зуны ногоорол {first} оноос хойш бодитоор буурсан.' },
+      none: { en: 'No soum shows a real change in summer greenness since {first}.', mn: '{first} оноос хойш зуны ногоорол бодитоор өөрчлөгдсөн сум алга.' },
+    },
   },
   {
     id: 'rain_summer', display: 'percent', unit: 'mm', decimals: 0,
@@ -34,6 +42,12 @@ const VARIABLES = [
       up: { en: 'Summer rainfall in {place} has risen about {x}% since {first}.', mn: '{place} зуны хур тунадас {first} оноос хойш ойролцоогоор {x} хувиар нэмэгдсэн.' },
       down: { en: 'Summer rainfall in {place} has fallen about {x}% since {first}.', mn: '{place} зуны хур тунадас {first} оноос хойш ойролцоогоор {x} хувиар буурсан.' },
       same: { en: 'Summer rainfall in {place} has barely changed since {first}.', mn: '{place} зуны хур тунадас {first} оноос хойш бараг өөрчлөгдөөгүй.' },
+    },
+    steps: [20, 30],
+    nation: {
+      up: { en: 'In {n} of {total} soums, summer rainfall has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны хур тунадас {first} оноос хойш бодитоор нэмэгдсэн.' },
+      down: { en: 'In {n} of {total} soums, summer rainfall has really fallen since {first}.', mn: '{total} сумаас {n} суманд зуны хур тунадас {first} оноос хойш бодитоор буурсан.' },
+      none: { en: 'No soum shows a real change in summer rainfall since {first}.', mn: '{first} оноос хойш зуны хур тунадас бодитоор өөрчлөгдсөн сум алга.' },
     },
   },
   {
@@ -50,6 +64,12 @@ const VARIABLES = [
       down: { en: 'Summers in {place} have cooled about {x} °C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x} градусаар сэрүүссэн.' },
       same: { en: 'Summer temperatures in {place} have barely changed since {first}.', mn: '{place} зуны температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    steps: [1, 2],
+    nation: {
+      up: { en: 'In {n} of {total} soums, summers have really warmed since {first}.', mn: '{total} сумаас {n} суманд зун {first} оноос хойш бодитоор дулаарсан.' },
+      down: { en: 'In {n} of {total} soums, summers have really cooled since {first}.', mn: '{total} сумаас {n} суманд зун {first} оноос хойш бодитоор сэрүүссэн.' },
+      none: { en: 'No soum shows a real change in summer temperature since {first}.', mn: '{first} оноос хойш зуны температур бодитоор өөрчлөгдсөн сум алга.' },
+    },
   },
   {
     id: 'temp_winter', display: 'absolute', unit: '°C', decimals: 1,
@@ -65,6 +85,12 @@ const VARIABLES = [
       down: { en: 'Winters in {place} have become about {x} °C colder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x} градусаар хүйтэрсэн.' },
       same: { en: 'Winter temperatures in {place} have barely changed since {first}.', mn: '{place} өвлийн температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    steps: [0.5, 1],
+    nation: {
+      up: { en: 'In {n} of {total} soums, winters have really become milder since {first}.', mn: '{total} сумаас {n} суманд өвөл {first} оноос хойш бодитоор зөөлөрсөн.' },
+      down: { en: 'In {n} of {total} soums, winters have really become colder since {first}.', mn: '{total} сумаас {n} суманд өвөл {first} оноос хойш бодитоор хүйтэрсэн.' },
+      none: { en: 'No soum shows a real change in winter temperature since {first}.', mn: '{first} оноос хойш өвлийн температур бодитоор өөрчлөгдсөн сум алга.' },
+    },
   },
   {
     id: 'first_frost', display: 'absolute', unit: 'days', decimals: 0,
@@ -79,6 +105,12 @@ const VARIABLES = [
       up: { en: 'The first autumn frost in {place} now comes about {x} {days} later than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x} хоногоор хойшилсон.' },
       down: { en: 'The first autumn frost in {place} now comes about {x} {days} earlier than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x} хоногоор урагшилсан.' },
       same: { en: 'The first autumn frost in {place} still comes at about the same time as in {first}.', mn: '{place} намрын анхны хяруу орох хугацаа {first} оноос хойш бараг өөрчлөгдөөгүй.' },
+    },
+    steps: [7, 14],
+    nation: {
+      up: { en: 'In {n} of {total} soums, the first autumn frost has really moved later since {first}.', mn: '{total} сумаас {n} суманд намрын анхны хяруу {first} оноос хойш бодитоор хойшилсон.' },
+      down: { en: 'In {n} of {total} soums, the first autumn frost has really moved earlier since {first}.', mn: '{total} сумаас {n} суманд намрын анхны хяруу {first} оноос хойш бодитоор урагшилсан.' },
+      none: { en: 'No soum shows a real change in the date of the first autumn frost since {first}.', mn: '{first} оноос хойш намрын анхны хяруу орох хугацаа бодитоор өөрчлөгдсөн сум алга.' },
     },
     unitName: { en: 'days', mn: 'хоног' },
   },

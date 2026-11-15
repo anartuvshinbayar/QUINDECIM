@@ -2,10 +2,15 @@
 
 NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Team Quindecim, Ulaanbaatar.
 
-Scroll down: the logo drops straight down out of the tiles, grows and dissolves, and the map tool rises in. Pick one of the five questions above the map, then tap an aimag. The aimag zooms in, its soums appear, and the result slides in:
+Scroll down (about one screen): the logo drops out of the tiles into the middle, and the map tool rises over it.
+Pick one of the five questions above the map. The map shows every soum of Mongolia, coloured by the direction and
+size of its trend (filled = real trend, striped = possible, pale = not proven); beside it, the whole country in one
+sentence ("In 117 of 333 soums, summer greenness has really risen since 2001."), the count of each verdict and the
+largest real changes. Tap a soum: its aimag zooms in and the soum's result shows:
 one plain sentence ("Summer greenness in this soum has risen about 20% since 2001. This is very unlikely to be chance."),
 the yearly data, the trend, and an honest verdict (**real trend**, **possible trend** or **not proven**).
-Tap any soum for its own result; the small arrow goes back to all aimags.
+The small arrow goes back to the whole country. **Share as image** makes a picture of the result (a soum's chart, or
+the country's map) in Mongolian, for Facebook and Messenger.
 Built for students and teachers in Mongolia, in Mongolian and English.
 
 ## Run it
@@ -28,10 +33,11 @@ visitors' browsers load the new files instead of an old cached copy.
 | `index.html` | The page: hero (fits one screen), scroll room for the logo's trip, map tool, Words. Meta tags and structured data (JSON-LD) in the head |
 | `404.html` | Custom not-found page (GitHub Pages serves it automatically) |
 | `css/site.css` | All styles, from nyd's design. Palette and font are tokens at the top |
-| `js/motion.js` | Animation, in the style of loopsii.com: a one-second loader that never waits for the data, tile grow-in wave and reshuffle, the logo's scroll trip (straight down, grows, dissolves, the tool rises in), rotating headline with colour fades, pill header, scroll reveals. Respects reduced motion |
+| `js/motion.js` | Animation, in the style of loopsii.com: a one-second loader that never waits for the data, tile grow-in wave and reshuffle, the logo's short scroll trip (straight down, grows; the tool rises over it at twice the scroll speed), rotating headline with colour fades, pill header, scroll reveals. Respects reduced motion |
 | `js/stats.js` | Mann-Kendall with the Hamed & Rao correction, Sen's slope, linear fit with effective sample size, t-test, 95% CI and band, Benjamini-Hochberg false discovery rate. No DOM, testable in node |
-| `js/app.js` | State and flow (question, aimag, soum), nationwide check, plain-language sentence, question tabs, result panel, breadcrumb, URL sharing, CSV download, no-shift language switch |
-| `js/map.js` | Two-level SVG map: aimag overview, smooth zoom into one aimag and its soums, label placement |
+| `js/app.js` | State and flow (country, aimag, soum), nationwide check, map shades, country summary, plain-language sentence, question tabs, result panel, breadcrumb, URL sharing, CSV downloads (one place, or every soum), no-shift language switch |
+| `js/map.js` | SVG map: every soum shaded by its trend with aimag borders on top, stripes for possible trends, smooth zoom into one aimag, label placement |
+| `js/share.js` | Share as image: draws a 1080 x 1350 card (the place's sentence, verdict and chart, or the country's map and key) on a canvas, in Mongolian or English |
 | `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |
 | `js/i18n.js` | All text in Mongolian and English, plus the glossary |
@@ -103,6 +109,11 @@ Same rules for every series:
   also gets a **Benjamini-Hochberg false discovery rate** q value among all soums (or all aimags) for the same
   question and years. Verdict: **real** if q < 0.05, **possible** if p < 0.10 but not real, otherwise **not proven**.
   The map and the result panel use the same verdicts.
+- **Map shades.** Each soum's change along the trend line over the chosen years (the same number as its plain
+  sentence) falls in one of three steps per direction, set per question in `js/variables.js` (`steps`: greenness 15%
+  and 30%, rain 20% and 30%, summer temperature 1 and 2 °C, winter 0.5 and 1 °C, first frost 7 and 14 days).
+  Real trends are filled with their shade, possible ones striped with it, not proven ones pale: a big change that
+  could be chance is never shown as a strong colour.
 - **Sen's slope** gives the rate. Greenness and rain are shown as % of the period average per decade,
   temperature in °C per decade, frost in days per decade.
 - **Linear fit** gives a second opinion with a t-test p value and a 95% confidence interval, using the

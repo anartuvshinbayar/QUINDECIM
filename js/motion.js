@@ -126,10 +126,12 @@ function initTraveler() {
   // shorter once you scroll, so its current height is part of the sum.)
   const toolRest = () => Math.max(0, pageTop(stage) - (header ? header.offsetHeight : 0) - 12);
 
-  // The reveal after the trip: the logo holds alone (HOLD x screen height), then the glass map panel (the stage) rises
-  // over it with the page's own scroll, from its top at the bottom edge of the screen (riseStart) to its resting place
-  // (riseEnd). Meanwhile the logo stays pinned behind it, blurring and dimming. All of it follows the scroll position.
-  const HOLD = 0.4, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map itself fades in over the last 40% of the rise
+  // The reveal after the trip: the logo holds alone for a moment (at most HOLD x screen height), then the glass map panel
+  // (the stage) rises over it, from its top at the bottom edge of the screen (riseStart) to its resting place (riseEnd).
+  // It rises faster than the page scrolls (RISE: half a screen of scrolling for a whole screen of rise), so the reveal
+  // is short; it is held lower by a transform that shrinks to nothing at the resting place. Meanwhile the logo stays
+  // pinned behind it, blurring and dimming. All of it follows the scroll position.
+  const HOLD = 0.12, RISE = 0.5, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
@@ -137,7 +139,7 @@ function initTraveler() {
     const y0 = r.top + scrollY + r.height / 2, mid = vh / 2;
     const big = Math.min(vw * 0.46, vh * 0.46, 440);                  // its size once it is alone in the middle
     const leave = Math.max(vh * 0.25, 2 * (y0 - mid));                // leaves the grid at the page's speed, then holds at the middle
-    const riseStart = pageTop(stage) - vh, riseEnd = Math.max(riseStart + 1, toolRest());
+    const riseEnd = toolRest(), riseStart = Math.min(riseEnd - 1, riseEnd - RISE * (riseEnd - (pageTop(stage) - vh)));
     return { x: r.left + r.width / 2, y0, size0: r.width, vh, mid, big, leave, riseStart, riseEnd,
       holdStart: Math.max(leave, riseStart - vh * HOLD) };             // the logo is alone and full size from here on
   }
@@ -181,6 +183,9 @@ function initTraveler() {
       const size = g.size0 + (g.big - g.size0) * smooth(clamp((s - g.leave * 0.4) / (g.holdStart - g.leave * 0.4)));
       setLogo(g.x, y, size, g.big);
     }
+    // The panel's extra drop while it rises: at riseStart its top is at the bottom edge of the screen, at riseEnd none.
+    const drop = reduced ? 0 : Math.max(0, g.riseEnd - s) * (1 / RISE - 1);
+    stage.style.transform = drop > 0.5 ? `translate3d(0, ${drop.toFixed(1)}px, 0)` : '';
     if (reduced) {   // no reveal: the panel simply crossfades in once it is well into the screen
       stage.classList.toggle('is-faded', s < g.riseStart + g.vh * 0.2);
       return;
@@ -216,7 +221,7 @@ function initTraveler() {
     if (reduced) { scrollTo({ top: y, behavior: 'instant' }); return; }
     const from = scrollY, dist = y - from;
     if (Math.abs(dist) < 2) return;
-    const start = performance.now(), ms = Math.min(900, 380 + Math.abs(dist) * 0.25);
+    const start = performance.now(), ms = Math.min(700, 320 + Math.abs(dist) * 0.2);
     gliding = hold = true; glideDir = Math.sign(dist);
     const step = now => {
       if (!gliding) return;
@@ -244,7 +249,7 @@ function initTraveler() {
   let target = scrollY, shown = scrollY, raf = 0, lastY = scrollY;
   const tick = () => {
     const gap = target - shown;
-    shown = Math.abs(gap) < 0.5 || Math.abs(gap) > innerHeight * 1.5 ? target : shown + gap * 0.14;
+    shown = Math.abs(gap) < 0.5 || Math.abs(gap) > innerHeight * 1.5 ? target : shown + gap * 0.2;
     draw(shown);
     raf = shown === target ? 0 : requestAnimationFrame(tick);
   };

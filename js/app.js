@@ -10,7 +10,8 @@ const motion = Q.motion;
 
 const $ = id => document.getElementById(id);
 
-// Flow: overview of aimags -> click an aimag (zoom, result panel slides in, soums appear) -> click a soum.
+// Flow: the country (every soum on the map, the country's summary in the panel) -> tap a soum (zoom to its aimag, its
+// result in the panel). The aimag's own result is one step back (breadcrumb, search, or Tab + Enter on the overview).
 const DEFAULT_VAR = 'ndvi_summer';
 const state = { lang: 'mn', varId: DEFAULT_VAR, aimag: null, soumId: null, from: null, to: null };
 let DATA, map, lastResultKey = '';
@@ -18,8 +19,10 @@ let DATA, map, lastResultKey = '';
 const t = key => STRINGS[state.lang][key];
 const tf = (key, vars) => t(key).replace(/\{(\w+)\}/g, (_, k) => vars[k]);   // text with {placeholders}
 const tr = obj => obj[state.lang];
-const aimagName = a => (state.lang === 'mn' ? AIMAG_MN[a] || a : a);
-const soumName = s => (state.lang === 'mn' ? s.name_mn : s.name_en);
+const aimagNameL = (a, L) => (L === 'mn' ? AIMAG_MN[a] || a : a);
+const soumNameL = (s, L) => (L === 'mn' ? s.name_mn : s.name_en);
+const aimagName = a => aimagNameL(a, state.lang);
+const soumName = s => soumNameL(s, state.lang);
 const soumLabel = s => `${soumName(s)}, ${aimagName(s.aimag)}`;
 const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
 
@@ -97,6 +100,43 @@ function verdictKey(r) {
 }
 const resultFor = s => { const part = slice(s, state.from, state.to); return analyze(part.years, part.values); };
 
+// ---------- size of the change, and the map's shades ----------
+// The change along the trend line (Sen's slope) from the first year to the last: in % of the line's first-year value
+// for percent questions, else in units. NaN when a percent has no sensible base.
+function changeOf(v, r) {
+  const total = r.sen.slope * (r.last - r.first);
+  if (v.display !== 'percent') return total;
+  const start = r.sen.intercept + r.sen.slope * r.first;
+  return start > 0 ? total / start * 100 : NaN;
+}
+// Map shade of a place: its direction and one of three steps of change (v.steps), or '' if the trend is not proven.
+function shadeOf(v, r) {
+  if (!r.ok || r.level === 'not-proven' || r.direction === 'flat') return '';
+  const c = Math.abs(changeOf(v, r));
+  return `${r.direction}-${!(c >= v.steps[0]) ? 1 : c < v.steps[1] ? 2 : 3}`;
+}
+// The three shades per direction: the question's colours (css: .tool[data-var]) mixed into milk. Real trends are filled
+// with their shade, possible ones striped with it (js/map.js), not proven ones pale.
+const MILK = '#F6F1E7', MIX = [0.4, 0.7, 1];
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, w) => '#' + rgb(a).map((x, i) => Math.round(x * w + rgb(b)[i] * (1 - w)).toString(16).padStart(2, '0')).join('');
+function palette() {
+  const cs = getComputedStyle($('tool'));
+  const col = (name, fallback) => { const c = cs.getPropertyValue(name).trim(); return /^#[0-9a-f]{6}$/i.test(c) ? c : fallback; };
+  const up = col('--up', '#3A68BD'), down = col('--down', '#B9431C');
+  return { up: MIX.map(m => mix(up, MILK, m)), down: MIX.map(m => mix(down, MILK, m)), notProven: '#EFE9DD', noData: '#DAD3C6',
+    upText: MILK, downText: col('--on-down', MILK), downDeep: col('--down-deep', down) };
+}
+// A change as text: "+21%", "−1.8 °C", "+9 days".
+function fmtChange(v, c, L) {
+  const sign = c > 0 ? '+' : c < 0 ? '−' : '';
+  const a = Math.abs(c);
+  if (v.display === 'percent') return `${sign}${a.toFixed(0)}%`;
+  if (v.id.startsWith('temp')) return `${sign}${a.toFixed(1)} °C`;
+  return `${sign}${a.toFixed(0)} ${v.unitName ? v.unitName[L] : v.unit}`;
+}
+const tick = x => (x > 0 ? '+' : x < 0 ? '−' : '') + String(Math.abs(x));
+
 // ---------- every place at once, with the nationwide check ----------
 // For the chosen question and years, every soum and every aimag is tested. With 337 soums, about 17 would pass
 // p < 0.05 by pure chance, so each place also gets a false discovery rate q value (Benjamini-Hochberg) among all soums
@@ -125,14 +165,9 @@ function nation() {
 // ---------- the result in plain words ----------
 // One sentence anyone can read: how much it changed along the trend line from the first year to the last, and whether
 // that could be chance. Percent questions compare with the trend line's value in the first year.
-function plainSentence(v, r, isSoum) {
-  const L = state.lang, place = STRINGS[L][isSoum ? 'plainSoum' : 'plainAimag'];
-  const total = r.sen.slope * (r.last - r.first);
-  let amount = NaN;
-  if (v.display === 'percent') {
-    const start = r.sen.intercept + r.sen.slope * r.first;
-    if (start > 0) amount = Math.abs(total / start * 100);
-  } else amount = Math.abs(total);
+function plainSentence(v, r, isSoum, L = state.lang) {
+  const place = STRINGS[L][isSoum ? 'plainSoum' : 'plainAimag'];
+  const amount = Math.abs(changeOf(v, r));
   // Whole numbers, or one decimal for temperatures and for anything under 1; "barely changed" if that still rounds to 0.
   const d = v.id.startsWith('temp') || amount < 1 ? 1 : 0;
   const shown = Number.isFinite(amount) ? amount.toFixed(d) : '';
@@ -141,7 +176,7 @@ function plainSentence(v, r, isSoum) {
   const text = v.plain[barely ? 'same' : r.direction][L].replace(/\{(\w+)\}/g, (_, k) => vars[k]);
   if (barely) return text;
   const chance = { real: 'plainReal', possible: 'plainPossible', 'not-proven': 'plainNotProven' }[r.level];
-  return `${text} ${t(chance)}`;
+  return `${text} ${STRINGS[L][chance]}`;
 }
 
 
@@ -149,10 +184,57 @@ function plainSentence(v, r, isSoum) {
 // Every piece of text that changes with the language gets room for its longer version (width for
 // buttons and labels, height for text that can wrap), so nothing moves when you press MN or EN.
 const LANGS = ['mn', 'en'];
-function legendTexts(l) {
+// Map key text in language l (the colours are set in paintLegend).
+function legendSet(l) {
   const v = byId[state.varId], S = STRINGS[l];
-  return { 'legend-real-up': `${S.real}: ${v.up[l]}`, 'legend-possible-up': `${S.possibleShort}: ${v.up[l]}`, 'legend-not-proven': S.notProven,
-    'legend-possible-down': `${S.possibleShort}: ${v.down[l]}`, 'legend-real-down': `${S.real}: ${v.down[l]}` };
+  const unit = v.display === 'percent' ? '%' : v.unitName ? v.unitName[l] : v.unit;
+  $('legend-title').textContent = S.legendTitle.replace('{a}', state.from).replace('{b}', state.to).replace('{unit}', unit);
+  $('legend-down').textContent = v.down[l];
+  $('legend-up').textContent = v.up[l];
+  $('legend-real').textContent = S.legReal;
+  $('legend-possible').textContent = S.legPossible;
+  $('legend-not-proven').textContent = S.legNotProven;
+}
+const stripeBg = c => `repeating-linear-gradient(135deg, ${c} 0 5px, rgba(246, 241, 231, .8) 5px 7.5px)`;
+function paintLegend(v, pal) {
+  const shades = [...pal.down.slice().reverse(), ...pal.up];
+  $('legend-ramp').replaceChildren(...shades.map(c => { const i = make('i'); i.style.background = c; return i; }));
+  const [a, b] = v.steps;
+  $('legend-ticks').replaceChildren(...[-b, -a, 0, a, b].map(x => make('span', { textContent: tick(x) })));
+  $('swatch-real').style.background = pal.up[1];
+  $('swatch-possible').style.background = stripeBg(pal.up[1]);
+  $('swatch-not-proven').style.background = pal.notProven;
+}
+// The buttons under the result (they wrap on phones): their text in language l. The download button names the whole
+// table on the country view.
+function extrasSet(l) {
+  document.querySelectorAll('#result-extras [data-i18n]').forEach(el => { el.textContent = STRINGS[l][el.dataset.i18n]; });
+  $('download').textContent = STRINGS[l][state.aimag ? 'download' : 'downloadAll'];
+}
+// Hold one box at the height of its taller language (for boxes whose text changes with the view, not only the language).
+function holdHeight(box, set) {
+  box.style.minHeight = '';
+  let max = 0;
+  for (const l of LANGS) { set(l); max = Math.max(max, box.getBoundingClientRect().height); }
+  set(state.lang);
+  box.style.minHeight = Math.ceil(max) + 'px';
+}
+// On phones the result card sits in the page flow: hold it at the height of its taller language, so a language switch
+// moves nothing below it. (On wide screens it is a fixed card beside the map.) It is drawn in both languages to measure.
+let heldFor = '';
+function holdPanel(force) {
+  const panel = $('result-panel'), v = byId[state.varId];
+  if (!DATA || panel.hidden) return;
+  if (getComputedStyle(panel).position === 'absolute') { panel.style.minHeight = ''; heldFor = ''; return; }
+  const key = [v.id, state.aimag, state.soumId, state.from, state.to, innerWidth].join('|');
+  if (key === heldFor && !force) return;
+  heldFor = key;
+  const keep = state.lang;
+  panel.style.minHeight = '';
+  let max = 0;
+  for (const l of LANGS) { state.lang = l; lastResultKey = ''; renderResult(v); max = Math.max(max, panel.getBoundingClientRect().height); }
+  state.lang = keep; lastResultKey = ''; renderResult(v);
+  panel.style.minHeight = Math.ceil(max) + 'px';
 }
 function lockSizes() {
   // Each item: the box to size, which dimension, and how to write its text in a given language.
@@ -170,9 +252,11 @@ function lockSizes() {
   GLOSSARY.forEach((_, i) => add($('glossary-def'), 'height', l => showDef(i, l)));
   add($('glossary-def'), 'height', () => showDef(glossaryIndex, state.lang));
   document.querySelectorAll('.hero-sub, #map-hint').forEach(el => add(el, 'height', i18nText(el)));
-  const legendSet = l => { for (const [id, text] of Object.entries(legendTexts(l))) $(id).textContent = text; };
   add($('map-legend'), 'width', legendSet);
   add($('map-legend'), 'height', legendSet);
+  // The country summary in the panel: as tall as its taller language (on phones it sits in the page flow).
+  add($('nation-body'), 'height', l => renderNation(byId[state.varId], l));
+  add($('result-extras'), 'height', extrasSet);
   document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
   // Widths first (they decide how text wraps), then heights. Each item ends back in the current language.
@@ -191,6 +275,7 @@ function lockSizes() {
       i.box.style[prop] = Math.ceil(max) + 'px';
     }
   }
+  holdPanel(true);
   // The hero title and other split headings rise word by word: split them again after measuring.
   motion.refresh();
 }
@@ -322,22 +407,22 @@ function render() {
     b.disabled = which === 'from' ? next < lo || next > state.to : next < state.from || next > hi;
   });
 
-  // Map colours: every aimag (average of its soums); soums only for the open aimag. Verdicts after the nationwide check.
-  const all = nation(), aimagVerdicts = {}, soumVerdicts = {};
-  for (const a of DATA.aimags) aimagVerdicts[a.name] = verdictKey(all.aimags[a.name]);
-  if (state.aimag) for (const id of DATA.aimagByName[state.aimag].soumIds) soumVerdicts[id] = verdictKey(all.soums[id]);
-  const panel = Boolean(state.aimag);
-  map.update({ aimag: state.aimag, soumId: state.soumId, panel, aimagVerdicts, soumVerdicts });
-  $('stage').classList.toggle('has-panel', panel);
+  // Map colours: every soum, by the direction and size of its trend, after the nationwide check (same verdicts as the panel).
   $('tool').dataset.var = v.id;   // the map, legend and badge take this question's colours (css: .tool[data-var])
+  const all = nation(), fills = {}, pal = palette();
+  for (const s of DATA.soums) { const r = all.soums[s.id]; fills[s.id] = { verdict: verdictKey(r), shade: shadeOf(v, r) }; }
+  map.update({ aimag: state.aimag, soumId: state.soumId, panel: true, fills, palette: pal });
+  $('stage').classList.add('has-panel');   // the panel is always there: the country, an aimag or a soum
   $('map-back').hidden = false;
+  $('map-legend').hidden = false;
   $('result-panel').hidden = false;
-  $('result-panel').inert = !panel;
-  $('result-extras').hidden = !panel;
+  $('result-extras').hidden = false;
 
-  for (const [id, text] of Object.entries(legendTexts(state.lang))) $(id).textContent = text;
+  legendSet(state.lang);
+  paintLegend(v, pal);
 
-  if (panel) renderResult(v);
+  renderResult(v);
+  holdPanel(false);
   if (!$('soum-search').matches(':focus')) {
     $('soum-search').value = state.soumId ? soumLabel(DATA.soumById[state.soumId]) : state.aimag ? aimagName(state.aimag) : '';
   }
@@ -345,25 +430,40 @@ function render() {
 }
 
 function renderResult(v) {
-  const soum = state.soumId && DATA.soumById[state.soumId];
-  const r = soum ? nation().soums[soum.id] : nation().aimags[state.aimag];
   const key = [v.id, state.aimag, state.soumId, state.from, state.to, state.lang].join('|');
   const changed = key !== lastResultKey;
   lastResultKey = key;
   if (!changed) return;
+  const country = !state.aimag;
+  const soum = state.soumId && DATA.soumById[state.soumId];
+  const r = country ? null : soum ? nation().soums[soum.id] : nation().aimags[state.aimag];
 
   // Breadcrumb: Mongolia › Aimag › Soum (earlier steps are buttons).
-  const crumbs = [[t('mapRegion'), goOverview], [aimagName(state.aimag), soum ? () => selectAimag(state.aimag) : null]];
+  const crumbs = [[t('mapRegion'), country ? null : goOverview]];
+  if (!country) crumbs.push([aimagName(state.aimag), soum ? () => selectAimag(state.aimag) : null]);
   if (soum) crumbs.push([soumName(soum), null]);
   $('breadcrumb').querySelector('ol').replaceChildren(...crumbs.map(([label, fn]) => {
     const li = make('li');
     li.append(fn ? Object.assign(make('button', { type: 'button', textContent: label }), { onclick: fn }) : label);
     return li;
   }));
-  $('result-title').textContent = soum ? soumName(soum) : aimagName(state.aimag);
+  $('result-title').textContent = country ? t('mapRegion') : soum ? soumName(soum) : aimagName(state.aimag);
+  $('breadcrumb').hidden = country;   // the country has nothing before it
+  const badge = $('verdict-badge');
+  $('nation-body').hidden = !country;
+  $('details-extra').hidden = country;
+  holdHeight($('result-extras'), extrasSet);   // the download button's label differs between the country and a place
+  $('share-image').disabled = !country && !r.ok;
+  if (country) {
+    badge.hidden = true;
+    $('too-short').hidden = true;
+    $('result-body').hidden = true;
+    renderNation(v, state.lang);
+    $('download').onclick = () => downloadAllCsv(v);
+    return;
+  }
 
   $('result-panel').dataset.dir = r.ok ? r.direction : '';   // trend line and rate in the direction's colour
-  const badge = $('verdict-badge');
   $('too-short').hidden = r.ok;
   $('result-body').hidden = !r.ok;
   if (!r.ok) {
@@ -428,6 +528,159 @@ function renderResult(v) {
     return row;
   }));
   $('download').onclick = () => downloadCsv(v, soum, r);
+}
+
+// ---------- the whole country ----------
+// Counts of each verdict among the soums with data, and the sentence for the country, in language L.
+function countrySummary(v, L) {
+  const all = nation(), tested = DATA.soums.filter(s => all.soums[s.id].ok);
+  const counts = { 'real-up': 0, 'possible-up': 0, 'not-proven': 0, 'possible-down': 0, 'real-down': 0 };
+  for (const s of tested) counts[verdictKey(all.soums[s.id])]++;
+  const dir = counts['real-up'] >= counts['real-down'] ? 'up' : 'down', n = counts[`real-${dir}`];
+  const vars = { n, total: tested.length, first: state.from };
+  const sentence = (n ? v.nation[dir][L] : v.nation.none[L]).replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+  return { all, tested, counts, dir: n ? dir : '', sentence, missing: DATA.soums.length - tested.length };
+}
+function renderNation(v, L) {
+  if (!DATA) return;
+  const S = STRINGS[L], c = countrySummary(v, L), pal = palette();
+  $('result-panel').dataset.dir = c.dir;
+  $('nation-sub').textContent = `${v.name[L]}, ${state.from}–${state.to}`;
+  $('nation-line').textContent = c.sentence;
+  // One bar of all soums (browner ... greener, as on the key), then the counts.
+  const look = { 'real-down': pal.down[1], 'possible-down': stripeBg(pal.down[1]), 'not-proven': pal.notProven,
+    'possible-up': stripeBg(pal.up[1]), 'real-up': pal.up[1] };
+  $('nation-bar').replaceChildren(...Object.keys(look).filter(k => c.counts[k]).map(k => {
+    const seg = make('i');
+    seg.style.flexGrow = c.counts[k];
+    seg.style.background = look[k];
+    return seg;
+  }));
+  const label = { 'real-up': `${S.real}: ${v.up[L]}`, 'possible-up': `${S.possibleShort}: ${v.up[L]}`, 'not-proven': S.notProven,
+    'possible-down': `${S.possibleShort}: ${v.down[L]}`, 'real-down': `${S.real}: ${v.down[L]}` };
+  const rows = Object.keys(label).map(k => {
+    const li = make('li'), sw = make('span', { className: 'swatch' });
+    sw.style.background = look[k];
+    li.append(sw, make('span', { textContent: label[k] }), make('span', { className: 'num', textContent: c.counts[k] }));
+    return li;
+  });
+  if (c.missing) rows.push(Object.assign(make('li', { className: 'is-muted' }), { textContent: `${S[v.id === 'ndvi_summer' ? 'noGrassCount' : 'noDataCount']}: ${c.missing}` }));
+  $('nation-counts').replaceChildren(...rows);
+  // The largest real changes, each a shortcut to its soum.
+  const top = c.tested.map(s => [s, c.all.soums[s.id]]).filter(([, r]) => r.level === 'real')
+    .map(([s, r]) => [s, changeOf(v, r)]).filter(([, ch]) => Number.isFinite(ch))
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
+  $('nation-top-title').textContent = S.nationTop;
+  $('nation-top-title').hidden = $('nation-top').hidden = !top.length;
+  $('nation-top').replaceChildren(...top.map(([s, ch]) => {
+    const b = make('button', { type: 'button', className: 'nation-place' }), dot = make('span', { className: 'swatch' });
+    dot.style.background = ch > 0 ? pal.up[2] : pal.down[2];
+    b.append(dot, make('span', { className: 'name', textContent: `${soumNameL(s, L)}, ${aimagNameL(s.aimag, L)}` }),
+      make('span', { className: 'num', textContent: fmtChange(v, ch, L) }));
+    b.addEventListener('click', () => selectSoum(s.id));
+    const li = make('li');
+    li.append(b);
+    return li;
+  }));
+  $('nation-note').textContent = S.nationNote.replace('{n}', c.tested.length);
+  const hi = DATA.yearRange[v.id][1];
+  const newest = state.to === hi ? v.newest[L].replace(/\{y\}/g, hi).replace(/\{y0\}/g, hi - 1) : '';
+  const grass = v.id === 'ndvi_summer' ? S.grassOnly : '';
+  $('nation-source').textContent = [`${S.sourceLine}: ${v.source}.`, `${v.season[L]}.`, newest, grass].filter(Boolean).join(' ');
+}
+
+// Every soum's result for the chosen question and years, as one table.
+function downloadAllCsv(v) {
+  const all = nation(), unit = v.display === 'percent' ? 'percent' : v.unit;
+  const q = x => `"${String(x).replace(/"/g, '""')}"`;
+  const lines = [
+    `# ${v.name.en} (${v.unit}), every soum, ${state.from}-${state.to}. Source: ${v.source}. ${v.season.en}.`,
+    `# change = along the trend line (Sen's slope) from the first year to the last, in ${unit}. ` +
+      `Mann-Kendall p with the Hamed-Rao correction; q = false discovery rate over all soums tested; verdict: real if q < 0.05.`,
+    DATA.sample ? '# SAMPLE DATA: invented numbers, not real results' : '',
+    'soum_id,soum,soum_mn,aimag,years,first,last,sen_slope_per_year,change,mk_p,fdr_q,verdict',
+    ...DATA.soums.map(s => {
+      const r = all.soums[s.id];
+      if (!r.ok) return [s.id, q(s.name_en), q(s.name_mn), q(s.aimag), r.n, '', '', '', '', '', '', 'no data'].join(',');
+      return [s.id, q(s.name_en), q(s.name_mn), q(s.aimag), r.n, r.first, r.last, r.sen.slope.toPrecision(4),
+        changeOf(v, r).toFixed(2), r.mk.p.toFixed(4), r.q.toFixed(4), verdictKey(r)].join(',');
+    }),
+  ].filter(Boolean);
+  const a = make('a', { download: `${v.id}_all_soums_${state.from}-${state.to}.csv` });
+  a.href = URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }));
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- share as image (js/share.js draws it) ----------
+// The card is in Mongolian unless switched: it is made for Facebook and Messenger, where Mongolian communities share.
+let cardLang = 'mn', cardFile = null, cardUrl = '';
+const siteAddress = () => (document.querySelector('link[rel="canonical"]')?.href || location.href).replace(/^https?:\/\//, '').replace(/[/#?].*$/, '');
+function cardDraw(L) {
+  const v = byId[state.varId], S = STRINGS[L], pal = palette();
+  const common = { question: v.question[L], years: `${state.from}–${state.to}`, url: siteAddress(),
+    source: `${S.cardSource}: ${v.source}. ${v.season[L]}.` };
+  if (!state.aimag) {
+    const c = countrySummary(v, L), fills = {};
+    for (const s of DATA.soums) {
+      const r = c.all.soums[s.id], shade = shadeOf(v, r);
+      const [dir, step] = shade ? shade.split('-') : [];
+      fills[s.id] = { color: !r.ok ? pal.noData : dir ? pal[dir][step - 1] : pal.notProven, striped: r.level === 'possible' };
+    }
+    const unit = v.display === 'percent' ? '%' : v.unitName ? v.unitName[L] : v.unit;
+    const [a, b] = v.steps;
+    const o = { ...common, place: S.countryCard, sentence: c.sentence, trendColor: c.dir === 'down' ? pal.downDeep : c.dir ? pal.up[2] : '#15213B',
+      soums: DATA.soums, aimags: DATA.aimags, fills, noData: pal.noData,
+      legend: { title: S.legendTitle.replace('{a}', state.from).replace('{b}', state.to).replace('{unit}', unit),
+        down: pal.down, up: pal.up, ticks: [-b, -a, 0, a, b].map(tick), downWord: v.down[L], upWord: v.up[L],
+        sure: [S.legReal, S.legPossible, S.legNotProven], notProven: pal.notProven },
+      counts: S.cardCounts.replace('{real}', c.counts['real-up'] + c.counts['real-down'])
+        .replace('{possible}', c.counts['possible-up'] + c.counts['possible-down']).replace('{notProven}', c.counts['not-proven']) };
+    return { name: `quindecim_${v.id}_mongolia_${state.from}-${state.to}_${L}.png`, alt: c.sentence, draw: images => Q.share.nationCard(o, images) };
+  }
+  const soum = state.soumId && DATA.soumById[state.soumId];
+  const r = soum ? nation().soums[soum.id] : nation().aimags[state.aimag];
+  const vk = verdictKey(r), up = r.direction === 'up';
+  const short = { real: S.real, possible: S.possibleShort, 'not-proven': S.notProven }[r.level];
+  const color = up ? pal.up[2] : pal.down[2];
+  const place = soum ? S.cardSoum.replace('{soum}', soumNameL(soum, L)).replace('{aimag}', aimagNameL(soum.aimag, L))
+    : S.cardAimag.replace('{aimag}', aimagNameL(state.aimag, L));
+  const sentence = plainSentence(v, r, Boolean(soum), L);
+  const o = { ...common, place, sentence, r, decimals: v.decimals,
+    unit: v.unitName ? v.unitName[L] : v.unit,
+    trendColor: r.direction === 'flat' ? '#15213B' : up ? pal.up[2] : pal.downDeep,
+    pill: { label: vk === 'not-proven' ? short : `${short} · ${v[up ? 'up' : 'down'][L]}`, kind: r.level,
+      color, textColor: r.level === 'real' ? (up ? pal.upText : pal.downText) : up ? pal.up[2] : pal.downDeep } };
+  return { name: `quindecim_${v.id}_${soum ? soum.id : state.aimag}_${state.from}-${state.to}_${L}.png`, alt: sentence,
+    draw: images => Q.share.placeCard(o, images) };
+}
+async function showCard() {
+  const card = cardDraw(cardLang);
+  await Q.share.fontsReady();
+  const blob = await Q.share.toBlob(card.draw);
+  if (cardUrl) URL.revokeObjectURL(cardUrl);
+  cardUrl = URL.createObjectURL(blob);
+  cardFile = new File([blob], card.name, { type: 'image/png' });
+  $('card-img').src = cardUrl;
+  $('card-img').alt = card.alt;
+  $('card-save').href = cardUrl;
+  $('card-save').download = card.name;
+  // Phones: the share sheet (Facebook, Messenger, ...). Elsewhere saving the picture is the way.
+  $('card-share').hidden = !(navigator.canShare && navigator.canShare({ files: [cardFile] }));
+  document.querySelectorAll('.card-lang-button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === cardLang));
+}
+async function openCard() {
+  if (!DATA) return;
+  cardLang = 'mn';
+  $('share-image').disabled = true;
+  try {
+    await showCard();
+    if (!$('card-dialog').open) $('card-dialog').showModal();
+  } catch (err) {
+    console.error('Could not draw the image', err);
+  } finally {
+    $('share-image').disabled = false;
+  }
 }
 
 function downloadCsv(v, soum, r) {
@@ -496,7 +749,21 @@ function wire() {
     scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && state.aimag) goOverview();
+    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open) goOverview();
+  });
+
+  // Share as image.
+  $('share-image').addEventListener('click', openCard);
+  $('card-close').addEventListener('click', () => $('card-dialog').close());
+  $('card-dialog').addEventListener('click', e => { if (e.target === $('card-dialog')) $('card-dialog').close(); });   // outside the card
+  document.querySelectorAll('.card-lang-button').forEach(b => b.addEventListener('click', () => {
+    if (cardLang === b.dataset.lang) return;
+    cardLang = b.dataset.lang;
+    showCard().catch(err => console.error('Could not draw the image', err));
+  }));
+  $('card-share').addEventListener('click', async () => {
+    try { await navigator.share({ files: [cardFile] }); }
+    catch (err) { /* closed the share sheet, or sharing is not allowed: saving still works */ }
   });
 
   // Question tabs: arrow keys pick the next or previous question, like any radio group.
@@ -571,12 +838,15 @@ function wire() {
     onAimag: selectAimag, onSoum: selectSoum,
     aimagLabel: name => aimagName(name),
     soumLabel: id => soumName(DATA.soumById[id]),
+    soumTitle: id => soumLabel(DATA.soumById[id]),
   });
   $('tool-loading').hidden = true;
   fillSearch();
   renderQuestions();   // hides a question that has no data
   render();
+  lockSizes();         // the key and the country summary have their text now
   map.layout(false);   // the question tabs made the bar taller: fit the map under it right away
+  Q.share.fontsReady();   // the card's fonts, ahead of the first "share as image"
   addEventListener('q:panel-settled', () => map.layout(false));   // the glass panel has risen into place: re-fit the map
 })();
 })(globalThis.Q = globalThis.Q || {});

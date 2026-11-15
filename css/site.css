@@ -162,8 +162,8 @@ main > section { position: relative; z-index: 1; }
 .travel-disc img { width: 86%; height: 86%; transform: scale(.25); transition: transform .9s cubic-bezier(.34, 1.56, .64, 1) .15s; }
 body.logo-in .travel-logo { opacity: 1; }
 body.logo-in .travel-disc img { transform: none; }
-/* Scroll room under the hero for the logo's trip and its short hold alone; the glass map panel then rises over it. */
-.logo-run { height: 95svh; }
+/* Scroll room under the hero for the logo's short hold alone; the glass map panel then rises over it (js/motion.js). */
+.logo-run { height: 14svh; }
 main > .tool { z-index: 5; }
 
 
@@ -224,22 +224,29 @@ main > .tool { z-index: 5; }
 .map-world { transform-origin: 0 0; transition: transform 1s var(--ease); }
 .map-world.no-anim { transition: none; }
 .aimag, .soum { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; cursor: pointer; transition: fill .5s var(--ease), stroke .2s, opacity .6s var(--ease); }
-.aimag { fill: var(--v, var(--verdict-no-data)); stroke: var(--milk); stroke-width: 1.6; }
+.aimag { fill: var(--milk); stroke: none; }   /* under the soums: only a keyboard target (its outline is .ring) */
 .aimag:focus, .soum:focus, .map-svg:focus { outline: none; }   /* the keyboard focus style is the dark outline below */
 .aimag.is-away { opacity: 0; pointer-events: none; }
 /* Under its soums, the open aimag takes the border colour, so the soft corners leave no coloured specks. */
 .aimag.is-open { pointer-events: none; fill: var(--milk); stroke: var(--milk); transition-delay: .45s; }
-.soum-group { opacity: 0; pointer-events: none; transition: opacity .5s var(--ease); }
-.soum-group.is-active { opacity: 1; pointer-events: auto; transition-delay: .45s; }
-.soum { fill: var(--v, var(--verdict-no-data)); stroke: var(--milk); stroke-width: 1; }
+/* Every soum shows on the overview; zoomed in, only the open aimag's soums stay. Their fill is set by js/map.js. */
+.soum-group { transition: opacity .5s var(--ease); }
+.stage.is-zoomed .soum-group:not(.is-active) { opacity: 0; pointer-events: none; }
+.soum { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: .6; }
+.stage.is-zoomed .soum { stroke-width: 1; }
+/* Aimag borders over the soums, dark enough to read on the pale soums too. */
+.aimag-border { fill: none; stroke: rgba(21, 33, 59, .34); stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-linejoin: round; pointer-events: none; transition: opacity .6s var(--ease); }
+.aimag-border.is-away { opacity: 0; }
+.layer-rings { pointer-events: none; }
 /* Hover and selection outlines: separate lines above all shapes (js/map.js), so neighbours never cover half of them. */
 .ring { fill: none; stroke: var(--ink); vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; pointer-events: none; opacity: 0; transition: opacity .15s; }
 .ring.is-on { opacity: 1; }
 .ring-hover { stroke-width: 2; }
 .ring-selected { stroke-width: 3; }
 .layer-labels { pointer-events: none; transition: opacity .4s; }
-.aimag-label.is-tiny, .soum-label.is-hidden { display: none; }
-.soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; }
+.aimag-label.is-tiny, .aimag-label.is-cramped, .soum-label.is-hidden { display: none; }
+.soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; transition: opacity .4s .55s; }
+.stage:not(.is-zoomed) .soum-label { opacity: 0; transition-delay: 0s; }   /* soum names only once zoomed in */
 .aimag-label { fill: var(--ink); font-family: var(--font); font-weight: 600; paint-order: stroke; stroke: rgba(251, 248, 242, .85); stroke-width: .25em; stroke-linejoin: round; }
 .stage.is-zoomed .layer-labels { opacity: 0; }
 [data-verdict="real-up"] { --v: var(--verdict-real-up); }
@@ -274,9 +281,20 @@ main > .tool { z-index: 5; }
 .tool-loading span { animation: breathe 1.6s ease-in-out infinite; }
 @keyframes breathe { 50% { opacity: .35; } }
 .stage.is-zoomed .map-hint { opacity: 0; }
-.map-legend { position: absolute; left: 14px; bottom: 12px; z-index: 3; background: var(--glass); padding: 8px 10px; border: 1px solid var(--glass-edge); border-radius: 14px; box-shadow: var(--glass-shadow); }
-.map-legend ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: .76rem; }
-.swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 1px solid #BDB6A8; border-radius: 3px; background: var(--v); transition: background .5s; }
+/* Map key: six shades of change (down ... up) with the change at their edges, the words for both ends, and how sure. */
+.map-legend { position: absolute; left: 14px; bottom: 12px; z-index: 3; display: grid; gap: 3px; justify-items: start; background: var(--glass); padding: 9px 12px 10px; border: 1px solid var(--glass-edge); border-radius: 14px; box-shadow: var(--glass-shadow); font-size: .74rem; }
+.legend-title { margin: 0 0 2px; font-weight: 700; font-size: .76rem; }
+.legend-scale { --cell: 26px; width: calc(6 * var(--cell)); }
+.legend-ramp { display: grid; grid-template-columns: repeat(6, var(--cell)); height: 12px; border-radius: 3px; overflow: hidden; }
+.legend-ramp i { display: block; transition: background .5s; }
+.legend-ticks { position: relative; height: 15px; font-size: .66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend-ticks span { position: absolute; top: 1px; transform: translateX(-50%); }
+.legend-ticks span:nth-child(1) { left: calc(1 * var(--cell)); } .legend-ticks span:nth-child(2) { left: calc(2 * var(--cell)); }
+.legend-ticks span:nth-child(3) { left: calc(3 * var(--cell)); } .legend-ticks span:nth-child(4) { left: calc(4 * var(--cell)); }
+.legend-ticks span:nth-child(5) { left: calc(5 * var(--cell)); }
+.legend-ends { width: calc(6 * 26px); display: flex; justify-content: space-between; gap: 8px; margin: 0; font-weight: 600; }
+.legend-sure { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 3px 12px; }
+.swatch { display: inline-block; flex: none; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 1px solid #BDB6A8; border-radius: 3px; background: var(--v); transition: background .5s; }
 
 /* The result panel is a glass card inset in the stage; denser milk than the other chrome so the chart and text stay crisp. */
 .result-panel { position: absolute; top: calc(var(--bar-h) + 10px); right: 10px; bottom: 10px; width: calc(46% - 10px); z-index: 5; background: rgba(246, 241, 231, .8); border: 1px solid var(--glass-edge); border-radius: 18px; box-shadow: 0 20px 50px -24px rgba(21, 33, 59, .4); padding: 18px 22px; overflow-y: auto; transform: translateX(calc(100% + 24px)); transition: transform .8s .15s var(--ease); }
@@ -289,6 +307,19 @@ main > .tool { z-index: 5; }
 .result-head h3 { margin: 0; font-size: 1.35rem; }
 /* The result in one plain sentence, first thing under the name. */
 .plain-line { margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--trend); font-size: 1rem; font-weight: 600; line-height: 1.45; }
+/* The whole country: one bar of all soums, the counts, and the largest real changes as shortcuts. */
+.nation-sub { margin: 2px 0 0; font-size: .85rem; color: var(--muted); font-weight: 600; }
+.nation-bar { display: flex; height: 14px; margin: 16px 0 10px; border-radius: 7px; overflow: hidden; background: var(--line-soft); }
+.nation-bar i { display: block; min-width: 3px; }
+.nation-counts { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: .84rem; }
+.nation-counts li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; }
+.nation-counts li.is-muted { display: block; color: var(--muted); font-size: .78rem; }
+.nation-counts .num, .nation-place .num { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }   /* not the panel's trend colour: rows go both ways */
+.nation-top-title { margin: 16px 0 6px; font-size: .9rem; }
+.nation-top { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+.nation-place { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0 4px; padding: 5px 8px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: .84rem; text-align: left; color: var(--ink); cursor: pointer; transition: background .2s; }
+.nation-place:hover, .nation-place:focus-visible { background: rgba(58, 104, 189, .1); }
+.nation-place .name { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .pill { display: inline-flex; align-items: center; justify-content: center; text-align: center; padding: 7px 14px; font-weight: 600; font-size: .8rem; border: 2px solid var(--blue); border-radius: 999px; white-space: nowrap; transition: background .4s, border-color .4s, color .4s; }
 .pill-real { background: var(--up); border-color: var(--up); color: var(--milk); }
 .pill-possible { background: var(--milk); border-color: var(--up); color: var(--up); }
@@ -331,6 +362,23 @@ main > .tool { z-index: 5; }
 /* Extras sit at the bottom right, under the map and the result. */
 .result-extras { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 10px 14px; margin-top: 12px; animation: cell-in .5s .4s var(--ease) backwards; }
 .result-extras .button { padding: 8px 14px; font-size: .85rem; }
+.result-extras .button:disabled { opacity: .45; cursor: default; }
+
+/* Share as image: the picture with Save (and Share on phones), and the card's language. */
+.card-dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100svh - 24px); padding: 16px 18px 18px; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--milk); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(21, 33, 59, .5); overflow-y: auto; }
+.card-dialog::backdrop { background: rgba(21, 33, 59, .45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.card-head h3 { margin: 0; font-size: 1.1rem; }
+.card-close { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
+.card-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.card-close:hover { background: var(--line-soft); }
+.card-img { display: block; width: 100%; height: auto; max-height: calc(100svh - 230px); object-fit: contain; aspect-ratio: 4 / 5; border-radius: 12px; border: 1px solid var(--line-soft); background: var(--line-soft); }
+.card-hint { margin: 10px 0 12px; font-size: .85rem; color: var(--muted); }
+.card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.card-actions .button { padding: 9px 16px; font-size: .88rem; cursor: pointer; }
+.card-lang { display: flex; margin-right: auto; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
+.card-lang-button { padding: 5px 12px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: .8rem; font-weight: 700; color: var(--muted); cursor: pointer; }
+.card-lang-button[aria-pressed="true"] { background: var(--ink); color: var(--milk); }
 .extra { order: -1; }
 .extra summary { cursor: pointer; font-weight: 600; font-size: .88rem; color: var(--blue); padding: 8px 0; }
 .extra[open] { flex-basis: 100%; order: 2; border-top: 1px solid var(--line); }
@@ -376,7 +424,6 @@ main > .tool { z-index: 5; }
   .hero-sub { max-width: none; }
   .hero-art { width: calc(var(--tile) * 5); }
   .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
-  .logo-run { height: 95svh; }   /* room for the trip and the hold before the panel rises */
   .frame { padding-top: 64px; padding-bottom: 64px; }
   .glossary { grid-template-columns: minmax(0, 1fr); }
   .glossary-terms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -396,12 +443,12 @@ main > .tool { z-index: 5; }
   .year-pick { min-width: 0; justify-content: space-between; padding-left: 8px; }
   .year-label { font-size: .6rem; letter-spacing: .02em; margin-right: 0; }
   .year-step { width: 22px; height: 22px; }
-  .map-svg, .tool-loading { position: relative; inset: auto; height: clamp(260px, 92vw, 52svh); }
-  /* No empty space under the map until an aimag is chosen; then the result rises in. */
+  .map-svg, .tool-loading { position: relative; inset: auto; height: clamp(240px, 76vw, 52svh); }
+  /* The result (the country first, then a place) appears under the map. */
   .result-panel { display: none; position: relative; inset: auto; width: auto; margin: 0 8px 8px; transform: none; overflow: visible; transition: none; }
   .stage.has-panel .result-panel { display: block; animation: panel-up .6s .25s var(--ease) both; }
   .map-legend { bottom: auto; top: auto; position: relative; left: auto; margin: 6px 12px; background: none; padding: 0; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .map-legend ul { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .map-legend { display: grid; }
   .stage-bar { order: 0; } .map-hint { order: 1; } .map-back { order: 2; } .map-svg, .tool-loading { order: 3; } .map-legend { order: 4; } .result-panel { order: 5; }
   .map-back { position: relative; top: auto; left: 12px; margin: 8px 0 -46px; }
   .map-hint { position: relative; top: auto; left: auto; margin: 8px 12px 0; }
