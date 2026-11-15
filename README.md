@@ -15,7 +15,7 @@ Team Quindecim, Ulaanbaatar. NASA Space Apps Challenge 2026, "Be An Earth System
 - **One sentence anyone can read**, for example: "Summer greenness in this soum has risen about 20% since 2001. This is very unlikely to be chance."
 - **An honest verdict**: real trend, possible trend or not proven, with the yearly data, the trend line and the full test results one click away.
 - **Every place at a glance**: all five questions for the chosen soum or aimag, and "What this means for this place": what changed, what it does not mean (greener is not always healthier pasture) and that a trend does not show its cause.
-- **The headline up front**: the first screen shows the three main findings, each opening its question on the map, and an "In short" section says what we measured, found and why it matters.
+- **The headline up front**: the first screen shows the three main findings, each opening its question on the map, and a "What is Quindecim" section says what we looked at, what we found and why it matters.
 - **The whole country at a glance**: how many soums show a real trend, and where the largest changes are.
 - **Share and download**: a picture of any result to post on Facebook or send on Messenger, a link to it, and the numbers as CSV (one place, or every soum at once).
 - **Two languages**: the site opens in English; MN in the header switches everything to Mongolian, shared pictures and links included.

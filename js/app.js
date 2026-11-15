@@ -168,7 +168,7 @@ const nation = () => nationFor(state.varId, state.from, state.to);
 const fullRecord = v => nationFor(v, ...DATA.yearRange[v]);
 const cap = w => w.charAt(0).toLocaleUpperCase() + w.slice(1);
 
-// ---------- the simple layer (In short): what we found, over each question's full record ----------
+// ---------- the simple layer (What is Quindecim): what we found, over each question's full record ----------
 function headline() {
   const count = (v, k) => Object.values(fullRecord(v).soums).filter(r => verdictKey(r) === k).length;
   const tested = v => Object.values(fullRecord(v).soums).filter(r => r.ok).length;
@@ -342,7 +342,6 @@ function lockSizes() {
   add(document.querySelector('.hero-note'), 'width', statsSet);
   add(document.querySelector('.hero-note'), 'height', statsSet);
   document.querySelectorAll('.short-card').forEach(card => add(card, 'height', l => renderShort(l)));   // stacked on phones
-  add($('short-found-line'), 'height', l => renderShort(l));
   add($('h-short'), 'height', l => renderShort(l));   // the Mongolian heading takes two lines on phones
   document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
