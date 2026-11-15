@@ -45,6 +45,11 @@
     .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 20px 0 0; list-style: none; font-size: .9rem; font-weight: 600; }
     .brief { margin: 24px 0 0; padding: 18px 22px; border-left: 4px solid var(--green); background: rgba(46, 122, 87, .07); border-radius: 0 12px 12px 0; }
     .brief ul { margin: 0; padding-left: 1.1em; }
+    /* Future work: the one section that looks ahead, so it gets a larger heading inside a blue frame. */
+    .future { margin: 56px 0 0; padding: 26px 28px; border: 2px solid var(--blue); border-radius: 16px; background: rgba(58, 104, 189, .06); }
+    .future h2 { font-size: clamp(1.9rem, 4.6vw, 2.6rem); line-height: 1.12; letter-spacing: -.02em; color: var(--blue); margin: 0 0 14px; padding: 0; border: 0; }
+    .future p { font-size: 1.08rem; margin: 0; max-width: 46em; }
+    @media (max-width: 700px) { .future { padding: 20px 18px; } }
     .table { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, .45); }
     table { border-collapse: collapse; width: 100%; font-size: .88rem; }
     th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-soft); }
@@ -106,12 +111,12 @@
     <ul class="toc" lang="en">
       <li><a href="#brief">In brief</a></li><li><a href="#data">The data</a></li><li><a href="#areas">The 337 areas</a></li>
       <li><a href="#tests">How a trend is judged</a></li><li><a href="#findings">What we found</a></li>
-      <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#downloads">Downloads</a></li><li><a href="#team">Team</a></li>
+      <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#future">Future work</a></li><li><a href="#downloads">Downloads</a></li><li><a href="#team">Team</a></li>
     </ul>
     <ul class="toc" lang="mn">
       <li><a href="#brief">Товчхон</a></li><li><a href="#data">Өгөгдөл</a></li><li><a href="#areas">337 нутаг дэвсгэр</a></li>
       <li><a href="#tests">Чиг хандлагыг хэрхэн дүгнэдэг</a></li><li><a href="#findings">Юу олсон бэ</a></li>
-      <li><a href="#stations">Цаг уурын станцууд</a></li><li><a href="#limits">Хязгаарлалт</a></li><li><a href="#downloads">Татаж авах</a></li><li><a href="#team">Баг</a></li>
+      <li><a href="#stations">Цаг уурын станцууд</a></li><li><a href="#limits">Хязгаарлалт</a></li><li><a href="#future">Цаашдын ажил</a></li><li><a href="#downloads">Татаж авах</a></li><li><a href="#team">Баг</a></li>
     </ul>
 
     <section id="brief" class="brief" aria-label="In brief / Товчхон">
@@ -300,6 +305,13 @@
       <li lang="en">The Mongolian text and soum names are being checked by a native speaker.</li>
       <li lang="mn">Монгол хэл болон сумын нэрсийг төрөлх хэлтэн шалгаж байна.</li>
     </ul>
+
+    <!-- Future work. The Mongolian text is a draft translation still to be checked by Anu. -->
+    <section class="future" aria-labelledby="future">
+      <h2 id="future"><span lang="en">Future work</span><span lang="mn">Цаашдын ажил</span></h2>
+      <p lang="en">Next, we want to test our satellite trends on the ground. We plan to request NAMEM's rangeland monitoring data from its 1,516 sites and its weather station records, then compare each soum's greenness trend with nearby ground measurements. Where a station is close, its temperatures and frost dates would replace our coarse 10 to 50 km model estimates. Ground records of grazing would also let us begin to separate grazing pressure from climate as causes of change, which satellites alone cannot do. Alongside this, we plan to pilot Quindecim with schools and soum offices in one aimag, and add a printable one-page report for each soum.</p>
+      <p lang="mn">Дараагийн алхамд бид хиймэл дагуулаас гаргасан чиг хандлагаа газар дээр шалгахыг зорьж байна. Цаг уур, орчны шинжилгээний газраас (ЦУОШГ) 1,516 цэгийн бэлчээрийн хяналт-шинжилгээний өгөгдөл болон цаг уурын станцуудын бичлэгийг хүсч, сум бүрийн ногоорлын чиг хандлагыг ойролцоох газрын хэмжилттэй харьцуулахаар төлөвлөж байна. Станц ойрхон байгаа газарт түүний температур, хяруу орсон огноо нь манай 10–50 км-ийн бүдүүн загварын тооцоог орлоно. Мал бэлчээрлэлтийн газрын бүртгэл нь өөрчлөлтийн шалтгаан болох бэлчээрийн ачааллыг уур амьсгалаас ялгаж эхлэх боломж олгоно; үүнийг зөвхөн хиймэл дагуулаар хийж чадахгүй. Үүний зэрэгцээ бид Quindecim-ийг нэг аймгийн сургууль, сумын байгууллагуудтай туршиж, сум бүрт хэвлэх боломжтой нэг хуудас тайлан нэмэхээр төлөвлөж байна.</p>
+    </section>
 
     <h2 id="downloads"><span lang="en">Downloads</span><span lang="mn">Татаж авах</span></h2>
     <ul>
