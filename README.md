@@ -18,7 +18,7 @@ Team Quindecim, Ulaanbaatar. NASA Space Apps Challenge 2026, "Be An Earth System
 - **The headline up front**: the first screen shows the three main findings, each opening its question on the map, and a "What is Quindecim" section says what we looked at, what we found and why it matters.
 - **The whole country at a glance**: how many soums show a real trend, and where the largest changes are.
 - **Share and download**: a picture of any result to post on Facebook or send on Messenger, a link to it, and the numbers as CSV (one place, or every soum at once).
-- **Discover, stories from the steppe**: tip cards for herders (a herder who lost no animals in a dzud, selling early, the dzud risk map, livestock insurance), each opening a short article with its sources on [discover.html](https://quindecim-theta.vercel.app/discover.html), and data cards that open a place's result on the map.
+- **Discover**: four tip cards for herders (a herder who lost no animals in a dzud, selling early, the dzud risk map, livestock insurance), each opening a short article with its sources on [discover.html](https://quindecim-theta.vercel.app/discover.html).
 - **Two languages**: the site opens in English; MN in the header switches everything to Mongolian, shared pictures and links included.
 - **Readable without JavaScript**: a [Methods and data](https://quindecim-theta.vercel.app/methods.html) page, a summary in the page itself, every result as CSV (`data/results.csv`) and a plain-text summary for AI assistants (`llms.txt`).
 
@@ -113,7 +113,7 @@ js/
   motion.js           loader, tiles, the logo's scroll, reveals
   variables.js        the five questions
   i18n.js             all text in English and Mongolian, glossary
-  stories.js          Discover cards: tips (articles on discover.html) and data cards
+  stories.js          Discover: the four tip cards (articles on discover.html)
   data.js             loads data/data.js
 data/
   data.js             what the page loads (0.84 MB, 266 KB compressed)

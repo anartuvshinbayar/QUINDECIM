@@ -27,9 +27,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611152346">
+  <link rel="stylesheet" href="css/site.css?v=202611152352">
   <!-- The data (0.84 MB, about 250 KB compressed) loads in parallel and never holds up the page: js/data.js waits for it. -->
-  <script id="data-js" src="data/data.js?v=202611152346" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
+  <script id="data-js" src="data/data.js?v=202611152352" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -295,15 +295,12 @@
       </dialog>
     </section>
 
-    <!-- Discover: "Stories from the steppe", tips for herders (articles on discover.html) and data cards that open a result
-         in the tool (js/stories.js, js/app.js renderStories). The old #stories anchor is kept. -->
-    <section id="discover" class="stories" aria-labelledby="h-stories">
+    <!-- Discover: four tips for herders in cards like "What is Quindecim", each opening its article on discover.html
+         (js/stories.js, js/app.js renderStories). The old #stories anchor is kept. -->
+    <section id="discover" class="short discover" aria-labelledby="h-discover">
       <span id="stories"></span>
-      <p class="stories-eyebrow" data-i18n="storiesEyebrow">Discover</p>
-      <h2 id="h-stories" class="short-title" data-i18n="storiesTitle">Stories from the steppe</h2>
-      <p class="stories-intro" data-i18n="storiesIntro">What the data says, next to the people who live it.</p>
-      <div class="stories-row"><div id="stories-track-1" class="stories-track"></div></div>
-      <div class="stories-row is-reverse"><div id="stories-track-2" class="stories-track"></div></div>
+      <h2 id="h-discover" class="short-title discover-title" data-i18n="navDiscover">Discover</h2>
+      <div id="discover-grid" class="short-grid discover-grid"></div>
     </section>
 
     <!-- The simple layer: what Quindecim is, in three cards: what we looked at, what we found, why it matters
@@ -368,7 +365,7 @@
       <h3>Read more</h3>
       <ul>
         <li><a href="methods.html">Methods and data</a>: the full method, the findings and the station check.</li>
-        <li><a href="discover.html">Discover</a>: stories from the steppe, four short articles for herders with their sources.</li>
+        <li><a href="discover.html">Discover</a>: four short articles for herders with their sources.</li>
         <li><a href="data/results.csv">data/results.csv</a>: every area's result for every question, with its plain sentence.</li>
         <li><a href="data/data.csv">data/data.csv</a>: every yearly value.</li>
         <li><a href="llms.txt">llms.txt</a>: this summary as plain text.</li>
@@ -408,16 +405,16 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><div class="travel-disc"><img src="assets/brand/quindecim-mark.svg" alt=""></div></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="js/stats.js?v=202611152346"></script>
-  <script src="js/variables.js?v=202611152346"></script>
-  <script src="js/i18n.js?v=202611152346"></script>
-  <script src="js/data.js?v=202611152346"></script>
-  <script src="js/map.js?v=202611152346"></script>
-  <script src="js/chart.js?v=202611152346"></script>
-  <script src="js/figures.js?v=202611152346"></script>
-  <script src="js/motion.js?v=202611152346"></script>
-  <script src="js/share.js?v=202611152346"></script>
-  <script src="js/stories.js?v=202611152346"></script>
-  <script src="js/app.js?v=202611152346"></script>
+  <script src="js/stats.js?v=202611152352"></script>
+  <script src="js/variables.js?v=202611152352"></script>
+  <script src="js/i18n.js?v=202611152352"></script>
+  <script src="js/data.js?v=202611152352"></script>
+  <script src="js/map.js?v=202611152352"></script>
+  <script src="js/chart.js?v=202611152352"></script>
+  <script src="js/figures.js?v=202611152352"></script>
+  <script src="js/motion.js?v=202611152352"></script>
+  <script src="js/share.js?v=202611152352"></script>
+  <script src="js/stories.js?v=202611152352"></script>
+  <script src="js/app.js?v=202611152352"></script>
 </body>
 </html>

@@ -815,66 +815,27 @@ async function openCard() {
   }
 }
 
-// ---------- Discover: stories from the steppe (tips with articles on discover.html, and data cards) ----------
-function storyFacts(st, L) {   // the place's name and its real number for the story's question (full record)
-  const v = byId[st.variable], all = fullRecord(v.id);
-  const soum = st.place.soum && DATA.soumById[st.place.soum];
-  const r = soum ? all.soums[soum.id] : all.aimags[st.place.aimag];
-  const place = soum ? `${soumNameL(soum, L)}, ${aimagNameL(soum.aimag, L)}` : aimagNameL(st.place.aimag, L);
-  const vk = verdictKey(r), dir = vk.endsWith('-up') ? 'up' : 'down', S = STRINGS[L];
-  const label = vk.startsWith('real') ? `${v[dir][L]}, ${r.first}–${r.last}` : vk.startsWith('possible') ? `${S.glanceMaybe} ${v[dir][L]}` : S.glanceNone;
-  return { soum, place, number: r.ok ? fmtChange(v, changeOf(v, r), L) : '–', label };
-}
+// ---------- Discover: four tips for herders, each opening its article on discover.html ----------
 function renderStories(L) {
-  if (!DATA) return;
-  const S = STRINGS[L], lang = L === 'mn' ? '&lang=mn' : '';
-  // One card: an article whose "Read" link covers the whole card (.story-more::after).
-  const shell = (cls, colour, head, text, foot, href) => {
-    const c = make('article', { className: `story ${cls}` });
-    c.style.setProperty('--g', colour);
-    c.innerHTML = `<div class="story-head">${head}</div><div class="story-text">${text}<p class="story-foot"><span class="story-src"></span><a class="story-more"></a></p></div>`;
-    c.querySelector('.story-src').textContent = foot;
-    const a = c.querySelector('.story-more');
-    a.href = href; a.textContent = `${S.storyRead} →`;
-    return c;
-  };
-  const tipCard = tip => {
-    const c = shell(`story-tip story-${tip.type}`, tip.colour,
-      `${Q.figures.svg(tip.figure, 'rgba(255,255,255,.4)')}<span class="story-photo"></span><span class="story-chip"></span>`,
-      `<small class="story-place"></small><h3></h3><p class="story-teaser"></p>${tip.quote ? '<blockquote class="story-quote"></blockquote>' : ''}`,
-      tip.source[L], `discover.html${L === 'mn' ? '?lang=mn' : ''}#${tip.id}`);
-    c.querySelector('.story-photo').textContent = S.storyPhoto;
-    c.querySelector('.story-chip').textContent = tip.chip[L];
-    c.querySelector('.story-place').textContent = tip.tag[L];
+  const S = STRINGS[L];
+  $('discover-grid').replaceChildren(...Q.tips.map(tip => {
+    const c = make('article', { className: 'short-card discover-card' });
+    c.style.setProperty('--c', tip.colour);
+    c.innerHTML = `<div class="short-head"><small></small><h3></h3>${Q.figures.svg(tip.figure, 'rgba(255,255,255,.55)')}</div>`
+      + `<div class="discover-body"><span class="discover-chip"></span><p></p>${tip.quote ? '<blockquote></blockquote>' : ''}`
+      + `<p class="discover-foot"><span></span><a></a></p></div>`;
+    c.querySelector('.short-head small').textContent = tip.tag[L];
     c.querySelector('h3').textContent = tip.title[L];
-    c.querySelector('.story-teaser').textContent = tip.teaser[L];
-    if (tip.quote) c.querySelector('.story-quote').textContent = tip.quote[L];
-    c.querySelector('.story-more').setAttribute('aria-label', `${S.storyRead}: ${tip.title[L]}`);
+    c.querySelector('.discover-chip').textContent = tip.chip[L];
+    c.querySelector('.discover-body p').textContent = tip.teaser[L];
+    if (tip.quote) c.querySelector('blockquote').textContent = tip.quote[L];
+    c.querySelector('.discover-foot span').textContent = tip.source[L];
+    const a = c.querySelector('.discover-foot a');
+    a.href = `discover.html${L === 'mn' ? '?lang=mn' : ''}#${tip.id}`;
+    a.textContent = `${S.storyRead} →`;
+    a.setAttribute('aria-label', `${S.storyRead}: ${tip.title[L]}`);
     return c;
-  };
-  const dataCard = st => {   // "Read" opens this place and question in the tool
-    const f = storyFacts(st, L), where = f.soum ? `s=${f.soum.id}` : `a=${encodeURIComponent(st.place.aimag)}`;
-    const c = shell(`story-${st.type}`, st.colour, `${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small>`,
-      '<small class="story-place"></small><h3></h3>', '', `#v=${st.variable}&${where}${lang}`);
-    c.querySelector('.story-head small').textContent = f.label;
-    c.querySelector('.story-place').textContent = f.place;
-    c.querySelector('h3').textContent = st.title[L];
-    const a = c.querySelector('.story-more');
-    a.setAttribute('aria-label', `${S.storyRead}: ${st.title[L]}, ${f.place}`);
-    a.addEventListener('click', e => {   // pick the place and question, glide to the map
-      e.preventDefault();
-      state.aimag = f.soum ? f.soum.aimag : st.place.aimag; state.soumId = f.soum ? f.soum.id : null;
-      selectVariable(st.variable);
-      motion.toTool();
-    });
-    return c;
-  };
-  const card = key => (key[0] === 't' ? tipCard(Q.tips[+key.slice(1)]) : dataCard(Q.stories[+key.slice(1)]));
-  // Each row twice, so the slow loop is seamless; the copy is hidden from screen readers and keyboards.
-  Q.storyRows.forEach((row, i) => {
-    const copies = row.map(k => { const c = card(k); c.setAttribute('aria-hidden', 'true'); c.querySelector('a').tabIndex = -1; return c; });
-    $(`stories-track-${i + 1}`).replaceChildren(...row.map(card), ...copies);
-  });
+  }));
 }
 
 function downloadCsv(v, soum, r) {

@@ -47,7 +47,7 @@
 - [Every yearly value as CSV](https://quindecim-theta.vercel.app/data/data.csv): soum_id, variable, year, value.
 - [Weather station check](https://quindecim-theta.vercel.app/data/stations.csv)
 - [Methods and data](https://quindecim-theta.vercel.app/methods.html): the full method, findings and limits, readable without JavaScript.
-- [Discover: stories from the steppe](https://quindecim-theta.vercel.app/discover.html): four short articles for herders (a herder who lost no animals in a dzud, selling early, the NAMEM dzud risk map, index-based livestock insurance), each with its sources.
+- [Discover](https://quindecim-theta.vercel.app/discover.html): four short articles for herders (a herder who lost no animals in a dzud, selling early, the NAMEM dzud risk map, index-based livestock insurance), each with its sources.
 - A link to one place: https://quindecim-theta.vercel.app/#v=temp_summer&s=129615 (question `v`, soum id `s` from results.csv; `lang=mn` for Mongolian).
 
 ## Limits
