@@ -226,15 +226,18 @@ function initTraveler() {
   // Settled, the glass (css .stage: blur 14px, saturate 1.15) stops blurring the page; the logo carries that blur itself.
   // Two blurs add up as sqrt(16^2 + 14^2) = 21.3px, so it looks the same.
   const CALM = 'blur(21.3px) saturate(1.15)';
+  // The slot's place on the page, read once per layout (refresh clears it): reading it on every frame forced a layout each time.
+  let slotBox = null;
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
-    const r = slot.getBoundingClientRect(), vh = innerHeight, vw = innerWidth;
-    const y0 = r.top + scrollY + r.height / 2, mid = vh / 2;
-    const big = Math.min(vw * 0.46, vh * 0.46, 440);                  // its size once it is alone in the middle
+    if (!slotBox) { const r = slot.getBoundingClientRect(); slotBox = { x: r.left + r.width / 2, top: r.top + scrollY, w: r.width, h: r.height }; }
+    const vh = innerHeight, vw = innerWidth;
+    const y0 = slotBox.top + slotBox.h / 2, mid = vh / 2;
+    const big = Math.min(vw * 0.36, vh * 0.36, 340);                  // its size once it is alone in the middle (smaller than before)
     const leave = Math.max(vh * 0.25, 2 * (y0 - mid));                // leaves the grid at the page's speed, then holds at the middle
     const riseEnd = toolRest(), riseStart = Math.min(riseEnd - 1, riseEnd - RISE * (riseEnd - (pageTop(stage) - vh)));
-    return { x: r.left + r.width / 2, y0, size0: r.width, vh, mid, big, leave, riseStart, riseEnd,
+    return { x: slotBox.x, y0, size0: slotBox.w, vh, mid, big, leave, riseStart, riseEnd,
       holdStart: Math.max(leave, riseStart - vh * HOLD) };             // the logo is alone and full size from here on
   }
 
@@ -328,6 +331,7 @@ function initTraveler() {
   const STICK = 260, wide = matchMedia('(min-width: 761px)');
   let stuck = 0, stuckT = 0;
   const scrollsInside = (el, dy) => {
+    if (!(el instanceof Element)) return false;
     for (; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
       const oy = getComputedStyle(el).overflowY;
       if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1
@@ -430,7 +434,7 @@ function initTraveler() {
     if (!raf) raf = requestAnimationFrame(tick);
   };
 
-  const refresh = () => { target = shown = lastY = scrollY; draw(shown); };
+  const refresh = () => { slotBox = null; target = shown = lastY = scrollY; draw(shown); };
   addEventListener('scroll', follow, { passive: true });
   addEventListener('resize', refresh);
   if ('ResizeObserver' in window) new ResizeObserver(refresh).observe(document.body);
