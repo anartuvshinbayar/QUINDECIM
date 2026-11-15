@@ -342,6 +342,8 @@ function lockSizes() {
   add(document.querySelector('.hero-note'), 'width', statsSet);
   add(document.querySelector('.hero-note'), 'height', statsSet);
   document.querySelectorAll('.short-card').forEach(card => add(card, 'height', l => renderShort(l)));   // stacked on phones
+  add($('short-found-line'), 'height', l => renderShort(l));
+  add($('h-short'), 'height', l => renderShort(l));   // the Mongolian heading takes two lines on phones
   document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
   // Widths first (they decide how text wraps), then heights. Each item ends back in the current language.

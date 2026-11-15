@@ -492,6 +492,9 @@ main > .tool { z-index: 5; }
 .short-head h3 { color: #fff; position: relative; z-index: 1; max-width: 80%; }
 .short-head svg { position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; }
 .short-card p { margin: 0; padding: 18px clamp(16px, 2vw, 24px) 24px; font-size: .95rem; line-height: 1.55; }
+/* What we found, in one line under the cards: the numbers come from the data (js/app.js renderShort). */
+.short-found { margin: clamp(14px, 2vw, 22px) 0 0; padding: 14px 18px; border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; background: rgba(46, 122, 87, .07); font-size: .95rem; line-height: 1.55; }
+.short-found strong { margin-right: .35em; }
 .short-more { margin: 14px 0 0; font-weight: 600; }
 .short-more a { color: var(--blue); text-underline-offset: 3px; }
 .glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); scroll-margin-top: 70px; }
