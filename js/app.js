@@ -455,7 +455,10 @@ function renderGlossary(l = state.lang) {
     term.append(...GLOSSARY[i][l][0].split(' ').flatMap((w, k) =>
       [k ? ' ' : '', w.includes('-') ? make('span', { className: 'nobr', textContent: w }) : w]).filter(x => x !== ''));
     body.append(term, make('span', { className: 'gcard-text', textContent: GLOSSARY[i][l][1] }));
-    b.replaceChildren(top, body);
+    // The full meaning, shown as a small popup on hover or keyboard focus (css .gcard-full); no click needed.
+    const full = make('span', { className: 'gcard-full', textContent: GLOSSARY[i][l][1] });
+    full.setAttribute('aria-hidden', 'true');
+    b.replaceChildren(top, body, full);
   });
   if (openTermIndex >= 0) openTerm(openTermIndex);   // a language switch redraws the open strip
 }

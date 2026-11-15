@@ -478,10 +478,15 @@ main > .tool { z-index: 5; }
 /* Compact cards, all the same size, so the whole glossary fits on one screen: a coloured block with the number and a
    figure, then the term (up to two lines) and the start of its meaning. On phones only the term. */
 .glossary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.gcard { display: grid; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--glass-edge); border-radius: 22px; overflow: hidden; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.gcard { display: grid; position: relative; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
 .gcard:hover { border-color: var(--c); }
 .gcard:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.gcard-top { position: relative; display: block; background: var(--c); color: #fff; overflow: hidden; }
+.gcard-top { position: relative; display: block; background: var(--c); color: #fff; overflow: hidden; border-radius: 21px 0 0 21px; }
+/* The full meaning, on hover or focus: a small popup under the card. It takes no clicks, so it blocks nothing. */
+.gcard-full { position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; width: 300px; max-width: 80vw; padding: 12px 14px; border: 1px solid var(--glass-edge); border-radius: 14px; background: #FBF8F2; box-shadow: 0 16px 40px -18px rgba(21, 33, 59, .45); color: var(--ink); font-size: .85rem; font-weight: 500; line-height: 1.5; text-align: left; opacity: 0; visibility: hidden; transform: translateY(-4px); pointer-events: none; transition: opacity .18s, transform .18s, visibility 0s .18s; }
+.gcard:hover, .gcard:focus-visible { z-index: 30; }
+.gcard:hover .gcard-full, .gcard:focus-visible .gcard-full { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+@media (max-width: 760px) { .gcard-full { display: none; } }
 .gcard-top small { display: none; }
 .gcard-n { position: absolute; left: 8px; bottom: 4px; z-index: 1; font-size: 1.15rem; font-weight: 800; line-height: 1; }
 .gcard-top svg { position: absolute; right: -16px; top: -12px; width: 54px; height: 54px; }
