@@ -148,14 +148,15 @@ main > section { position: relative; z-index: 1; }
 .hero-art { position: relative; width: calc(var(--tile) * 11); margin: 0 auto; }
 .hero-tiles { display: grid; grid-template-columns: repeat(11, var(--tile)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
 .hero-tiles > .corner { z-index: 2; }
-/* Find my soum: the one call to action on the hero. A plain solid button, three tiles wide, centred on the bottom row
-   of the tiles (under the logo's cell), so the hero keeps its height. It stands out because the tiles right around it
-   are softly blurred (.hero-find-halo, a feathered patch behind the button), not because of effects on the button. */
-.hero-find { position: absolute; left: 50%; bottom: calc(var(--tile) * .17); z-index: 3; transform: translateX(-50%);
-  display: inline-flex; align-items: center; justify-content: center; gap: .55em; box-sizing: border-box;
-  min-width: calc(var(--tile) * 3); height: calc(var(--tile) * .66); min-height: 46px; padding: 0 1.1em;
+/* Find my soum: the one call to action on the hero. A plain solid button that fills the three centre tiles of the
+   bottom row (under the logo's cell), inset by one gap (--g) on every side: the space to the square above, to the
+   squares left and right and to the bottom edge is the same. Its size comes from the tiles, so it is the same in both
+   languages and the hero keeps its height. The tiles right around it are softly blurred (.hero-find-halo). */
+.hero-find { --g: calc(var(--tile) * .14); position: absolute; left: 50%; bottom: var(--g); z-index: 3; transform: translateX(-50%);
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em; box-sizing: border-box;
+  width: calc(var(--tile) * 3 - 2 * var(--g)); height: calc(var(--tile) - 2 * var(--g)); padding: 0 .6em;
   border: 0; border-radius: 999px; white-space: nowrap; background: var(--blue); color: var(--milk);
-  font-weight: 700; font-size: clamp(1rem, calc(var(--tile) * .2), 1.5rem); letter-spacing: -.01em; text-decoration: none;
+  font-weight: 700; font-size: min(1.5rem, calc(var(--tile) * .19)); letter-spacing: -.01em; text-decoration: none;
   box-shadow: 0 14px 30px -12px rgba(21, 33, 59, .55); transition: background .25s; }
 .hero-find svg { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 .hero-find:hover { background: var(--ink); }
@@ -164,8 +165,9 @@ main > section { position: relative; z-index: 1; }
   width: calc(var(--tile) * 4.6); height: calc(var(--tile) * 1.5); pointer-events: none;
   -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); background: rgba(246, 241, 231, .18);
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); }
-/* Phones: the same width in both languages (the Mongolian label is the longer one), so switching moves nothing. */
-@media (max-width: 760px) { .hero-find { min-width: calc(var(--tile) * 4.2); } .hero-find-halo { width: calc(var(--tile) * 5); } }
+/* Phones: the grid is five tiles wide and the label needs more room, so the button fills the whole bottom row, with
+   the same gap to the row above and to both edges of the grid. */
+@media (max-width: 760px) { .hero-find { width: calc(var(--tile) * 5 - 2 * var(--g)); font-size: min(1rem, calc(var(--tile) * .3)); } .hero-find-halo { width: calc(var(--tile) * 5); } }
 .tile { aspect-ratio: 1; position: relative; }
 /* Intro: each block grows from small to full out of one of its corners, in a diagonal wave. */
 .tile-face { position: absolute; inset: 0; transform: scale(.08); opacity: 0; transform-origin: var(--ox, 50%) var(--oy, 50%);
