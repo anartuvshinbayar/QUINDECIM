@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methods and data · Quindecim</title>
+  <meta name="description" content="How Quindecim tests whether the climate is really changing in each of Mongolia's 337 soums and districts: the NASA data, the trend tests, the check for chance, what we found, a check against weather stations, and every result to download.">
+  <meta name="theme-color" content="#F6F1E7">
+  <link rel="canonical" href="https://quindecim-theta.vercel.app/methods.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Quindecim">
+  <meta property="og:title" content="Methods and data · Quindecim">
+  <meta property="og:description" content="The NASA data, the trend tests and the check for chance behind Quindecim, with every result to download.">
+  <meta property="og:url" content="https://quindecim-theta.vercel.app/methods.html">
+  <meta property="og:image" content="https://quindecim-theta.vercel.app/assets/brand/quindecim-og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg?v=3" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico?v=3" sizes="32x32">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+  <!-- A plain page: everything is in the HTML, nothing needs JavaScript. The tables marked "static:" are written from
+       the data by tools/static_pages.js (run it after the data or the statistics change). -->
+  <style>
+    :root { --milk: #F6F1E7; --ink: #15213B; --muted: #5B6375; --blue: #3A68BD; --line: #CFC8BA; --line-soft: #E4DED2; --green: #2E7A57; --clay: #B9431C; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--milk); color: var(--ink); font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: var(--blue); text-underline-offset: 2px; }
+    header { position: sticky; top: 0; z-index: 2; background: rgba(246, 241, 231, .92); border-bottom: 1px solid var(--line-soft); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    .bar { max-width: 960px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .bar img { height: 32px; width: auto; display: block; }
+    .bar nav { display: flex; gap: 20px; font-weight: 600; font-size: .95rem; }
+    .bar nav a { color: var(--ink); text-decoration: none; }
+    .bar nav a:hover { color: var(--blue); }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; color: var(--blue); margin: 8px 0 12px; letter-spacing: -.02em; }
+    h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 8px; border-top: 2px solid var(--line-soft); }
+    h3 { font-size: 1.05rem; margin: 24px 0 8px; }
+    .lede { font-size: 1.15rem; font-weight: 500; max-width: 46em; }
+    .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 20px 0 0; list-style: none; font-size: .9rem; font-weight: 600; }
+    .brief { margin: 24px 0 0; padding: 18px 22px; border-left: 4px solid var(--green); background: rgba(46, 122, 87, .07); border-radius: 0 12px 12px 0; }
+    .brief ul { margin: 0; padding-left: 1.1em; }
+    .table { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, .45); }
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-soft); }
+    th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: rgba(228, 222, 210, .45); }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .note { font-size: .88rem; color: var(--muted); }
+    code { font-size: .88em; background: rgba(228, 222, 210, .7); padding: 1px 5px; border-radius: 4px; }
+    footer { border-top: 1px solid var(--line-soft); padding: 24px 20px 40px; font-size: .88rem; color: var(--muted); }
+    footer div { max-width: 960px; margin: 0 auto; }
+    @media (max-width: 600px) { .bar nav { gap: 14px; font-size: .88rem; } .bar img { height: 26px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a href="./"><img src="assets/brand/quindecim-lockup.svg" alt="Quindecim" width="163" height="32"></a>
+      <nav aria-label="Main"><a href="./#tool">The tool</a><a href="#data">Data</a><a href="#findings">Findings</a></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="note">Quindecim · NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective" · Team Quindecim, Ulaanbaatar</p>
+    <h1>How Quindecim works</h1>
+    <p class="lede">Quindecim answers one question for each of Mongolia's 337 soums and districts: is the climate here really changing, or is it just a few unusual years? This page explains the data, the tests and their limits, and links every result, so anyone can check our work.</p>
+    <ul class="toc">
+      <li><a href="#brief">In brief</a></li><li><a href="#data">The data</a></li><li><a href="#areas">The 337 areas</a></li>
+      <li><a href="#tests">How a trend is judged</a></li><li><a href="#findings">What we found</a></li>
+      <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#downloads">Downloads</a></li>
+    </ul>
+
+    <section id="brief" class="brief" aria-label="In brief">
+<!-- static:brief:start -->
+      <ul>
+        <li>In 117 of 333 soums, summer greenness has really risen since 2001.</li>
+        <li>In 11 of 337 soums, summer rainfall has really fallen since 1982.</li>
+        <li>In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one.</li>
+        <li>No soum shows a real change in winter temperature since 1983.</li>
+        <li>No soum shows a real change in the date of the first autumn frost since 1981.</li>
+        <li>Every result comes from a Mann-Kendall test corrected for year-to-year correlation and a check for chance across all 337 areas (false discovery rate), and is said in one plain sentence.</li>
+        <li>The statistics match independent Python code to within 0.0000001, and the summer temperature data follow ten weather stations closely.</li>
+      </ul>
+<!-- static:brief:end -->
+    </section>
+
+    <h2 id="data">The data</h2>
+    <p>One value per area per year, for five questions. Only complete seasons are used: the newest year, 2026, is the full June to August 2026 for the summer questions and December 2025 to February 2026 for winter, and a frost year counts only once its frost has come.</p>
+<!-- static:questions:start -->
+    <div class="table"><table>
+      <thead><tr><th>Question</th><th>NASA data</th><th>Season</th><th>Years</th><th>What one value covers</th><th>Data confidence</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Summer greenness</strong><br><code>ndvi_summer</code></td><td><a href="https://lpdaac.usgs.gov/products/mod13a2v061/">MODIS MOD13A2 v061</a></td><td>June to August average</td><td>2001–2026</td><td>Satellite pixels of 1 km (NASA MODIS), averaged over the grassland in each soum.</td><td>High (measured from space every 16 days, the most direct of the five)</td></tr>
+        <tr><td><strong>Summer rainfall</strong><br><code>rain_summer</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>June to August total</td><td>1982–2026</td><td>Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.</td><td>Lower (rainfall from a land model is the least certain of the five, so read its trends with care)</td></tr>
+        <tr><td><strong>Summer temperature</strong><br><code>temp_summer</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>June to August average</td><td>1982–2026</td><td>Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.</td><td>Good (it rises and falls with ten weather stations year by year, but shows less warming than they measure, so its warming figures are cautious)</td></tr>
+        <tr><td><strong>Winter temperature</strong><br><code>temp_winter</code></td><td><a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">FLDAS Noah, monthly 0.1°</a></td><td>December to February average, labelled by the January year</td><td>1983–2026</td><td>Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.</td><td>Medium (the model misses the winter inversions of cold basins, so it reads milder than weather stations, by up to 13 °C in the Uvs basin; like most stations, it shows no clear winter trend)</td></tr>
+        <tr><td><strong>First autumn frost</strong><br><code>first_frost</code></td><td><a href="https://power.larc.nasa.gov/">NASA POWER daily, T2M_MIN</a></td><td>First day after 1 July below 0 °C (day of year)</td><td>1981–2026</td><td>One NASA POWER grid cell (0.5° × 0.625°, about 55 × 47 km) at the soum centre; neighbouring soums often share it.</td><td>Medium (one coarse cell and a daily minimum below 0 °C give the general timing, not the exact frost day in one valley)</td></tr>
+      </tbody>
+    </table></div>
+<!-- static:questions:end -->
+    <p><strong>Greenness is measured over grassland only.</strong> A whole-soum average would mix in desert, water, forest, fields and towns. We keep the 1 km pixels that MODIS land cover (MCD12Q1, class 10 "Grasslands") calls grassland in most years since 2001, and use the same pixels every year, so a trend can never come from a change in which land is measured. Composites flagged as snow or cloud are dropped. Four areas have under 10 km² of grassland and get no greenness value.</p>
+    <p><strong>Why these seasons.</strong> Summer rain and greenness decide the pasture that herds live on; winter temperature matters for dzud, the harsh winters that kill livestock; the first autumn frost ends the growing season.</p>
+
+    <h2 id="areas">The 337 areas</h2>
+    <p>Mongolia officially has 330 soums and Ulaanbaatar has 9 districts, 339 in all. We use the FAO GAUL 2025 boundaries, the standard global set of administrative areas, which draw 328 soums and Ulaanbaatar's 9 districts: 337 areas. On the site they are all called soums. An aimag's result uses the average of its soums for each year (years where at least half of them have a value); Ulaanbaatar is counted with the 21 aimags, making 22.</p>
+
+    <h2 id="tests">How a trend is judged</h2>
+    <p>The same rules apply to every area and every question.</p>
+    <ol>
+      <li><strong>At least 20 yearly values</strong>, otherwise the site says there is not enough data. One value per year means there is no seasonal cycle to remove.</li>
+      <li><strong>Mann-Kendall test</strong> for the direction and the p value: it compares every year with every later year and counts ups against downs, so one extreme year cannot make a trend.</li>
+      <li><strong>Correction for year-to-year correlation</strong> (Hamed and Rao 1998). A dry year is often followed by another, and such runs make the plain test find too many trends. The correction widens the test's uncertainty when the years are correlated; it is only ever used to make the test stricter.</li>
+      <li><strong>Check for chance across all areas.</strong> With 337 areas, about 17 would pass p &lt; 0.05 by luck alone. Every area also gets a Benjamini-Hochberg false discovery rate q value among all areas (aimags among all aimags) for the same question and years.</li>
+      <li><strong>Verdict.</strong> A <em>real trend</em> if q &lt; 0.05 (and p &lt; 0.05); a <em>possible trend</em> if p &lt; 0.10 but not real; otherwise <em>not proven</em>. "Not proven" is a real answer: the change over these years is no bigger than the usual ups and downs.</li>
+      <li><strong>Rate.</strong> Sen's slope (the middle of all year-to-year slopes) gives the rate per decade. A straight-line fit with a t-test and a 95% confidence interval, using an effective sample size for correlated years (Santer et al. 2000), gives a second opinion; if the two disagree, the site says so.</li>
+      <li><strong>In plain words.</strong> Every result starts with one sentence: the change along the trend line from the first year to the last, and whether it could be chance.</li>
+      <li><strong>On the map</strong>, the colour depth is the size of the change and the fill is how sure it is: solid for a real trend, striped for a possible one, pale for not proven. A large change that could be chance never shows as a strong colour.</li>
+    </ol>
+    <p><strong>Checked.</strong> All statistics run in the browser (<a href="js/stats.js"><code>js/stats.js</code></a>, no libraries). A test script runs 15 series (ties, an extreme year, strongly correlated years, alternating years, a gap) through it and through independent Python code (SciPy, and pymannkendall where installed); they agree to within 0.0000001.</p>
+    <p class="note">Each result states its own period. Records differ in length (greenness from 2001, the others from the early 1980s), so a 26-year and a 45-year trend are not directly comparable.</p>
+
+    <h2 id="findings">What we found</h2>
+    <p>Each area's full record, after the check for chance across all areas:</p>
+<!-- static:findings:start -->
+    <div class="table"><table>
+      <thead><tr><th>Question</th><th>Years</th><th class="num">Areas tested</th><th class="num">Real trend</th><th class="num">Possible</th><th class="num">Not proven</th></tr></thead>
+      <tbody>
+        <tr><td>Summer greenness</td><td>2001–2026</td><td class="num">333</td><td class="num">117 greener, 0 browner</td><td class="num">85</td><td class="num">131</td></tr>
+        <tr><td>Summer rainfall</td><td>1982–2026</td><td class="num">337</td><td class="num">7 wetter, 11 drier</td><td class="num">56</td><td class="num">263</td></tr>
+        <tr><td>Summer temperature</td><td>1982–2026</td><td class="num">337</td><td class="num">197 hotter, 0 cooler</td><td class="num">91</td><td class="num">49</td></tr>
+        <tr><td>Winter temperature</td><td>1983–2026</td><td class="num">337</td><td class="num">0 milder, 0 colder</td><td class="num">2</td><td class="num">335</td></tr>
+        <tr><td>First autumn frost</td><td>1981–2026</td><td class="num">337</td><td class="num">0 later, 0 earlier</td><td class="num">56</td><td class="num">281</td></tr>
+      </tbody>
+    </table></div>
+    <p>In 117 of 333 soums, summer greenness has really risen since 2001. In 11 of 337 soums, summer rainfall has really fallen since 1982. In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one. No soum shows a real change in winter temperature since 1983. No soum shows a real change in the date of the first autumn frost since 1981.</p>
+    <p class="note">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>
+<!-- static:findings:end -->
+
+    <h2 id="stations">Checked against weather stations</h2>
+<!-- static:stations:start -->
+    <p>A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
+    <p>Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.93) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.2 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's &quot;not proven&quot; for winters.</p>
+    <div class="table"><table>
+      <thead><tr><th>Station</th><th>Area</th><th>Years</th><th class="num">Summer correlation</th><th class="num">Summer trend, station</th><th class="num">Summer trend, FLDAS</th><th class="num">Winter correlation</th><th class="num">Winter difference, FLDAS − station</th></tr></thead>
+      <tbody>
+        <tr><td>Ulaangom</td><td>Tarialan, Uvs</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.8 °C/decade</td><td class="num">+0.5 °C/decade</td><td class="num">0.75</td><td class="num">+12.6 °C</td></tr>
+        <tr><td>Khovd</td><td>Khovd, Khovd</td><td>1982–2026</td><td class="num">0.95</td><td class="num">+0.8 °C/decade</td><td class="num">+0.5 °C/decade</td><td class="num">0.55</td><td class="num">+6.0 °C</td></tr>
+        <tr><td>Mörön</td><td>Mörön, Khövsgöl</td><td>1982–2026</td><td class="num">0.96</td><td class="num">+0.7 °C/decade</td><td class="num">+0.5 °C/decade</td><td class="num">0.53</td><td class="num">+3.2 °C</td></tr>
+        <tr><td>Uliastai</td><td>Aldarkhaan, Zavkhan</td><td>1982–2026</td><td class="num">0.94</td><td class="num">+0.8 °C/decade</td><td class="num">+0.4 °C/decade</td><td class="num">0.90</td><td class="num">+5.2 °C</td></tr>
+        <tr><td>Arvaikheer</td><td>Arvaikheer, Övörkhangai</td><td>1982–2026</td><td class="num">0.81</td><td class="num">+0.6 °C/decade</td><td class="num">+0.2 °C/decade</td><td class="num">0.89</td><td class="num">−0.1 °C</td></tr>
+        <tr><td>Ulaanbaatar (airport)</td><td>Khan-Uul, Ulaanbaatar</td><td>1982–2025</td><td class="num">0.91</td><td class="num">+0.5 °C/decade</td><td class="num">+0.3 °C/decade</td><td class="num">0.75</td><td class="num">+4.3 °C</td></tr>
+        <tr><td>Mandalgovi</td><td>Saintsagaan, Dundgovi</td><td>1982–2026</td><td class="num">0.84</td><td class="num">+0.6 °C/decade</td><td class="num">+0.2 °C/decade</td><td class="num">0.82</td><td class="num">+0.9 °C</td></tr>
+        <tr><td>Dalanzadgad</td><td>Dalanzadgad, Ömnögovi</td><td>1982–2026</td><td class="num">0.73</td><td class="num">+0.5 °C/decade</td><td class="num">+0.2 °C/decade</td><td class="num">0.87</td><td class="num">+1.2 °C</td></tr>
+        <tr><td>Sainshand</td><td>Sainshand, Dornogovi</td><td>1982–2026</td><td class="num">0.85</td><td class="num">+0.5 °C/decade</td><td class="num">+0.3 °C/decade</td><td class="num">0.82</td><td class="num">+2.8 °C</td></tr>
+        <tr><td>Choibalsan</td><td>Kherlen, Dornod</td><td>1982–2026</td><td class="num">0.93</td><td class="num">+0.5 °C/decade</td><td class="num">+0.3 °C/decade</td><td class="num">0.87</td><td class="num">+2.4 °C</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Correlation of the yearly values (1 = they rise and fall together). Trend: Sen's slope over the same years. The station data are in <a href="data/stations.csv"><code>data/stations.csv</code></a> (built by <code>tools/stations.py</code>).</p>
+<!-- static:stations:end -->
+
+    <h2 id="limits">Limits</h2>
+    <ul>
+      <li>Straight-line trends only: a change that sped up or reversed is summarised as one rate.</li>
+      <li>Neighbouring areas share weather, and often share the same model cell (FLDAS about 11 × 8 km, POWER about 55 × 47 km), so their results are not independent. The corrections make the verdicts stricter, not perfect.</li>
+      <li>Rainfall from a land model is the least certain of the five questions; read rainfall trends with care.</li>
+      <li>Winter temperatures from FLDAS differ from weather stations in cold basins, where winter inversions trap cold air (see the station check above). Trends are more reliable than absolute winter values.</li>
+      <li>The first frost uses one coarse grid cell at the soum centre: good for the general timing, not for the exact frost day in one valley.</li>
+      <li>A trend is not a cause.</li>
+      <li>The Mongolian text and soum names are being checked by a native speaker.</li>
+    </ul>
+
+    <h2 id="downloads">Downloads</h2>
+    <ul>
+      <li><a href="data/results.csv"><code>data/results.csv</code></a>: the trend test result for every area, aimag and question (full record), with the plain-language sentence.</li>
+      <li><a href="data/data.csv"><code>data/data.csv</code></a>: every yearly value (area, question, year, value).</li>
+      <li><a href="data/stations.csv"><code>data/stations.csv</code></a>: seasonal temperatures at the ten weather stations.</li>
+      <li><a href="data/grassland.csv"><code>data/grassland.csv</code></a>: land and grassland area per soum.</li>
+      <li><a href="data/soums.geojson"><code>data/soums.geojson</code></a> and <a href="data/aimags.geojson"><code>data/aimags.geojson</code></a>: the boundaries.</li>
+      <li><a href="llms.txt"><code>llms.txt</code></a>: a plain-text summary for AI assistants.</li>
+    </ul>
+
+    <h2 id="references">Sources and references</h2>
+    <ul>
+      <li>NASA MODIS MOD13A2 v061 vegetation indices: <a href="https://lpdaac.usgs.gov/products/mod13a2v061/">LP DAAC</a></li>
+      <li>NASA MODIS MCD12Q1 v061 land cover: <a href="https://lpdaac.usgs.gov/products/mcd12q1v061/">LP DAAC</a></li>
+      <li>NASA FLDAS Noah land surface model, monthly 0.1°: <a href="https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary">GES DISC</a></li>
+      <li>NASA POWER daily data: <a href="https://power.larc.nasa.gov/">power.larc.nasa.gov</a></li>
+      <li>FAO GAUL 2025 boundaries: <a href="https://developers.google.com/earth-engine/datasets/catalog/FAO_GAUL_2025_level2">Earth Engine catalog</a></li>
+      <li>Weather stations: NOAA <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">GHCN-Daily</a></li>
+      <li>Hamed, K. H. and Rao, A. R. (1998). A modified Mann-Kendall trend test for autocorrelated data. Journal of Hydrology 204, 182-196. <a href="https://doi.org/10.1016/S0022-1694(97)00125-X">doi</a></li>
+      <li>Benjamini, Y. and Hochberg, Y. (1995). Controlling the false discovery rate. Journal of the Royal Statistical Society B 57, 289-300. <a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x">doi</a></li>
+      <li>Santer, B. D. et al. (2000). Statistical significance of trends and trend differences in layer-average atmospheric temperature time series. Journal of Geophysical Research 105, 7337-7356. <a href="https://doi.org/10.1029/1999JD901105">doi</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    <div>Team Quindecim · NASA Space Apps Challenge 2026 · Ulaanbaatar. Code under the <a href="LICENSE">MIT License</a>. <a href="./">Back to the tool</a>.</div>
+  </footer>
+</body>
+</html>

@@ -474,6 +474,7 @@ function renderResult(v) {
   }));
   $('result-title').textContent = country ? t('mapRegion') : soum ? soumName(soum) : aimagName(state.aimag);
   $('breadcrumb').hidden = country;   // the country has nothing before it
+  $('result-sub').hidden = country;   // the country has its own line (nation-sub)
   const badge = $('verdict-badge');
   $('nation-body').hidden = !country;
   $('details-extra').hidden = country;
@@ -489,6 +490,9 @@ function renderResult(v) {
   }
 
   $('result-panel').dataset.dir = r.ok ? r.direction : '';   // trend line and rate in the direction's colour
+  // The period on every result: records differ in length (greenness from 2001, the others from the early 1980s).
+  $('result-sub').textContent = r.ok ? `${tr(v.name)}, ${r.first}–${r.last} (${r.n} ${t('years')})` : `${tr(v.name)}, ${state.from}–${state.to}`;
+  $('result-methods').textContent = t('methodsLink');
   $('too-short').hidden = r.ok;
   $('result-body').hidden = !r.ok;
   if (!r.ok) {
@@ -521,7 +525,9 @@ function renderResult(v) {
   $('v-meaning').textContent = { real: t('meaningReal'), possible: t('meaningPossible'), 'not-proven': t('meaningNotProven') }[r.level];
   $('verdict').querySelectorAll(':scope > div').forEach(d => { d.style.animation = 'none'; void d.offsetWidth; d.style.animation = ''; });
 
-  const scope = soum ? (v.level === 'regional' ? t('regional') : v.level === 'point' ? t('point') : '') : t('aimagAverage');
+  // What one value stands for on the ground, and how far its trends can be trusted (js/variables.js).
+  const scope = soum ? tr(v.resolution) : `${t('aimagAverage')} ${tr(v.resolution)}`;
+  const trust = `${t('confidenceLabel')}: ${tr(v.confidence)}.`;
   // Greenness: grassland only, and how much of the soum that is.
   const g = v.id === 'ndvi_summer' && soum && DATA.grass[soum.id];
   const share = g && g[0] > 0 ? Math.round(g[1] / g[0] * 100) : null;
@@ -530,7 +536,7 @@ function renderResult(v) {
   // The newest year is always a complete season; say so, and what it covers.
   const hi = DATA.yearRange[v.id][1];
   const newest = r.last === hi ? tr(v.newest).replace(/\{y\}/g, hi).replace(/\{y0\}/g, hi - 1) : '';
-  $('source-line').textContent = [`${t('sourceLine')}: ${v.source}.`, `${tr(v.season)}.`, newest, grassNote, scope].filter(Boolean).join(' ');
+  $('source-line').textContent = [`${t('sourceLine')}: ${v.source}.`, `${tr(v.season)}.`, newest, grassNote, scope, trust].filter(Boolean).join(' ');
   $('disagree-note').hidden = !r.testsDisagree;
 
   const ru = rateUnit(v), dd = v.display === 'percent' ? 2 : 3;
@@ -607,11 +613,13 @@ function renderNation(v, L) {
     li.append(b);
     return li;
   }));
-  $('nation-note').textContent = S.nationNote.replace('{n}', c.tested.length);
+  $('nation-note').textContent = `${S.nationNote.replace('{n}', c.tested.length)} ${S.areasNote}`;
+  $('nation-methods').textContent = S.methodsLink;
   const hi = DATA.yearRange[v.id][1];
   const newest = state.to === hi ? v.newest[L].replace(/\{y\}/g, hi).replace(/\{y0\}/g, hi - 1) : '';
   const grass = v.id === 'ndvi_summer' ? S.grassOnly : '';
-  $('nation-source').textContent = [`${S.sourceLine}: ${v.source}.`, `${v.season[L]}.`, newest, grass].filter(Boolean).join(' ');
+  $('nation-source').textContent = [`${S.sourceLine}: ${v.source}.`, `${v.season[L]}.`, newest, grass, v.resolution[L],
+    `${S.confidenceLabel}: ${v.confidence[L]}.`].filter(Boolean).join(' ');
 }
 
 // Every soum's result for the chosen question and years, as one table.
@@ -620,6 +628,7 @@ function downloadAllCsv(v) {
   const q = x => `"${String(x).replace(/"/g, '""')}"`;
   const lines = [
     `# ${v.name.en} (${v.unit}), every soum, ${state.from}-${state.to}. Source: ${v.source}. ${v.season.en}.`,
+    `# ${v.resolution.en} Data confidence: ${v.confidence.en}. Areas: 328 soums and Ulaanbaatar's 9 districts (FAO GAUL 2025).`,
     `# change = along the trend line (Sen's slope) from the first year to the last, in ${unit}. ` +
       `Mann-Kendall p with the Hamed-Rao correction; q = false discovery rate over all soums tested; verdict: real if q < 0.05.`,
     DATA.sample ? '# SAMPLE DATA: invented numbers, not real results' : '',
@@ -711,7 +720,7 @@ function downloadCsv(v, soum, r) {
   const place = soum ? `${soum.name_en}, ${soum.aimag}` : `${state.aimag} (average of its soums)`;
   const lines = [
     `# ${v.name.en} (${v.unit}), ${place}`,
-    `# Source: ${v.source}. ${v.season.en}.`,
+    `# Source: ${v.source}. ${v.season.en}. ${v.resolution.en} Data confidence: ${v.confidence.en}.`,
     v.id === 'ndvi_summer' ? '# Greenness over grassland only (MODIS land cover MCD12Q1, the same pixels every year).' : '',
     `# Mann-Kendall p = ${r.mk.p.toFixed(4)} (Hamed-Rao correction for year-to-year correlation; plain test ${r.mk.plainP.toFixed(4)}), ` +
       `false discovery rate q = ${r.q.toFixed(4)} over ${r.tested} ${soum ? 'soums' : 'aimags'}, verdict: ${r.level}`,

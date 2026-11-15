@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /tools/
 Disallow: /design/
+
+Sitemap: https://quindecim-theta.vercel.app/sitemap.xml

@@ -4,6 +4,8 @@
 // display: 'percent' shows the rate as % of the period average per decade; 'absolute' shows units per decade.
 // level: 'soum' = genuinely soum-level data; 'regional' = coarse model cells shared by nearby soums.
 // newest: what the newest year covers (always a complete season). plain: the one-sentence result (js/app.js).
+// resolution: what one value stands for on the ground. confidence: how far its trends can be trusted, and why
+// (shown with every result and on methods.html).
 // steps: the map's three shades of change along the trend line over the chosen years (in % for percent questions, else
 // in units): up to steps[0], up to steps[1], more. nation: the sentence for all of Mongolia ({n} of {total} soums).
 const VARIABLES = [
@@ -22,6 +24,8 @@ const VARIABLES = [
       down: { en: 'Summer greenness in {place} has fallen about {x}% since {first}.', mn: '{place} зуны ногоорол {first} оноос хойш ойролцоогоор {x} хувиар буурсан.' },
       same: { en: 'Summer greenness in {place} has barely changed since {first}.', mn: '{place} зуны ногоорол {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    resolution: { en: 'Satellite pixels of 1 km (NASA MODIS), averaged over the grassland in each soum.', mn: 'НАСА-гийн MODIS хиймэл дагуулын 1 км пиксел, сум бүрийн бэлчээр дээрх дундаж.' },
+    confidence: { level: 'high', en: 'high (measured from space every 16 days, the most direct of the five)', mn: 'өндөр (16 хоног тутам сансраас хэмждэг, тавуулангаас хамгийн шууд хэмжилт)' },
     steps: [15, 30],
     nation: {
       up: { en: 'In {n} of {total} soums, summer greenness has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны ногоорол {first} оноос хойш бодитоор нэмэгдсэн.' },
@@ -43,6 +47,8 @@ const VARIABLES = [
       down: { en: 'Summer rainfall in {place} has fallen about {x}% since {first}.', mn: '{place} зуны хур тунадас {first} оноос хойш ойролцоогоор {x} хувиар буурсан.' },
       same: { en: 'Summer rainfall in {place} has barely changed since {first}.', mn: '{place} зуны хур тунадас {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
+    confidence: { level: 'low', en: 'lower (rainfall from a land model is the least certain of the five, so read its trends with care)', mn: 'харьцангуй бага (загвараас гаргасан хур тунадас тавуулангаас хамгийн тодорхойгүй тул чиг хандлагыг болгоомжтой уншина уу)' },
     steps: [20, 30],
     nation: {
       up: { en: 'In {n} of {total} soums, summer rainfall has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны хур тунадас {first} оноос хойш бодитоор нэмэгдсэн.' },
@@ -64,6 +70,8 @@ const VARIABLES = [
       down: { en: 'Summers in {place} have cooled about {x}\u00A0°C since {first}.', mn: '{place} зун {first} оноос хойш ойролцоогоор {x}\u00A0градусаар сэрүүссэн.' },
       same: { en: 'Summer temperatures in {place} have barely changed since {first}.', mn: '{place} зуны температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
+    confidence: { level: 'good', en: 'good (it rises and falls with ten weather stations year by year, but shows less warming than they measure, so its warming figures are cautious)', mn: 'сайн (арван цаг уурын станцтай жил бүр хамт өсч буурдаг ч тэдний хэмжсэнээс бага дулаарал харуулдаг тул дулаарлын тоо нь болгоомжтой)' },
     steps: [1, 2],
     nation: {
       up: { en: 'In {n} of {total} soums, summers have really warmed since {first}.', mn: '{total} сумаас {n} суманд зун {first} оноос хойш бодитоор дулаарсан.' },
@@ -85,6 +93,8 @@ const VARIABLES = [
       down: { en: 'Winters in {place} have become about {x}\u00A0°C colder since {first}.', mn: '{place} өвөл {first} оноос хойш ойролцоогоор {x}\u00A0градусаар хүйтэрсэн.' },
       same: { en: 'Winter temperatures in {place} have barely changed since {first}.', mn: '{place} өвлийн температур {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
+    confidence: { level: 'medium', en: 'medium (the model misses the winter inversions of cold basins, so it reads milder than weather stations, by up to 13 °C in the Uvs basin; like most stations, it shows no clear winter trend)', mn: 'дунд (загвар хүйтэн хотгорын өвлийн инверсийг алгасдаг тул цаг уурын станцаас дулаан гардаг, Увсын хотгорт 13 °C хүртэл; ихэнх станцын адил өвлийн тодорхой чиг хандлага харуулдаггүй)' },
     steps: [0.5, 1],
     nation: {
       up: { en: 'In {n} of {total} soums, winters have really become milder since {first}.', mn: '{total} сумаас {n} суманд өвөл {first} оноос хойш бодитоор зөөлөрсөн.' },
@@ -106,6 +116,8 @@ const VARIABLES = [
       down: { en: 'The first autumn frost in {place} now comes about {x}\u00A0{days} earlier than in {first}.', mn: '{place} намрын анхны хяруу {first} оноос хойш ойролцоогоор {x}\u00A0хоногоор урагшилсан.' },
       same: { en: 'The first autumn frost in {place} still comes at about the same time as in {first}.', mn: '{place} намрын анхны хяруу орох хугацаа {first} оноос хойш бараг өөрчлөгдөөгүй.' },
     },
+    resolution: { en: 'One NASA POWER grid cell (0.5° × 0.625°, about 55 × 47 km) at the soum centre; neighbouring soums often share it.', mn: 'Сумын төв дээрх НАСА POWER-ийн нэг нүд (0.5° × 0.625°, ойролцоогоор 55 × 47 км); хөрш сумд ихэвчлэн хуваалцана.' },
+    confidence: { level: 'medium', en: 'medium (one coarse cell and a daily minimum below 0 °C give the general timing, not the exact frost day in one valley)', mn: 'дунд (нэг том нүд болон 0 °C-аас доош хамгийн бага температур ерөнхий хугацааг харуулна, нэг хөндийн яг хяруу орох өдрийг биш)' },
     steps: [7, 14],
     nation: {
       up: { en: 'In {n} of {total} soums, the first autumn frost has really moved later since {first}.', mn: '{total} сумаас {n} суманд намрын анхны хяруу {first} оноос хойш бодитоор хойшилсон.' },

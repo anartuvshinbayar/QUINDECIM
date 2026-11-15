@@ -52,6 +52,8 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.15; }
 
 
 /* ---------- loader ---------- */
+/* Without JavaScript (html without .js) there is no loading screen and nothing waits to fade in: the text just shows. */
+html:not(.js) .loader, html:not(.js) .tool-loading { display: none; }
 .loader { position: fixed; inset: 0; z-index: 90; background: #CFE0F2; display: grid; place-items: center; transition: clip-path .6s var(--ease), opacity .3s .45s; clip-path: inset(0 0 0 0); }
 .loader-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--blue-soft) 1px, transparent 1px), linear-gradient(90deg, var(--blue-soft) 1px, transparent 1px); background-size: calc(100% / 3) calc(100% / 3); background-position: center; opacity: .6; }
 .loader-box { position: relative; width: min(38vw, 300px); aspect-ratio: 1; border: 1.5px solid var(--ink); display: grid; place-items: center; }
@@ -67,7 +69,7 @@ body.is-loaded .loader { clip-path: inset(0 0 100% 0); opacity: 0; pointer-event
 /* No scrolling while the loading screen is up. The page scrolls on <html>, so it is locked there; the gutter keeps the
    page from shifting sideways when a scrollbar appears afterwards. */
 html { scrollbar-gutter: stable; }
-html:has(> body.is-loading), body.is-loading { overflow: hidden; }
+html.js:has(> body.is-loading), .js body.is-loading { overflow: hidden; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes pop { to { transform: scale(1); } }
 
@@ -168,8 +170,8 @@ main > .tool { z-index: 5; }
 
 
 /* ---------- reveal on scroll ---------- */
-[data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--d, 0s); }
-[data-reveal].is-in { opacity: 1; transform: none; }
+.js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--d, 0s); }
+.js [data-reveal].is-in { opacity: 1; transform: none; }
 .word { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }   /* room for descenders, no extra height */
 .word > span { display: inline-block; transform: translateY(105%); transition: transform .9s var(--ease); transition-delay: var(--d, 0s); }
 [data-split].is-in .word > span { transform: none; }
@@ -356,6 +358,11 @@ main > .tool { z-index: 5; }
 .verdict-grid dd { margin: 0; font-size: .95rem; }
 .num { color: var(--trend, var(--clay)); font-weight: 700; font-variant-numeric: tabular-nums; }
 .source-line, .note { font-size: .78rem; color: var(--muted); margin: 10px 0 0; }
+/* Link to methods.html under a result. */
+.source-link { margin: 6px 0 0; font-size: .78rem; }
+.source-link a { color: var(--blue); text-underline-offset: 2px; }
+.noscript { position: absolute; inset: var(--bar-h) 0 auto 0; z-index: 2; margin: 24px; padding: 16px 18px; border: 1.5px dashed var(--blue); border-radius: 14px; background: var(--milk); font-weight: 600; }
+.noscript a { color: var(--blue); }
 .too-short { margin: 24px 0; padding: 16px; border: 1.5px dashed var(--clay); color: var(--clay); font-weight: 600; }
 
 /* Extras sit at the bottom right, under the map and the result. */
@@ -452,6 +459,7 @@ main > .tool { z-index: 5; }
   .stage-bar { order: 0; } .map-hint { order: 1; } .map-back { order: 2; } .map-svg, .tool-loading { order: 3; } .map-legend { order: 4; } .result-panel { order: 5; }
   .map-back { position: relative; top: auto; left: 12px; margin: 8px 0 -46px; }
   .map-hint { position: relative; top: auto; left: auto; margin: 8px 12px 0; }
+  .noscript { position: relative; inset: auto; margin: 12px; order: 3; }
   .result-extras { flex-direction: column; align-items: stretch; }   /* one per row: nothing rewraps when the language changes */
   .brand img { height: 30px; }
   /* Result on a phone: the verdict badge goes under the name when both do not fit, and the cells stack. */

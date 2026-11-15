@@ -1,26 +1,48 @@
-# Quindecim: climate trends for every soum in Mongolia
+# Quindecim: is the climate in your soum really changing?
 
-> A bilingual (Mongolian and English) web tool that tests whether climate and vegetation in each of Mongolia's 337 soums are really changing. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective".
+> A bilingual (English and Mongolian) web tool that tests whether climate and vegetation are really changing in each of Mongolia's 337 soums and districts, using 25 to 45 years of NASA data. Built by Team Quindecim (Ulaanbaatar) for the NASA Space Apps Challenge 2026, "Be An Earth System Trend Detective". Live: https://quindecim-theta.vercel.app/
 
-The user picks a question, a soum and a range of years. The site shows one plain sentence, one value per year, the trend line, and a verdict from the Mann-Kendall test corrected for year-to-year correlation (Hamed & Rao 1998), checked for chance across all soums with the Benjamini-Hochberg false discovery rate: real trend (q < 0.05), possible trend (p < 0.10) or not proven. Sen's slope gives the rate per decade; a straight-line fit with a t-test and 95% confidence interval (effective sample size for correlated years) is shown as a second opinion. All statistics run in the browser.
+## What it found (each area's full record, after the check for chance across all areas)
 
-The map shows the 22 aimags (and, zoomed in, an aimag's soums), shaded by the direction and size of their trend (filled = real, striped = possible, pale = not proven), next to a summary for the whole country. Any result can be saved as a picture (in the language chosen on the site: English by default, or Mongolian) to post on Facebook or send on Messenger, and every soum's result can be downloaded as one CSV table.
+- In 117 of 333 soums, summer greenness has really risen since 2001.
+- In 11 of 337 soums, summer rainfall has really fallen since 1982.
+- In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one.
+- No soum shows a real change in winter temperature since 1983.
+- No soum shows a real change in the date of the first autumn frost since 1981.
 
-## Questions and data
+- Summer greenness: 117 greener, 0 browner (real trends of 333 areas, 2001–2026); 85 possible, 131 not proven.
+- Summer rainfall: 7 wetter, 11 drier (real trends of 337 areas, 1982–2026); 56 possible, 263 not proven.
+- Summer temperature: 197 hotter, 0 cooler (real trends of 337 areas, 1982–2026); 91 possible, 49 not proven.
+- Winter temperature: 0 milder, 0 colder (real trends of 337 areas, 1983–2026); 2 possible, 335 not proven.
+- First autumn frost: 0 later, 0 earlier (real trends of 337 areas, 1981–2026); 56 possible, 281 not proven.
 
-- Summer greenness: NASA MODIS MOD13A2 NDVI, 1 km, June to August mean over grassland only (MODIS MCD12Q1 land cover, the same pixels every year), 2001 to 2026, soum level
-- Summer rainfall: NASA FLDAS Noah land model, June to August total, 1982 to 2026, regional estimate
-- Summer temperature: NASA FLDAS, June to August mean, 1982 to 2026, regional estimate
-- Winter temperature: NASA FLDAS, December to February mean labelled by the January year, 1983 to 2026, regional estimate
-- First autumn frost: NASA POWER daily minimum temperature at the soum centre, first day after 1 July below 0 °C, 1981 to 2026
-- Soum boundaries: FAO GAUL 2025 level 2
+## How a verdict is made
 
-## Files
+- One value per year per area (season mean or total), complete seasons only, at least 20 years.
+- Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation.
+- Benjamini-Hochberg false discovery rate across all areas: real trend if q < 0.05, possible if p < 0.10, otherwise not proven.
+- Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.
+- Every result is also given as one plain sentence, for example: "Summers in this soum have warmed about 1.8 °C since 1982. This is very unlikely to be chance."
+- The statistics agree with SciPy and an independent Python version to within 0.0000001.
+- Checked against ten weather stations (NOAA GHCN-Daily). Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.93) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.2 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's "not proven" for winters.
 
-- [Data format and methods](README.md): data format, statistics rules, known limits
-- [Data, CSV](data/data.csv): soum_id, variable, year, value
-- [Soum boundaries, GeoJSON](data/soums.geojson)
+## Data
+
+- Summer greenness (`ndvi_summer`): MODIS MOD13A2 v061 (https://lpdaac.usgs.gov/products/mod13a2v061/), June to August average, 2001-2026. Satellite pixels of 1 km (NASA MODIS), averaged over the grassland in each soum. Data confidence: high (measured from space every 16 days, the most direct of the five).
+- Summer rainfall (`rain_summer`): FLDAS Noah, monthly 0.1° (https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary), June to August total, 1982-2026. Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values. Data confidence: lower (rainfall from a land model is the least certain of the five, so read its trends with care).
+- Summer temperature (`temp_summer`): FLDAS Noah, monthly 0.1° (https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary), June to August average, 1982-2026. Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values. Data confidence: good (it rises and falls with ten weather stations year by year, but shows less warming than they measure, so its warming figures are cautious).
+- Winter temperature (`temp_winter`): FLDAS Noah, monthly 0.1° (https://disc.gsfc.nasa.gov/datasets/FLDAS_NOAH01_C_GL_M_001/summary), December to February average, labelled by the January year, 1983-2026. Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values. Data confidence: medium (the model misses the winter inversions of cold basins, so it reads milder than weather stations, by up to 13 °C in the Uvs basin; like most stations, it shows no clear winter trend).
+- First autumn frost (`first_frost`): NASA POWER daily, T2M_MIN (https://power.larc.nasa.gov/), First day after 1 July below 0 °C (day of year), 1981-2026. One NASA POWER grid cell (0.5° × 0.625°, about 55 × 47 km) at the soum centre; neighbouring soums often share it. Data confidence: medium (one coarse cell and a daily minimum below 0 °C give the general timing, not the exact frost day in one valley).
+- Areas: 328 soums and Ulaanbaatar's 9 districts, 337 in all, as drawn in the FAO GAUL 2025 boundaries (Mongolia officially counts 330 soums).
+
+## Look up any place
+
+- [Every result as CSV](https://quindecim-theta.vercel.app/data/results.csv): one row per area (soum, district or aimag) and question, with the change, p, q, verdict and the plain sentence.
+- [Every yearly value as CSV](https://quindecim-theta.vercel.app/data/data.csv): soum_id, variable, year, value.
+- [Weather station check](https://quindecim-theta.vercel.app/data/stations.csv)
+- [Methods and data](https://quindecim-theta.vercel.app/methods.html): the full method, findings and limits, readable without JavaScript.
+- A link to one place: https://quindecim-theta.vercel.app/#v=temp_summer&s=129615 (question `v`, soum id `s` from results.csv; `lang=mn` for Mongolian).
 
 ## Limits
 
-Every year shown is a complete season. Straight-line trends only. Neighbouring soums share weather, so their results are not independent. A trend is not a cause.
+Straight-line trends only. Neighbouring areas share model cells (FLDAS about 11 x 8 km, POWER about 55 x 47 km), so their results are not independent. Rainfall from a land model is the least certain question. Winter model temperatures differ from stations in cold basins. A trend is not a cause.
