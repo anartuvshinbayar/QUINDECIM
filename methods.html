@@ -62,6 +62,17 @@
     .lang-button[aria-pressed="true"] { background: var(--ink); color: #fff; }
     .lang-button .flag { width: 20px; height: 10px; border-radius: 2px; outline: 1px solid rgba(0, 0, 0, .15); }
     .bar-right { display: flex; align-items: center; gap: 18px; }
+    /* Team: photos (or initials where there is none), a name and a role, in a grid that is two columns on phones. */
+    .team { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; margin: 16px 0 0; }
+    .member { margin: 0; }
+    .member img, .member-initials { display: grid; place-items: center; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 22%; border-radius: 16px; background: var(--line-soft); }
+    .member-initials { font-size: 2rem; font-weight: 700; color: var(--blue); }
+    .member figcaption { margin-top: 10px; display: grid; gap: 2px; }
+    .member figcaption strong { font-size: 1rem; }
+    .member figcaption span { font-size: .9rem; color: var(--muted); }
+    .team-action { margin: 32px 0 0; }
+    .button { display: inline-block; padding: 10px 20px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font-weight: 600; }
+    .button:hover { background: var(--blue); }
     @media (max-width: 700px) { .bar-right { gap: 10px; } .bar nav { display: none; } .bar img { height: 26px; } }
   </style>
 </head>
@@ -95,12 +106,12 @@
     <ul class="toc" lang="en">
       <li><a href="#brief">In brief</a></li><li><a href="#data">The data</a></li><li><a href="#areas">The 337 areas</a></li>
       <li><a href="#tests">How a trend is judged</a></li><li><a href="#findings">What we found</a></li>
-      <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#downloads">Downloads</a></li>
+      <li><a href="#stations">Weather stations</a></li><li><a href="#limits">Limits</a></li><li><a href="#downloads">Downloads</a></li><li><a href="#team">Team</a></li>
     </ul>
     <ul class="toc" lang="mn">
       <li><a href="#brief">Товчхон</a></li><li><a href="#data">Өгөгдөл</a></li><li><a href="#areas">337 нутаг дэвсгэр</a></li>
       <li><a href="#tests">Чиг хандлагыг хэрхэн дүгнэдэг</a></li><li><a href="#findings">Юу олсон бэ</a></li>
-      <li><a href="#stations">Цаг уурын станцууд</a></li><li><a href="#limits">Хязгаарлалт</a></li><li><a href="#downloads">Татаж авах</a></li>
+      <li><a href="#stations">Цаг уурын станцууд</a></li><li><a href="#limits">Хязгаарлалт</a></li><li><a href="#downloads">Татаж авах</a></li><li><a href="#team">Баг</a></li>
     </ul>
 
     <section id="brief" class="brief" aria-label="In brief / Товчхон">
@@ -324,6 +335,23 @@
       <li>Benjamini, Y. and Hochberg, Y. (1995). Controlling the false discovery rate. Journal of the Royal Statistical Society B 57, 289-300. <a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x">doi</a></li>
       <li>Santer, B. D. et al. (2000). Statistical significance of trends and trend differences in layer-average atmospheric temperature time series. Journal of Geophysical Research 105, 7337-7356. <a href="https://doi.org/10.1029/1999JD901105">doi</a></li>
     </ul>
+
+    <h2 id="team"><span lang="en">Team</span><span lang="mn">Баг</span></h2>
+    <div class="team" lang="en">
+      <figure class="member"><img src="assets/team/bayasakh.jpg" alt="Bayasakh Enkhbold" loading="lazy" width="656" height="759"><figcaption><strong>Bayasakh Enkhbold</strong><span>Science lead</span></figcaption></figure>
+      <figure class="member"><img src="assets/team/anar.webp" alt="Anar Tuvshinbayar" loading="lazy" width="656" height="759"><figcaption><strong>Anar Tuvshinbayar</strong><span>Full-stack developer</span></figcaption></figure>
+      <figure class="member"><img src="assets/team/gan-erdene.webp" alt="Gan-Erdene Boldbaatar" loading="lazy" width="656" height="759"><figcaption><strong>Gan-Erdene Boldbaatar</strong><span>Digital Media specialist</span></figcaption></figure>
+      <figure class="member"><div class="member-initials" aria-hidden="true">MA</div><figcaption><strong>Misheel Ankhzul</strong><span>Video and demo producer</span></figcaption></figure>
+      <figure class="member"><div class="member-initials" aria-hidden="true">AT</div><figcaption><strong>Anu Tuvshinbayar</strong><span>UX writer</span></figcaption></figure>
+    </div>
+    <div class="team" lang="mn">
+      <figure class="member"><img src="assets/team/bayasakh.jpg" alt="Bayasakh Enkhbold" loading="lazy" width="656" height="759"><figcaption><strong>Bayasakh Enkhbold</strong><span>Шинжлэх ухааны удирдагч</span></figcaption></figure>
+      <figure class="member"><img src="assets/team/anar.webp" alt="Anar Tuvshinbayar" loading="lazy" width="656" height="759"><figcaption><strong>Anar Tuvshinbayar</strong><span>Фулл-стек хөгжүүлэгч</span></figcaption></figure>
+      <figure class="member"><img src="assets/team/gan-erdene.webp" alt="Gan-Erdene Boldbaatar" loading="lazy" width="656" height="759"><figcaption><strong>Gan-Erdene Boldbaatar</strong><span>Дижитал медиа мэргэжилтэн</span></figcaption></figure>
+      <figure class="member"><div class="member-initials" aria-hidden="true">MA</div><figcaption><strong>Misheel Ankhzul</strong><span>Видео ба демо продюсер</span></figcaption></figure>
+      <figure class="member"><div class="member-initials" aria-hidden="true">AT</div><figcaption><strong>Anu Tuvshinbayar</strong><span>UX бичигч</span></figcaption></figure>
+    </div>
+    <p class="team-action"><a class="button" href="./" data-tool><span lang="en">Try the tool</span><span lang="mn">Хэрэгсэл рүү очих</span></a></p>
   </main>
 
   <footer>
