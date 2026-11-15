@@ -196,10 +196,12 @@ main > .tool { z-index: 5; }
 /* The stage: the map fills it; the result panel slides in from the right.
    It is the glass panel that rises over the blurred logo (js/motion.js): a see-through milk fill, backdrop blur,
    a 1px light border, a soft shadow and round corners. Every piece of chrome on it is the same glass. */
-.stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .86); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
+.stage { --bar-h: 58px; --glass: rgba(246, 241, 231, .62); --glass-edge: rgba(255, 255, 255, .7); --glass-shadow: 0 10px 30px -12px rgba(21, 33, 59, .22);
   position: relative; height: clamp(440px, calc(100svh - 86px - var(--extras-room, 64px)), 1000px); overflow: hidden;
   border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
   box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
+.stage-bar, .map-legend, .map-back, .result-panel { -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); }
 /* Once the panel has settled, nothing behind the glass moves relative to it, so its blur is baked into the logo instead
    (js/motion.js: CALM): the map can zoom without the page being blurred again on every frame. It looks the same. */
 .stage.is-calm, .stage.is-calm .stage-bar, .stage.is-calm .map-legend, .stage.is-calm .map-back, .stage.is-calm .result-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }

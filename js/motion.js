@@ -222,10 +222,10 @@ function initTraveler() {
   // It rises faster than the page scrolls (RISE: half a screen of scrolling for a whole screen of rise), so the reveal
   // is short; it is held lower by a transform that shrinks to nothing at the resting place. Meanwhile the logo stays
   // pinned behind it, blurring and dimming. All of it follows the scroll position.
-  const HOLD = 0.12, RISE = 0.5, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
+  const HOLD = 0.12, RISE = 0.5, BLUR = 16, DIM = 0.5, MAP_IN = 0.6;   // MAP_IN: the map fades in over the last 40% of the rise
   // Settled, the glass (css .stage: blur 14px, saturate 1.15) stops blurring the page; the logo carries that blur itself.
   // Two blurs add up as sqrt(16^2 + 14^2) = 21.3px, so it looks the same.
-  const CALM = 'url(#q-grain)';
+  const CALM = 'blur(21.3px) saturate(1.15)';
   function geo() {
     const slot = $('hero-logo-slot');
     if (!slot) return null;
@@ -251,7 +251,7 @@ function initTraveler() {
   function reveal(p) {
     const on = p > 0;
     if (on || veiled) {
-      disc.style.filter = !on ? '' : CALM;   // grain, not blur: the logo stays crisp behind the glass
+      disc.style.filter = !on ? '' : p >= 1 ? CALM : `blur(${(BLUR * smooth(p)).toFixed(2)}px)`;
       disc.style.opacity = on ? (1 - (1 - DIM) * smooth(p)).toFixed(3) : '';
     }
     t.classList.toggle('is-veiled', on);   // no CSS transition on filter/opacity while they follow the scroll
