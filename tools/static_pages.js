@@ -302,7 +302,7 @@ ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
       <ul>
         <li>One value per year per area, complete seasons only, at least 20 years.</li>
         <li>Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation; Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.</li>
-        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if q &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
+        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if the adjusted p &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
         <li>Statistics checked against SciPy and an independent Python version (agreement within 0.0000001).</li>
 ${stations ? `        <li>Checked against ten weather stations (NOAA GHCN-Daily). ${esc(stationSummary)}</li>\n` : ''}      </ul>
       <h3>Data</h3>
@@ -349,7 +349,7 @@ ${greeningText.map(t => `- ${t}`).join('\n')}
 
 - One value per year per area (season mean or total), complete seasons only, at least 20 years.
 - Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation.
-- Benjamini-Hochberg false discovery rate across all areas: real trend if q < 0.05, possible if p < 0.10, otherwise not proven.
+- Benjamini-Hochberg false discovery rate across all areas: real trend if the adjusted p < 0.05, possible if p < 0.10, otherwise not proven.
 - Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.
 - Every result is also given as one plain sentence, for example: "Summers in this soum have warmed about 1.8 °C since 1982. This is very unlikely to be chance."
 - The statistics agree with SciPy and an independent Python version to within 0.0000001.
@@ -361,7 +361,7 @@ ${runs.map(({ v, lo, hi }) => `- ${v.name.en} (\`${v.id}\`): ${LINKS[v.id][0]} (
 
 ## Look up any place
 
-- [Every result as CSV](${SITE}data/results.csv): one row per area (soum, district or aimag) and question, with the change, p, q, verdict and the plain sentence.
+- [Every result as CSV](${SITE}data/results.csv): one row per area (soum, district or aimag) and question, with the change, p, adjusted p (fdr_q), verdict and the plain sentence.
 - [Every yearly value as CSV](${SITE}data/data.csv): soum_id, variable, year, value.
 - [Weather station check](${SITE}data/stations.csv)
 - [Methods and data](${SITE}methods.html): the full method, findings and limits, readable without JavaScript.

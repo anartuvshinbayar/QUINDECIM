@@ -27,9 +27,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611152307">
+  <link rel="stylesheet" href="css/site.css?v=202611152342">
   <!-- The data (0.84 MB, about 250 KB compressed) loads in parallel and never holds up the page: js/data.js waits for it. -->
-  <script id="data-js" src="data/data.js?v=202611152307" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
+  <script id="data-js" src="data/data.js?v=202611152342" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -351,7 +351,7 @@
       <ul>
         <li>One value per year per area, complete seasons only, at least 20 years.</li>
         <li>Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation; Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.</li>
-        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if q &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
+        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if the adjusted p &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
         <li>Statistics checked against SciPy and an independent Python version (agreement within 0.0000001).</li>
         <li>Checked against ten weather stations (NOAA GHCN-Daily). Summer: FLDAS rises and falls with the stations year by year (correlation 0.73 to 0.96, median 0.92) and, like them, warms at 10 of 10; but it warms less at 10 of 10 (FLDAS +0.2 to +0.5 °C per decade, stations +0.5 to +0.8), so the site's summer warming figures are cautious. Winter: FLDAS reads milder than the stations, by up to 12.6 °C in the cold western basins where winter inversions trap cold air (median +3.0 °C); FLDAS shows a clear winter trend at 0 of 10 stations and the stations themselves at 2, which matches the site's &quot;not proven&quot; for winters.</li>
       </ul>
@@ -415,16 +415,16 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><div class="travel-disc"><img src="assets/brand/quindecim-mark.svg" alt=""></div></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="js/stats.js?v=202611152307"></script>
-  <script src="js/variables.js?v=202611152307"></script>
-  <script src="js/i18n.js?v=202611152307"></script>
-  <script src="js/data.js?v=202611152307"></script>
-  <script src="js/map.js?v=202611152307"></script>
-  <script src="js/chart.js?v=202611152307"></script>
-  <script src="js/figures.js?v=202611152307"></script>
-  <script src="js/motion.js?v=202611152307"></script>
-  <script src="js/share.js?v=202611152307"></script>
-  <script src="js/stories.js?v=202611152307"></script>
-  <script src="js/app.js?v=202611152307"></script>
+  <script src="js/stats.js?v=202611152342"></script>
+  <script src="js/variables.js?v=202611152342"></script>
+  <script src="js/i18n.js?v=202611152342"></script>
+  <script src="js/data.js?v=202611152342"></script>
+  <script src="js/map.js?v=202611152342"></script>
+  <script src="js/chart.js?v=202611152342"></script>
+  <script src="js/figures.js?v=202611152342"></script>
+  <script src="js/motion.js?v=202611152342"></script>
+  <script src="js/share.js?v=202611152342"></script>
+  <script src="js/stories.js?v=202611152342"></script>
+  <script src="js/app.js?v=202611152342"></script>
 </body>
 </html>

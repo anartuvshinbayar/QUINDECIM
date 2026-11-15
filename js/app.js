@@ -613,7 +613,7 @@ function renderResult(v) {
     : r.level === 'possible' ? (r.mk.p < 0.05 ? tf('possibleAloneP', many) : t('possibleP')) : t('notProvenP');
   $('v-speed').replaceChildren(speedNode(v, r));
   $('v-speed').querySelectorAll('.num[data-value]').forEach(motion.countUp);
-  $('v-real').textContent = `${levelText}: ${levelP} (p = ${fmtP(r.mk.p)}, q = ${fmtP(r.q)})`;
+  $('v-real').textContent = `${levelText}: ${levelP} (p = ${fmtP(r.mk.p)}, ${t('adjP')} = ${fmtP(r.q)})`;
   $('v-meaning').textContent = { real: t('meaningReal'), possible: t('meaningPossible'), 'not-proven': t('meaningNotProven') }[r.level];
   $('verdict').querySelectorAll(':scope > div').forEach(d => { d.style.animation = 'none'; void d.offsetWidth; d.style.animation = ''; });
 
