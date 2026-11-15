@@ -29,7 +29,13 @@ function runLoader(done) {
 // No tile looks like the logo (no mountain with a spiral), so the logo is never mistaken for an ornament.
 const T = name => ({ img: `assets/tiles/${name}.svg` });
 const S = c => ({ solid: c });
+// Bayasakh's figures (js/figures.js) on a solid block: cream on the strong colours, the matching strong colour on light ones.
+const F = (c, fig, fc) => ({ solid: c, fig, fc });
+const CREAM = '#F6F1E7';
 const POOL = {
+  twinPink: F('#EDD3C6', 'twin', '#B9431C'), sunGrey: F('#D7DAE0', 'sun', '#3A68BD'), cloudSage: F('#D2DBCF', 'cloud', '#2E7A57'),
+  windClay: F('#B9431C', 'wind', CREAM), swirlBlue: F('#3A68BD', 'swirl', CREAM), aaruulSage: F('#D2DBCF', 'aaruul', '#2E7A57'),
+  sunPink: F('#EDD3C6', 'sun', '#B9431C'), aaruulInk: F('#15213B', 'aaruul', CREAM), windSage: F('#D2DBCF', 'wind', '#2E7A57'),
   crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'), ring: T('seal-hammer'),
   meander: T('alkhan-square'), keyband: T('alkhan-band'),
   blue: S('#3A68BD'), ink: S('#15213B'), green: S('#2E7A57'), clay: S('#B9431C'), sage: S('#D2DBCF'), grey: S('#D7DAE0'), pink: S('#EDD3C6'),
@@ -37,16 +43,17 @@ const POOL = {
 // 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
 const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
 const LAYOUT = `
-  crest  pink    quarter _      seal  grey  ring   keyband _     horns  quarter
-  sage   meander _       clay   quarter L   green  blue    seal  _      grey
-  _      blue    sage    meander pink green _     ink     clay  sage   crest`.trim().split(/\s+/).map(k => (k === '_' ? null : k));
+  crest     twinPink quarter    _       seal    sunGrey ring   keyband   _     horns    quarter
+  cloudSage meander  _          windClay quarter L      green  swirlBlue seal  _        grey
+  _         blue     aaruulSage meander sunPink green   _      aaruulInk clay  windSage crest`.trim().split(/\s+/).map(k => (k === '_' ? null : k));
 let gridCols = COLS;
 
 // Each block grows from small to full out of one of its corners, in a diagonal wave (loopsii-style).
 const CORNERS = [['0%', '0%'], ['100%', '0%'], ['0%', '100%'], ['100%', '100%']];
 function face(item) {
   const f = document.createElement('div');
-  f.className = 'tile-face' + (item.solid ? ' solid' : '');
+  f.className = 'tile-face' + (item.solid ? ' solid' : '') + (item.fig ? ' fig' : '');
+  if (item.fig) f.innerHTML = Q.figures.svg(item.fig, item.fc);
   if (item.solid) f.style.setProperty('--c', item.solid);
   else { const im = document.createElement('img'); im.src = item.img; im.alt = ''; im.loading = 'eager'; f.appendChild(im); }
   const [ox, oy] = CORNERS[Math.floor(Math.random() * 4)];

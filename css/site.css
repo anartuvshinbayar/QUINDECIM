@@ -153,6 +153,7 @@ main > section { position: relative; z-index: 1; }
   transition: transform .75s cubic-bezier(.34, 1.56, .64, 1), opacity .3s; transition-delay: var(--d, 0s); }
 .tile-face img { width: 100%; height: 100%; }
 .tile-face.solid { background: var(--c); }
+.tile-face.fig svg { position: absolute; inset: 15%; width: 70%; height: 70%; }   /* a figure, 70% of the tile, centred */
 .hero-tiles.is-in .tile-face { transform: none; opacity: 1; }
 .tile-face.is-out { transform: scale(.08) !important; opacity: 0 !important; transition: transform .45s var(--ease), opacity .3s .15s; transition-delay: 0s; }
 
@@ -312,7 +313,7 @@ main > .tool { z-index: 5; }
 .breadcrumb button { border: 0; background: none; padding: 0; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; font-size: inherit; }
 .breadcrumb li:last-child { color: var(--ink); font-weight: 600; }
 .result-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.result-head h3 { margin: 0; font-size: 1.35rem; }
+.result-head h3 { margin: 0; font-size: 1.5rem; }
 /* The result in one plain sentence, first thing under the name. */
 /* One place, all five questions at a glance; the current one outlined, the others open their question. */
 .glance { margin: 14px 0 0; }
@@ -327,21 +328,21 @@ main > .tool { z-index: 5; }
 .glance-years { font-size: .66rem; color: var(--muted); }
 /* What the result means for the place, in words, and what it does not say. */
 .here { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(228, 222, 210, .45); }
-.here-list { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: .86rem; line-height: 1.45; }
+.here-list { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: .92rem; line-height: 1.45; }
 .here-list li:first-child { font-weight: 600; }
-.nation-means { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(228, 222, 210, .45); font-size: .82rem; line-height: 1.45; }
-.plain-line { margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--trend); font-size: 1rem; font-weight: 600; line-height: 1.45; }
+.nation-means { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(228, 222, 210, .45); font-size: .9rem; line-height: 1.45; }
+.plain-line { margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--trend); font-size: 1.12rem; font-weight: 600; line-height: 1.45; }
 /* The whole country: one bar of all soums, the counts, and the largest real changes as shortcuts. */
-.nation-sub { margin: 2px 0 0; font-size: .85rem; color: var(--muted); font-weight: 600; }
+.nation-sub { margin: 2px 0 0; font-size: .92rem; color: var(--muted); font-weight: 600; }
 .nation-bar { display: flex; height: 14px; margin: 16px 0 10px; border-radius: 7px; overflow: hidden; background: var(--line-soft); }
 .nation-bar i { display: block; min-width: 3px; }
-.nation-counts { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: .84rem; }
+.nation-counts { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; font-size: .95rem; }
 .nation-counts li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; }
 .nation-counts li.is-muted { display: block; color: var(--muted); font-size: .78rem; }
 .nation-counts .num, .nation-place .num { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }   /* not the panel's trend colour: rows go both ways */
-.nation-top-title { margin: 16px 0 6px; font-size: .9rem; }
+.nation-top-title { margin: 16px 0 6px; font-size: 1rem; }
 .nation-top { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
-.nation-place { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0 4px; padding: 5px 8px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: .84rem; text-align: left; color: var(--ink); cursor: pointer; transition: background .2s; }
+.nation-place { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0 4px; padding: 5px 8px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: .95rem; text-align: left; color: var(--ink); cursor: pointer; transition: background .2s; }
 .nation-place:hover, .nation-place:focus-visible { background: rgba(58, 104, 189, .1); }
 .nation-place .name { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .pill { display: inline-flex; align-items: center; justify-content: center; text-align: center; padding: 7px 14px; font-weight: 600; font-size: .8rem; border: 2px solid var(--blue); border-radius: 999px; white-space: nowrap; transition: background .4s, border-color .4s, color .4s; }
@@ -378,9 +379,12 @@ main > .tool { z-index: 5; }
 @keyframes cell-in { to { opacity: 1; transform: none; } }
 @keyframes panel-up { from { opacity: 0; transform: translateY(24px); } }
 .verdict-grid dt { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-.verdict-grid dd { margin: 0; font-size: .95rem; }
+.verdict-grid dd { margin: 0; font-size: 1.02rem; }
 .num { color: var(--trend, var(--clay)); font-weight: 700; font-variant-numeric: tabular-nums; }
 .source-line, .note { font-size: .78rem; color: var(--muted); margin: 10px 0 0; }
+/* The small print under a result (method, areas, data source): smaller and quieter, so the result itself leads. */
+.result-panel .source-line, .result-panel .note, .result-panel .source-link { font-size: .7rem; line-height: 1.45; color: #8A90A0; }
+.result-panel .source-link a { color: #7C8DB5; }
 /* Link to methods.html under a result. */
 .source-link { margin: 6px 0 0; font-size: .78rem; }
 .source-link a { color: var(--blue); text-underline-offset: 2px; }
@@ -417,6 +421,39 @@ main > .tool { z-index: 5; }
 
 /* ---------- Words: equal term cells on the left, the chosen term's meaning in a card on the right ----------
    Inset like the hero text, so the title sits inside the page rails, not on them. */
+/* Stories (trial): two rows of cards drifting in opposite directions; they stop on hover, and with reduced motion
+   they are rows you scroll by hand. */
+.stories { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) 0 0; overflow: hidden; }
+.stories > p, .stories > h2 { padding: 0 calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); }
+.stories-eyebrow { margin: 0 0 4px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stories-intro { margin: -8px 0 18px; font-size: .9rem; color: var(--muted); }
+.stories-row { overflow: hidden; padding: 6px 0; }
+.stories-track { display: flex; gap: 16px; width: max-content; animation: drift 70s linear infinite; }
+.stories-row.is-reverse .stories-track { animation-duration: 80s; animation-direction: reverse; }
+.stories-row:hover .stories-track, .stories-row:focus-within .stories-track { animation-play-state: paused; }
+@keyframes drift { to { transform: translateX(calc(-50% - 8px)); } }
+.story { flex: none; width: 300px; height: 300px; display: grid; grid-template-rows: 150px 1fr; padding: 0; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #FBF8F2; text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, transform .2s; }
+.story-wide { width: 560px; grid-template-rows: none; grid-template-columns: 1fr 1fr; }
+.story:hover, .story:focus-visible { border-color: var(--blue); }
+.story:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.story-head, .story-top { position: relative; display: grid; align-content: end; padding: 16px 18px; background: var(--g); color: #fff; overflow: hidden; }
+.story-head svg, .story-top svg { position: absolute; right: -8px; top: -8px; width: 120px; height: 120px; }
+.story-head strong, .story-top strong { position: relative; font-size: 2.2rem; line-height: 1; font-weight: 800; letter-spacing: -.02em; }
+.story-head small, .story-top small { position: relative; margin-top: 4px; font-size: .78rem; font-weight: 600; opacity: .9; }
+.story-text { display: grid; align-content: start; gap: 6px; padding: 14px 18px; }
+.story-place { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.story-text b { font-size: 1.05rem; line-height: 1.3; }
+.story-more { margin-top: 4px; font-size: .82rem; font-weight: 700; color: var(--blue); }
+.story-dialog { width: min(560px, calc(100vw - 24px)); padding: 0; border: 0; border-radius: 20px; background: var(--milk); color: var(--ink); overflow: hidden; box-shadow: 0 30px 80px -20px rgba(21, 33, 59, .5); }
+.story-dialog::backdrop { background: rgba(21, 33, 59, .45); }
+.story-top { min-height: 150px; }
+.story-in { padding: 18px 22px 22px; }
+.story-in h3 { margin: 4px 0 10px; font-size: 1.35rem; }
+.story-who { font-size: .82rem; color: var(--muted); }
+.story-x { position: absolute; top: 12px; right: 12px; background: rgba(246, 241, 231, .9); }
+@media (prefers-reduced-motion: reduce) { .stories-row { overflow-x: auto; } .stories-track { animation: none; } }
+@media (max-width: 760px) { .story { width: 260px; height: 290px; } .story-wide { width: 260px; grid-template-columns: none; grid-template-rows: 150px 1fr; } }
+
 /* In short: the simple layer under the tool (methods.html is the technical one). */
 .short { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)) 0; scroll-margin-top: 70px; }
 .short-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
@@ -434,6 +471,12 @@ main > .tool { z-index: 5; }
 .glossary-term:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .glossary-term[aria-selected="true"] { background: var(--blue); border-color: var(--blue); color: var(--milk); }
 .glossary-def { margin: 0; padding: clamp(18px, 2.4vw, 28px); border: 1px solid var(--line); border-radius: 12px; background: #FBF8F2; font-size: clamp(1.1rem, 1.7vw, 1.35rem); line-height: 1.45; font-weight: 500; color: var(--ink); }
+.glossary-meaning { margin: 0; }
+/* A worked example from real results, with a small picture. */
+.glossary-example { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: rgba(228, 222, 210, .5); font-size: .9rem; line-height: 1.45; font-weight: 500; }
+.glossary-example strong { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.glossary-example svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 8px 0; font-family: var(--font); font-size: 11px; font-weight: 600; }
+.glossary-example p { margin: 0; }
 
 /* ---------- footer ---------- */
 .site-footer { background: var(--blue); color: var(--milk); padding: 56px var(--gutter); }

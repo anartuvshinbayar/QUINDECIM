@@ -439,7 +439,19 @@ function renderGlossary() {
   showDef(glossaryIndex, state.lang);
 }
 // The meaning card shows only the meaning: the chosen term is already highlighted next to it.
-function showDef(i, l) { $('glossary-def').textContent = GLOSSARY[i][l][1]; }
+// ...and under it a worked example from real results, with a small picture (js/examples.js).
+const EX_COLOURS = ['#2E7A57', '#3A68BD', '#B9431C', '#15213B'];
+function showDef(i, l) {
+  const g = GLOSSARY[i], ex = Q.examples.example(g.en[0], l, EX_COLOURS[i % EX_COLOURS.length]);
+  const box = $('glossary-def');
+  box.replaceChildren(make('p', { className: 'glossary-meaning', textContent: g[l][1] }));
+  if (!ex) return;
+  const e = make('div', { className: 'glossary-example' });
+  e.append(make('strong', { textContent: STRINGS[l].example }));
+  if (ex.svg) e.insertAdjacentHTML('beforeend', ex.svg);
+  e.append(make('p', { textContent: ex.text }));
+  box.append(e);
+}
 
 // ---------- rendering ----------
 
@@ -515,6 +527,7 @@ function render() {
   legendSet(state.lang);
   paintLegend(v, pal);
   renderShort(state.lang);
+  renderStories(state.lang);
 
   renderResult(v);
   holdPanel(false);
@@ -795,6 +808,57 @@ async function openCard() {
   }
 }
 
+// ---------- stories from herders (TRIAL: placeholder text, shown only with ?stories=1) ----------
+const STORIES_ON = new URLSearchParams(location.search).has('stories');
+function storyFacts(st, L) {   // the place's name and its real number for the story's question (full record)
+  const v = byId[st.variable], all = fullRecord(v.id);
+  const soum = st.place.soum && DATA.soumById[st.place.soum];
+  const r = soum ? all.soums[soum.id] : all.aimags[st.place.aimag];
+  const place = soum ? `${soumNameL(soum, L)}, ${aimagNameL(soum.aimag, L)}` : aimagNameL(st.place.aimag, L);
+  const vk = verdictKey(r), dir = vk.endsWith('-up') ? 'up' : 'down', S = STRINGS[L];
+  const label = vk.startsWith('real') ? `${v[dir][L]}, ${r.first}–${r.last}` : vk.startsWith('possible') ? `${S.glanceMaybe} ${v[dir][L]}` : S.glanceNone;
+  return { soum, place, number: r.ok ? fmtChange(v, changeOf(v, r), L) : '–', label };
+}
+function renderStories(L) {
+  if (!STORIES_ON || !DATA) return;
+  $('stories').hidden = false;
+  const S = STRINGS[L];
+  const card = (st, i) => {
+    const f = storyFacts(st, L), b = make('button', { type: 'button', className: `story story-${st.type}` });
+    b.style.setProperty('--g', st.colour);
+    b.innerHTML = `<span class="story-head">${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small></span><span class="story-text"><small class="story-place"></small><b></b><span class="story-more"></span></span>`;
+    b.querySelector('.story-head small').textContent = f.label;
+    b.querySelector('.story-text small').textContent = f.place;
+    b.querySelector('.story-text b').textContent = st.title[L];
+    b.querySelector('.story-more').textContent = `${S.storyRead} →`;
+    b.addEventListener('click', () => openStory(i));
+    return b;
+  };
+  // Each row twice, so the slow loop is seamless; the copy is hidden from screen readers and keyboards.
+  [[0, 4, 'stories-track-1'], [4, 8, 'stories-track-2']].forEach(([a, z, id]) => {
+    const cards = Q.stories.slice(a, z).map((st, k) => card(st, a + k));
+    const copies = Q.stories.slice(a, z).map((st, k) => { const c = card(st, a + k); c.tabIndex = -1; c.setAttribute('aria-hidden', 'true'); return c; });
+    $(id).replaceChildren(...cards, ...copies);
+  });
+}
+function openStory(i) {
+  const st = Q.stories[i], L = state.lang, f = storyFacts(st, L), S = STRINGS[L];
+  $('story-top').style.setProperty('--g', st.colour);
+  $('story-top').innerHTML = `${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small>`;
+  $('story-top').querySelector('small').textContent = f.label;
+  $('story-place').textContent = f.place;
+  $('story-title').textContent = st.title[L];
+  $('story-body').textContent = S.storyBody;
+  $('story-go').textContent = `${S.storyMap} →`;
+  $('story-go').onclick = () => {   // close, pick the place and question, glide to the map
+    $('story-dialog').close();
+    state.aimag = f.soum ? f.soum.aimag : st.place.aimag; state.soumId = f.soum ? f.soum.id : null;
+    selectVariable(st.variable);
+    motion.toTool();
+  };
+  $('story-dialog').showModal();
+}
+
 function downloadCsv(v, soum, r) {
   const place = soum ? `${soum.name_en}, ${soum.aimag}` : `${state.aimag} (average of its soums)`;
   const lines = [
@@ -865,8 +929,12 @@ function wire() {
     scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open) goOverview();
+    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open) goOverview();
   });
+
+  // Stories (trial).
+  $('story-close').addEventListener('click', () => $('story-dialog').close());
+  $('story-dialog').addEventListener('click', e => { if (e.target === $('story-dialog')) $('story-dialog').close(); });
 
   // Share as image.
   $('share-image').addEventListener('click', openCard);
