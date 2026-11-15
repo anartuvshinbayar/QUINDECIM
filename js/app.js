@@ -330,8 +330,6 @@ function lockSizes() {
   const tabNames = l => document.querySelectorAll('.q-tab').forEach(b => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; });
   document.querySelectorAll('.q-tab').forEach(b => add(b, 'width', l => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; }));
   add($('q-tabs'), 'height', tabNames);
-  // Glossary: every card as tall as its taller language, so the columns never reflow when switching.
-  document.querySelectorAll('.gcard').forEach((card, i) => add(card, 'height', l => glossaryCard(i, l, card)));
   document.querySelectorAll('.hero-sub, #map-hint').forEach(el => add(el, 'height', i18nText(el)));
   add($('map-legend'), 'width', legendSet);
   add($('map-legend'), 'height', legendSet);
@@ -427,28 +425,46 @@ function showCurrentQuestion() {
 // results with a small picture (js/examples.js). Cards keep their natural heights (CSS columns).
 const EX_COLOURS = ['#2E7A57', '#3A68BD', '#B9431C', '#15213B'];
 const READING = new Set(['Soum', 'Aimag', 'Time series', 'Trend', 'NDVI', "Sen's slope", 'Confidence interval']);
-function glossaryCard(i, l, card) {
-  const g = GLOSSARY[i], c = EX_COLOURS[i % EX_COLOURS.length], ex = Q.examples.example(g.en[0], l, c);
-  card.style.setProperty('--c', c);
-  const top = make('div', { className: 'gcard-top' });
-  top.append(make('small', { textContent: STRINGS[l][READING.has(g.en[0]) ? 'gRead' : 'gTest'] }),
+// The coloured top of a term: its group, its number and one of the figures (cards and pop-up share it).
+function glossaryTop(i, l, el) {
+  const g = GLOSSARY[i];
+  el.style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
+  el.replaceChildren(make('small', { textContent: STRINGS[l][READING.has(g.en[0]) ? 'gRead' : 'gTest'] }),
     make('span', { className: 'gcard-n', textContent: String(i + 1).padStart(2, '0') }));
-  top.insertAdjacentHTML('beforeend', Q.figures.svg(Q.figures.NAMES[i % Q.figures.NAMES.length], 'rgba(255,255,255,.5)', 8));
-  const body = make('div', { className: 'gcard-body' });
-  body.append(make('h3', { textContent: g[l][0] }), make('p', { textContent: g[l][1] }));
-  if (ex) {
-    const e = make('div', { className: 'glossary-example' });
-    e.append(make('strong', { textContent: STRINGS[l].example }));
-    if (ex.svg) e.insertAdjacentHTML('beforeend', ex.svg);
-    e.append(make('p', { textContent: ex.text }));
-    body.append(e);
-  }
-  card.replaceChildren(top, body);
+  el.insertAdjacentHTML('beforeend', Q.figures.svg(Q.figures.NAMES[i % Q.figures.NAMES.length], 'rgba(255,255,255,.5)', 8));
 }
+// Cards all the same size: the term and the start of its meaning. Clicking one opens the whole meaning and its example.
 function renderGlossary(l = state.lang) {
   const box = $('glossary-cards');
-  if (box.children.length !== GLOSSARY.length) box.replaceChildren(...GLOSSARY.map(() => make('article', { className: 'gcard' })));
-  [...box.children].forEach((card, i) => glossaryCard(i, l, card));
+  if (box.children.length !== GLOSSARY.length) box.replaceChildren(...GLOSSARY.map((_, i) => {
+    const b = make('button', { type: 'button', className: 'gcard' });
+    b.addEventListener('click', () => openTerm(i));
+    return b;
+  }));
+  [...box.children].forEach((b, i) => {
+    const top = make('span', { className: 'gcard-top' });
+    glossaryTop(i, l, top);
+    b.style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
+    const body = make('span', { className: 'gcard-body' });
+    body.append(make('strong', { className: 'gcard-term', textContent: GLOSSARY[i][l][0] }),
+      make('span', { className: 'gcard-text', textContent: GLOSSARY[i][l][1] }));
+    b.replaceChildren(top, body);
+  });
+}
+function openTerm(i) {
+  const g = GLOSSARY[i], l = state.lang, ex = Q.examples.example(g.en[0], l, EX_COLOURS[i % EX_COLOURS.length]);
+  glossaryTop(i, l, $('term-top'));
+  $('term-dialog').style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
+  $('term-title').textContent = g[l][0];
+  $('term-text').textContent = g[l][1];
+  const box = $('term-example');
+  box.hidden = !ex;
+  if (ex) {
+    box.replaceChildren(make('strong', { textContent: STRINGS[l].example }));
+    if (ex.svg) box.insertAdjacentHTML('beforeend', ex.svg);
+    box.append(make('p', { textContent: ex.text }));
+  }
+  $('term-dialog').showModal();
 }
 
 // ---------- rendering ----------
@@ -928,7 +944,7 @@ function wire() {
     scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open) goOverview();
+    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open && !$('term-dialog').open) goOverview();
   });
 
   // Toggles under the map: each opens its panel below the row.
@@ -937,6 +953,10 @@ function wire() {
     $(b).setAttribute('aria-expanded', open);
     $(p).hidden = !open;
   }));
+
+  // Glossary pop-up.
+  $('term-close').addEventListener('click', () => $('term-dialog').close());
+  $('term-dialog').addEventListener('click', e => { if (e.target === $('term-dialog')) $('term-dialog').close(); });
 
   // Stories (trial).
   $('story-close').addEventListener('click', () => $('story-dialog').close());
