@@ -43,7 +43,7 @@ visitors' browsers load the new files instead of an old cached copy.
 | `js/chart.js` | Yearly chart as plain SVG with the 95% confidence band |
 | `js/variables.js` | The five questions: names, units, sources, wording |
 | `js/i18n.js` | All text in Mongolian and English, plus the glossary |
-| `assets/brand/`, `assets/tiles/` | The Quindecim logo (mark and header lockup, traced to SVG from the new logo) and nyd's ornament tiles (originals in `design/nyd/`) |
+| `assets/brand/`, `assets/tiles/` | The Quindecim logo (mark and header lockup, drawn as clean curves by `tools/make_logo.py`, which also writes `favicon.svg`) and nyd's ornament tiles (originals in `design/nyd/`) |
 | `favicon.svg`, `favicon.ico` | Site icon |
 | `assets/brand/quindecim-og.png` | Social preview image (1200 x 630), made by `tools/og_card.html` |
 | `robots.txt`, `llms.txt` | Crawler rules and a plain-text summary for AI assistants |
