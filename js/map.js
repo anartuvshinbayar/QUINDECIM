@@ -171,6 +171,7 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     const region = { x: 0, y: top + above, w: wide && current.panel ? W * 0.54 : W, h: Math.max(80, H - top - above - below) };
     const box = zoomed ? aBoxes[current.aimag] : world;
     const f = fit(box, region, zoomed ? Math.min(W, H) * 0.05 : Math.min(W, H) * 0.02);
+    if (!(f.s > 0 && isFinite(f.s))) return;   // no size yet (loading screen, hidden tab): framed again on resize
     scale = f.s;
     g.classList.toggle('no-anim', !animate);
     g.style.transform = `translate(${f.tx.toFixed(1)}px, ${f.ty.toFixed(1)}px) scale(${f.s.toFixed(4)})`;

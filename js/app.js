@@ -433,38 +433,72 @@ function glossaryTop(i, l, el) {
     make('span', { className: 'gcard-n', textContent: String(i + 1).padStart(2, '0') }));
   el.insertAdjacentHTML('beforeend', Q.figures.svg(Q.figures.NAMES[i % Q.figures.NAMES.length], 'rgba(255,255,255,.5)', 8));
 }
-// Cards all the same size: the term and the start of its meaning. Clicking one opens the whole meaning and its example.
+// Cards all the same size: the term and the start of its meaning. Clicking one opens a compact strip right under its
+// row (meaning on the left, worked example on the right): nothing covers the page, and clicking again closes it.
+let openTermIndex = -1;
 function renderGlossary(l = state.lang) {
   const box = $('glossary-cards');
-  if (box.children.length !== GLOSSARY.length) box.replaceChildren(...GLOSSARY.map((_, i) => {
+  if (!box.querySelector('.gcard')) box.replaceChildren(...GLOSSARY.map((_, i) => {
     const b = make('button', { type: 'button', className: 'gcard' });
-    b.addEventListener('click', () => openTerm(i));
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', 'term-detail');
+    b.addEventListener('click', () => (openTermIndex === i ? closeTerm() : openTerm(i)));
     return b;
   }));
-  [...box.children].forEach((b, i) => {
+  box.querySelectorAll('.gcard').forEach((b, i) => {
     const top = make('span', { className: 'gcard-top' });
     glossaryTop(i, l, top);
     b.style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
     const body = make('span', { className: 'gcard-body' });
-    body.append(make('strong', { className: 'gcard-term', textContent: GLOSSARY[i][l][0] }),
-      make('span', { className: 'gcard-text', textContent: GLOSSARY[i][l][1] }));
+    // Hyphenated names are kept whole on wide cards (css .nobr); narrow phone cards may break them at the hyphen.
+    const term = make('strong', { className: 'gcard-term' });
+    term.append(...GLOSSARY[i][l][0].split(' ').flatMap((w, k) =>
+      [k ? ' ' : '', w.includes('-') ? make('span', { className: 'nobr', textContent: w }) : w]).filter(x => x !== ''));
+    body.append(term, make('span', { className: 'gcard-text', textContent: GLOSSARY[i][l][1] }));
     b.replaceChildren(top, body);
   });
+  if (openTermIndex >= 0) openTerm(openTermIndex);   // a language switch redraws the open strip
+}
+function fillTerm(i, l, d) {
+  const g = GLOSSARY[i], ex = Q.examples.example(g.en[0], l, EX_COLOURS[i % EX_COLOURS.length]);
+  d.style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
+  const text = make('div', { className: 'term-text' });
+  text.append(make('strong', { textContent: g[l][0] }), make('p', { textContent: g[l][1] }));
+  const parts = [text];
+  if (ex) {
+    const e = make('div', { className: 'glossary-example' });
+    e.append(make('strong', { textContent: STRINGS[l].example }));
+    if (ex.svg) e.insertAdjacentHTML('beforeend', ex.svg);
+    e.append(make('p', { textContent: ex.text }));
+    parts.push(e);
+  }
+  const x = make('button', { type: 'button', className: 'term-x' });
+  x.setAttribute('aria-label', STRINGS[l].storyClose);
+  x.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>';
+  x.addEventListener('click', closeTerm);
+  d.replaceChildren(...parts, x);
 }
 function openTerm(i) {
-  const g = GLOSSARY[i], l = state.lang, ex = Q.examples.example(g.en[0], l, EX_COLOURS[i % EX_COLOURS.length]);
-  glossaryTop(i, l, $('term-top'));
-  $('term-dialog').style.setProperty('--c', EX_COLOURS[i % EX_COLOURS.length]);
-  $('term-title').textContent = g[l][0];
-  $('term-text').textContent = g[l][1];
-  const box = $('term-example');
-  box.hidden = !ex;
-  if (ex) {
-    box.replaceChildren(make('strong', { textContent: STRINGS[l].example }));
-    if (ex.svg) box.insertAdjacentHTML('beforeend', ex.svg);
-    box.append(make('p', { textContent: ex.text }));
-  }
-  $('term-dialog').showModal();
+  const box = $('glossary-cards'), cards = [...box.querySelectorAll('.gcard')];
+  let d = $('term-detail');
+  if (!d) { d = make('div', { id: 'term-detail', className: 'term-detail' }); d.setAttribute('role', 'region'); }
+  // Right after the last card of the clicked card's row.
+  const cols = getComputedStyle(box).gridTemplateColumns.split(' ').length;
+  cards[Math.min(cards.length - 1, Math.floor(i / cols) * cols + cols - 1)].after(d);
+  // As tall as its taller language, so switching language moves nothing below it.
+  d.style.minHeight = '';
+  let h = 0;
+  for (const l of LANGS) { fillTerm(i, l, d); h = Math.max(h, d.getBoundingClientRect().height); }
+  fillTerm(i, state.lang, d);
+  d.style.minHeight = Math.ceil(h) + 'px';
+  openTermIndex = i;
+  cards.forEach((b, k) => { b.setAttribute('aria-expanded', k === i); b.classList.toggle('is-open', k === i); });
+}
+function closeTerm() {
+  openTermIndex = -1;
+  const d = $('term-detail');
+  if (d) d.remove();
+  document.querySelectorAll('.gcard').forEach(b => { b.setAttribute('aria-expanded', 'false'); b.classList.remove('is-open'); });
 }
 
 // ---------- rendering ----------
@@ -938,13 +972,14 @@ function wire() {
     const tab = document.querySelector('.q-tab[aria-checked="true"]');
     if (tab) tab.focus({ preventScroll: true });
   }));
-  // Back to top: scroll the page itself (the header is pinned, so jumping to it would not move anything).
+  // Back to top: scroll the page itself (the header is pinned, so jumping to it would not move anything), with the
+  // site's own glide so the catch at the tool cannot stop it half-way.
   document.querySelectorAll('a[href="#top"]').forEach(link => link.addEventListener('click', e => {
     e.preventDefault();
-    scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (!motion.toTop()) scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open && !$('term-dialog').open) goOverview();
+    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open) goOverview();
   });
 
   // Toggles under the map: each opens its panel below the row.
@@ -953,10 +988,6 @@ function wire() {
     $(b).setAttribute('aria-expanded', open);
     $(p).hidden = !open;
   }));
-
-  // Glossary pop-up.
-  $('term-close').addEventListener('click', () => $('term-dialog').close());
-  $('term-dialog').addEventListener('click', e => { if (e.target === $('term-dialog')) $('term-dialog').close(); });
 
   // Stories (trial).
   $('story-close').addEventListener('click', () => $('story-dialog').close());
@@ -1026,7 +1057,7 @@ function wire() {
   motion.init();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockSizes);
   let lockT;
-  addEventListener('resize', () => { clearTimeout(lockT); lockT = setTimeout(lockSizes, 200); });
+  addEventListener('resize', () => { clearTimeout(lockT); lockT = setTimeout(() => { closeTerm(); lockSizes(); }, 200); });
   try {
     DATA = await loadData();
     if (!DATA.aimags.length) throw new Error('no aimag outlines in data/data.js (run tools/gee_export.py --only aimags, then tools/build_data.py)');

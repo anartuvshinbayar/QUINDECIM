@@ -429,7 +429,9 @@ function initTraveler() {
   addEventListener('resize', refresh);
   if ('ResizeObserver' in window) new ResizeObserver(refresh).observe(document.body);
   refresh();
-  return { refresh, drawAt: draw, toTool: () => glide(toolRest()) };
+  // Back to top: the site's own glide, so the catch at the tool (only for wheel, trackpad or finger) cannot stop it.
+  const toTop = () => { userScroll = false; takeOver(); glide(0); };
+  return { refresh, drawAt: draw, toTool: () => glide(toolRest()), toTop };
 }
 
 // ---------- rotating word ----------
@@ -541,12 +543,12 @@ function countUp(span) {
   }, 30);
 }
 
-let logoDraw = null, logoToTool = null;   // logoAt: draw the logo for any scroll position (for checks); toTool: glide to the tool
+let logoDraw = null, logoToTool = null, logoToTop = null;   // logoAt: draw the logo for any scroll position (for checks); toTool: glide to the tool
 function init(onReady) {
   header();
   buildTiles();
   const logo = initTraveler(), place = logo.refresh;
-  logoDraw = logo.drawAt; logoToTool = logo.toTool;
+  logoDraw = logo.drawAt; logoToTool = logo.toTool; logoToTop = logo.toTop;
   // Rebuild the grid only when switching between the phone and desktop layouts.
   let rt, wasNarrow = matchMedia('(max-width: 760px)').matches;
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => {
@@ -564,5 +566,6 @@ function init(onReady) {
   });
 }
 
-Q.motion = { init, refresh, startRotator, countUp, observe, logoAt: s => logoDraw && logoDraw(s), toTool: () => logoToTool && logoToTool() };
+Q.motion = { init, refresh, startRotator, countUp, observe, logoAt: s => logoDraw && logoDraw(s), toTool: () => logoToTool && logoToTool(),
+  toTop: () => (logoToTop ? (logoToTop(), true) : false) };
 })(globalThis.Q = globalThis.Q || {});

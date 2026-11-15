@@ -475,23 +475,42 @@ main > .tool { z-index: 5; }
 .glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); scroll-margin-top: 70px; }
 .glossary-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
 /* Glossary cards: all the same size, the term and the start of its meaning; a click opens the rest. */
-.glossary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-.gcard { display: grid; grid-template-rows: 64px 1fr; height: 196px; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #FBF8F2; text-align: left; font: inherit; color: var(--ink); cursor: pointer; box-shadow: 0 10px 34px -20px rgba(21, 33, 59, .25); transition: border-color .2s, transform .2s var(--ease); }
-.gcard:hover { border-color: var(--c); transform: translateY(-2px); }
+/* Compact cards, all the same size, so the whole glossary fits on one screen: a coloured block with the number and a
+   figure, then the term (up to two lines) and the start of its meaning. On phones only the term. */
+.glossary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.gcard { display: grid; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #FBF8F2; text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.gcard:hover { border-color: var(--c); }
 .gcard:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.gcard-top { position: relative; display: block; height: 64px; padding: 10px 16px; background: var(--c); color: #fff; overflow: hidden; }
-.gcard-top small { position: relative; z-index: 1; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.gcard-n { position: absolute; left: 16px; bottom: -6px; font-size: 2.3rem; font-weight: 800; line-height: 1; opacity: .25; }
-.gcard-top svg { position: absolute; right: -6px; top: -10px; width: 80px; height: 80px; }
-.gcard-body { display: grid; align-content: start; gap: 6px; padding: 12px 16px; }
-.gcard-term { font-size: 1.08rem; line-height: 1.2; }
-.gcard-text { font-size: .84rem; line-height: 1.45; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.term-dialog { width: min(520px, calc(100vw - 24px)); max-height: calc(100svh - 24px); padding: 0; border: 0; border-radius: 20px; background: #FBF8F2; color: var(--ink); overflow: auto; box-shadow: 0 30px 80px -20px rgba(21, 33, 59, .5); }
-.term-dialog::backdrop { background: rgba(21, 33, 59, .45); }
-.term-dialog .gcard-top { height: 84px; }
-.term-in { padding: 16px 22px 22px; }
-.term-in h3 { margin: 0 0 8px; font-size: 1.45rem; }
-.term-in > p { margin: 0; font-size: 1rem; line-height: 1.55; }
+.gcard-top { position: relative; display: block; background: var(--c); color: #fff; overflow: hidden; }
+.gcard-top small { display: none; }
+.gcard-n { position: absolute; left: 8px; bottom: 4px; z-index: 1; font-size: 1.15rem; font-weight: 800; line-height: 1; }
+.gcard-top svg { position: absolute; right: -16px; top: -12px; width: 54px; height: 54px; }
+.gcard-body { display: grid; align-content: center; gap: 2px; padding: 8px 12px; }
+.gcard-term { font-size: .95rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.gcard-term .nobr { white-space: nowrap; }
+.gcard-text { font-size: .78rem; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) {
+  .glossary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .gcard { grid-template-columns: 24px minmax(0, 1fr); height: 54px; border-radius: 12px; }
+  .gcard-top svg { display: none; }
+  .gcard-n { left: 0; right: 0; bottom: auto; top: 50%; transform: translateY(-50%); text-align: center; font-size: .72rem; }
+  .gcard-body { padding: 4px 6px 4px 8px; }
+  .gcard-term .nobr { white-space: normal; }
+  .gcard-term { font-size: .76rem; line-height: 1.15; -webkit-line-clamp: 3; }
+  .gcard-text { display: none; }
+}
+.gcard.is-open { border-color: var(--c); box-shadow: 0 0 0 2px var(--c); }
+/* The open term: a compact strip under its row, meaning left, worked example right. */
+.term-detail { grid-column: 1 / -1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px 24px; align-items: start; padding: 14px 52px 14px 18px; border-left: 4px solid var(--c); border-radius: 14px; background: #FBF8F2; box-shadow: 0 10px 30px -22px rgba(21, 33, 59, .35); animation: term-in .25s var(--ease); }
+@keyframes term-in { from { opacity: 0; transform: translateY(-6px); } }
+.term-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+.term-text p { margin: 0; font-size: .95rem; line-height: 1.5; }
+.term-detail .glossary-example { margin: 0; }
+.term-detail .glossary-example svg { max-width: 220px; margin: 6px 0; }
+.term-x { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
+.term-x svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.term-x:hover { background: var(--line-soft); }
+@media (max-width: 760px) { .term-detail { grid-template-columns: minmax(0, 1fr); padding-right: 48px; } }
 .glossary-example { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--c) 9%, #FBF8F2); font-size: .88rem; line-height: 1.45; font-weight: 500; }
 .glossary-example strong { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .glossary-example svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 8px 0; font-family: var(--font); font-size: 11px; font-weight: 600; }
