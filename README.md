@@ -32,7 +32,7 @@ visitors' browsers load the new files instead of an old cached copy.
 
 | Path | What it is |
 |---|---|
-| `index.html` | The page: hero (fits one screen), scroll room for the logo's trip, map tool, Words. Meta tags and structured data (JSON-LD) in the head |
+| `index.html` | The page: hero (fits one screen), scroll room for the logo's trip, map tool, Glossary. Meta tags and structured data (JSON-LD) in the head |
 | `404.html` | Custom not-found page (GitHub Pages serves it automatically) |
 | `css/site.css` | All styles, from nyd's design. Palette and font are tokens at the top |
 | `js/motion.js` | Animation, in the style of loopsii.com: a one-second loader that never waits for the data, tile grow-in wave and reshuffle, the logo's short scroll trip (straight down, grows; the tool rises over it at twice the scroll speed; the scroll is caught where the tool rests, so a flick never carries past its settings), rotating headline with colour fades, pill header, scroll reveals. Respects reduced motion |

@@ -268,7 +268,7 @@ function lockSizes() {
   const tabNames = l => document.querySelectorAll('.q-tab').forEach(b => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; });
   document.querySelectorAll('.q-tab').forEach(b => add(b, 'width', l => { b.querySelector('.q-tab-name').textContent = byId[b.dataset.var].short[l]; }));
   add($('q-tabs'), 'height', tabNames);
-  // Words: the term cells share one width (CSS grid), so only their height is held; the meaning card is held at
+  // Glossary: the term cells share one width (CSS grid), so only their height is held; the meaning card is held at
   // the tallest meaning of all terms in both languages, so picking a term moves nothing either.
   document.querySelectorAll('.glossary-term').forEach(el => add(el, 'height', l => { el.textContent = GLOSSARY[+el.dataset.i][l][0]; }));
   GLOSSARY.forEach((_, i) => add($('glossary-def'), 'height', l => showDef(i, l)));
