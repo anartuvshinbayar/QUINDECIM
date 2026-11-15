@@ -50,6 +50,7 @@ function plain(v, r, place) {
   return barely ? text : `${text} ${EN[{ real: 'plainReal', possible: 'plainPossible', 'not-proven': 'plainNotProven' }[r.level]]}`;
 }
 const unitOf = v => (v.display === 'percent' ? '%' : v.unitName ? v.unitName.en : v.unit);
+const byIdOf = id => VARIABLES.find(v => v.id === id);
 
 (async () => {
   const D = await Q.data.loadData();
@@ -75,6 +76,45 @@ const unitOf = v => (v.display === 'percent' ? '%' : v.unitName ? v.unitName.en 
       c: { realUp: count('real-up'), realDown: count('real-down'), possible: count('possible-up') + count('possible-down'),
            possibleUp: count('possible-up'), possibleDown: count('possible-down'), notProven: count('not-proven') } });
   }
+
+  // ---------- checks on the greening, the period and shared cells (methods.html) ----------
+  const pearson = (a, b) => { const ma = a.reduce((x, y) => x + y, 0) / a.length, mb = b.reduce((x, y) => x + y, 0) / b.length;
+    let n = 0, da = 0, db = 0; a.forEach((x, i) => { n += (x - ma) * (b[i] - mb); da += (x - ma) ** 2; db += (b[i] - mb) ** 2; }); return n / Math.sqrt(da * db); };
+  const ndviRain = [];
+  for (const s of D.soums) {
+    const g = D.series.ndvi_summer[s.id], r = D.series.rain_summer[s.id];
+    if (!g || !r) continue;
+    const ys = g.years.filter((y, i) => Number.isFinite(g.values[i]) && Number.isFinite(r.values[r.years.indexOf(y)]));
+    ndviRain.push(pearson(ys.map(y => g.values[g.years.indexOf(y)]), ys.map(y => r.values[r.years.indexOf(y)])));
+  }
+  const over = (vid, from, to) => {   // every soum, one question, chosen years, with the check for chance
+    const res = D.soums.map(s => { const p = Q.data.slice(D.series[vid][s.id], from, to); return analyze(p.years, p.values); }).filter(r => r.ok);
+    const qv = fdr(res.map(r => r.mk.p)); res.forEach((r, i) => { r.q = qv[i]; r.level = verdictLevel(r.mk.p, r.q); });
+    return res;
+  };
+  const [g0, g1] = D.yearRange.ndvi_summer;
+  const rainSince = over('rain_summer', g0, g1), warmSince = over('temp_summer', g0, g1);
+  const meanOf = (vid, a, b) => { let sum = 0, n = 0; for (const s of D.soums) { const t = D.series[vid][s.id]; if (!t) continue;
+    t.years.forEach((y, i) => { if (y >= a && y <= b && Number.isFinite(t.values[i])) { sum += t.values[i]; n++; } }); } return sum / n; };
+  const sorted = a => [...a].sort((x, y) => x - y), middle = a => sorted(a)[a.length >> 1];
+  const frostCells = new Set(D.soums.filter(s => D.series.first_frost[s.id]).map(s => D.series.first_frost[s.id].values.join(','))).size;
+  const checks = {
+    corrPositive: ndviRain.filter(x => x > 0).length, corrTotal: ndviRain.length, corrMedian: middle(ndviRain).toFixed(2),
+    rainUp: rainSince.filter(r => verdictKey(r) === 'real-up').length, rainDown: rainSince.filter(r => verdictKey(r) === 'real-down').length,
+    rainMedian: Math.round(middle(rainSince.map(r => changeOf(byIdOf('rain_summer'), r)))),
+    rainEarly: Math.round(meanOf('rain_summer', g0, g0 + 7)), rainLate: Math.round(meanOf('rain_summer', g1 - 7, g1)),
+    rainBefore: Math.round(meanOf('rain_summer', D.yearRange.rain_summer[0], g0 - 2)),
+    ndviEarly: meanOf('ndvi_summer', g0, g0 + 7).toFixed(3), ndviLate: meanOf('ndvi_summer', g1 - 7, g1).toFixed(3),
+    warmSince: warmSince.filter(r => verdictKey(r) === 'real-up').length, g0, g1,
+    frostCells, frostSoums: D.soums.filter(s => D.series.first_frost[s.id]).length,
+  };
+  const greeningText = [
+    `Greenness rises and falls with rain: the yearly correlation between them is positive in ${checks.corrPositive} of ${checks.corrTotal} soums (median ${checks.corrMedian}), so the greenness record behaves as it should.`,
+    `Over the same years as the greenness record, ${g0}–${g1}, summer rain really rose in ${checks.rainUp} soums (median change +${checks.rainMedian}%) and fell in ${checks.rainDown}. The early 2000s were dry: ${checks.rainEarly} mm of summer rain on average in ${g0}–${g0 + 7}, against ${checks.rainBefore} mm in ${D.yearRange.rain_summer[0]}–${g0 - 2} and ${checks.rainLate} mm in ${g1 - 7}–${g1}. Average summer NDVI rose from ${checks.ndviEarly} to ${checks.ndviLate} between the same periods.`,
+    `So most of the greening since ${g0} is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.`,
+    `Results depend on the period. Over ${g0}–${g1} alone, ${checks.warmSince} soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.`,
+    `Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from ${checks.frostCells} distinct NASA POWER cells for ${checks.frostSoums} soums: soums in the same cell share one series.`,
+  ];
 
   // ---------- data/results.csv ----------
   const q = s => `"${String(s).replace(/"/g, '""')}"`;
@@ -159,6 +199,7 @@ ${findingsRows.map(({ v, lo, hi, tested, c }) => `        <tr><td>${esc(v.name.e
   m = between(m, 'brief', `      <ul>
 ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
         <li>Every result comes from a Mann-Kendall test corrected for year-to-year correlation and a check for chance across all 337 areas (false discovery rate), and is said in one plain sentence.</li>
+        <li>Greener is not always healthier pasture: the greening since ${g0} mostly follows wetter summers after the dry early 2000s (summer rain really rose in ${checks.rainUp} soums over the same years).</li>
         <li>The statistics match independent Python code to within 0.0000001${stations ? ', and the summer temperature data follow ten weather stations closely' : ''}.</li>
       </ul>`);
   m = between(m, 'questions', `    <div class="table"><table>
@@ -171,6 +212,7 @@ ${runs.map(({ v, lo, hi }) => `        <tr><td><strong>${esc(v.name.en)}</strong
   m = between(m, 'findings', findingsTable + `
     <p>${runs.map(r => esc(headline(r))).join(' ')}</p>
     <p class="note">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>`);
+  m = between(m, 'greening', greeningText.map(t => `    <p>${esc(t)}</p>`).join('\n'));
   m = between(m, 'stations', !stations ? '    <p>Not yet run: <code>python3 tools/stations.py</code>.</p>' : `    <p>A land model is only as good as its match with what thermometers measure. We compared FLDAS with ten weather stations across Mongolia (NOAA GHCN-Daily), each against the area it stands in, using the same seasons (a season counts when at least 80 of its days have a value).</p>
     <p>${esc(stationSummary)}</p>
     <div class="table"><table>
@@ -186,6 +228,14 @@ ${stations.map(s => `        <tr><td>${esc(s.name)}</td><td>${esc(s.soum)}, ${es
 
   // ---------- index.html: English text in the HTML, and the summary for readers without JavaScript ----------
   let h = read('index.html');
+  const run = id => runs.find(r => r.v.id === id);
+  const stat = (id, n, key, color) => `            <a class="hero-stat" href="#tool" data-var="${id}" style="--c: ${color}"><strong>${n}</strong><span data-i18n="${key}"></span></a>`;
+  h = between(h, 'stats', [stat('temp_summer', run('temp_summer').c.realUp, 'statWarm', '#B9431C'),
+    stat('ndvi_summer', run('ndvi_summer').c.realUp, 'statGreen', '#2E7A57'),
+    stat('rain_summer', run('rain_summer').c.realDown, 'statDry', '#B5561A')].join('\n'));
+  const counts = { warm: run('temp_summer').c.realUp, total: run('temp_summer').tested, median: Math.abs(run('temp_summer').median).toFixed(1),
+    green: run('ndvi_summer').c.realUp, greenTotal: run('ndvi_summer').tested, dry: run('rain_summer').c.realDown, wet: run('rain_summer').c.realUp };
+  h = h.replace(/(<!-- static:found:start -->)[\s\S]*?(<!-- static:found:end -->)/, `$1${esc(EN.shortFound.replace(/\{(\w+)\}/g, (_, k) => counts[k]))}$2`);
   h = h.replace(/(<(\w+)\b[^>]*\bdata-i18n="(\w+)"[^>]*>)([^<]*)(<\/\2>)/g, (all, open, tag, key, inner, close) =>
     (typeof EN[key] === 'string' ? `${open}${esc(EN[key])}${close}` : all));
   h = between(h, 'summary', `      <h2 id="about-title">Quindecim in brief</h2>
@@ -193,6 +243,7 @@ ${stations.map(s => `        <tr><td>${esc(s.name)}</td><td>${esc(s.soum)}, ${es
       <h3>What it found</h3>
       <ul>
 ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
+        <li>${esc(greeningText[2])}</li>
       </ul>
       <h3>How each verdict is made</h3>
       <ul>
@@ -238,6 +289,8 @@ ${GLOSSARY.map(g => `        <dt>${esc(g.en[0])}</dt><dd>${esc(g.en[1])}</dd>`).
 ${runs.map(r => `- ${headline(r)}`).join('\n')}
 
 ${findingsRows.map(r => `- ${r.text}`).join('\n')}
+
+${greeningText.map(t => `- ${t}`).join('\n')}
 
 ## How a verdict is made
 

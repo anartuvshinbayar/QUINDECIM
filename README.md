@@ -14,6 +14,8 @@ Team Quindecim, Ulaanbaatar. NASA Space Apps Challenge 2026, "Be An Earth System
 - **A map of Mongolia** with every aimag shaded by the direction and size of its trend. Tap an aimag to see its soums, then tap a soum.
 - **One sentence anyone can read**, for example: "Summer greenness in this soum has risen about 20% since 2001. This is very unlikely to be chance."
 - **An honest verdict**: real trend, possible trend or not proven, with the yearly data, the trend line and the full test results one click away.
+- **Every place at a glance**: all five questions for the chosen soum or aimag, and "What this means for this place": what changed, what it does not mean (greener is not always healthier pasture) and that a trend does not show its cause.
+- **The headline up front**: the first screen shows the three main findings, each opening its question on the map, and an "In short" section says what we measured, found and why it matters.
 - **The whole country at a glance**: how many soums show a real trend, and where the largest changes are.
 - **Share and download**: a picture of any result to post on Facebook or send on Messenger, a link to it, and the numbers as CSV (one place, or every soum at once).
 - **Two languages**: the site opens in English; MN in the header switches everything to Mongolian, shared pictures and links included.
@@ -30,6 +32,8 @@ Each soum's full record, after the check for chance across all soums (see [How a
 | Summer rainfall | FLDAS | 1982–2026 | 11 of 337 drier, 7 wetter |
 | Winter temperature | FLDAS | 1983–2026 | none |
 | First autumn frost | POWER | 1981–2026 | none (56 possible, nearly all later) |
+
+Greener is not always healthier pasture: greenness rises and falls with rain in 332 of 333 soums, and over the greenness years (2001–2026) summer rain really rose in 173 soums after a dry start in the early 2000s, so most of the greening is recovery with wetter summers. The summer warming is a change since the early 1980s: over 2001–2026 alone no soum shows a real warming trend. Every result states its years, and the years can be changed on the map.
 
 ## The data
 

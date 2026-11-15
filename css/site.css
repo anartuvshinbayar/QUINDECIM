@@ -135,7 +135,14 @@ main > section { position: relative; z-index: 1; }
 .rot-word.is-leaving { transform: translateY(-110%); opacity: 0; }
 .rot-word.is-entering { transform: translateY(110%); opacity: 0; transition: none; }
 .hero-side { display: grid; justify-items: end; gap: 2svh; text-align: right; padding-bottom: .6svh; }
-.hero-sub { margin: 0; max-width: 18ch; text-wrap: balance; font-size: clamp(1.05rem, min(2vw, 2.9svh), 1.6rem); line-height: 1.3; font-weight: 600; }
+.hero-sub { margin: 0; max-width: 26ch; text-wrap: balance; font-size: clamp(1.05rem, min(2vw, 2.9svh), 1.6rem); line-height: 1.3; font-weight: 600; }
+/* Three headline findings under the subtitle; each opens its question on the map. */
+.hero-stats { display: flex; gap: clamp(12px, 1.6vw, 22px); justify-content: flex-end; }
+.hero-stat { display: grid; justify-items: inherit; gap: 2px; color: var(--ink); text-decoration: none; }
+.hero-stat strong { font-size: clamp(1.7rem, min(3.4vw, 5svh), 2.6rem); line-height: 1; font-weight: 700; color: var(--c); letter-spacing: -.02em; }
+.hero-stat span { max-width: 15ch; font-size: .76rem; line-height: 1.25; font-weight: 600; color: var(--muted); }
+.hero-stat:hover span, .hero-stat:focus-visible span { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.hero-note { margin: 0; font-size: .74rem; color: var(--muted); }
 
 .hero-art { position: relative; width: calc(var(--tile) * 11); margin: 0 auto; }
 .hero-tiles { display: grid; grid-template-columns: repeat(11, var(--tile)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
@@ -307,6 +314,22 @@ main > .tool { z-index: 5; }
 .result-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .result-head h3 { margin: 0; font-size: 1.35rem; }
 /* The result in one plain sentence, first thing under the name. */
+/* One place, all five questions at a glance; the current one outlined, the others open their question. */
+.glance { margin: 14px 0 0; }
+.glance-title, .here-title { margin: 0 0 6px; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.glance-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.glance-item { width: 100%; height: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: rgba(251, 248, 242, .7); font: inherit; text-align: left; color: var(--ink); cursor: pointer; transition: border-color .2s, background .2s; }
+.glance-item:hover { border-color: var(--blue); }
+.glance-item.is-current { border: 2px solid var(--ink); padding: 5px 7px; cursor: default; }
+.glance-item .q-icon { grid-row: 1 / span 3; width: 24px; height: 24px; }
+.glance-name { font-size: .7rem; color: var(--muted); line-height: 1.2; }
+.glance-status { font-size: .8rem; line-height: 1.2; }
+.glance-years { font-size: .66rem; color: var(--muted); }
+/* What the result means for the place, in words, and what it does not say. */
+.here { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(228, 222, 210, .45); }
+.here-list { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: .86rem; line-height: 1.45; }
+.here-list li:first-child { font-weight: 600; }
+.nation-means { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(228, 222, 210, .45); font-size: .82rem; line-height: 1.45; }
 .plain-line { margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--trend); font-size: 1rem; font-weight: 600; line-height: 1.45; }
 /* The whole country: one bar of all soums, the counts, and the largest real changes as shortcuts. */
 .nation-sub { margin: 2px 0 0; font-size: .85rem; color: var(--muted); font-weight: 600; }
@@ -394,6 +417,15 @@ main > .tool { z-index: 5; }
 
 /* ---------- Words: equal term cells on the left, the chosen term's meaning in a card on the right ----------
    Inset like the hero text, so the title sits inside the page rails, not on them. */
+/* In short: the simple layer under the tool (methods.html is the technical one). */
+.short { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)) 0; scroll-margin-top: 70px; }
+.short-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
+.short-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
+.short-card { padding: clamp(16px, 2vw, 24px); border: 1px solid var(--line); border-radius: 12px; background: #FBF8F2; }
+.short-card h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--ink); }
+.short-card p { margin: 0; font-size: .95rem; line-height: 1.55; }
+.short-more { margin: 14px 0 0; font-weight: 600; }
+.short-more a { color: var(--blue); text-underline-offset: 3px; }
 .glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px clamp(20px, 3vw, 40px); align-items: stretch; scroll-margin-top: 70px; }
 .glossary-title { grid-column: 1 / -1; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
 .glossary-terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-content: start; }
@@ -429,6 +461,11 @@ main > .tool { z-index: 5; }
   .hero-title { font-size: clamp(2rem, min(12.5vw, 7.5svh), 3.6rem); }
   .hero-side { justify-items: start; text-align: left; }
   .hero-sub { max-width: none; }
+  .hero-stats { justify-content: space-between; width: 100%; gap: 10px; }
+  .hero-stat { flex: 1 1 0; }
+  .hero-stat strong { font-size: 1.6rem; }
+  .hero-stat span { font-size: .68rem; max-width: none; }
+  .short-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-art { width: calc(var(--tile) * 5); }
   .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
   .frame { padding-top: 64px; padding-bottom: 64px; }

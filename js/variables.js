@@ -6,6 +6,7 @@
 // newest: what the newest year covers (always a complete season). plain: the one-sentence result (js/app.js).
 // resolution: what one value stands for on the ground. confidence: how far its trends can be trusted, and why
 // (shown with every result and on methods.html).
+// means: what an up, down or no-trend result says about the place, in words; caveat: what it does not say.
 // steps: the map's three shades of change along the trend line over the chosen years (in % for percent questions, else
 // in units): up to steps[0], up to steps[1], more. nation: the sentence for all of Mongolia ({n} of {total} soums).
 const VARIABLES = [
@@ -26,6 +27,12 @@ const VARIABLES = [
     },
     resolution: { en: 'Satellite pixels of 1 km (NASA MODIS), averaged over the grassland in each soum.', mn: 'НАСА-гийн MODIS хиймэл дагуулын 1 км пиксел, сум бүрийн бэлчээр дээрх дундаж.' },
     confidence: { level: 'high', en: 'high (measured from space every 16 days, the most direct of the five)', mn: 'өндөр (16 хоног тутам сансраас хэмждэг, тавуулангаас хамгийн шууд хэмжилт)' },
+    means: {
+      up: { en: 'Here, summer plant cover on grassland has become greener over these years.', mn: 'Энд бэлчээрийн зуны ургамлан бүрхэвч эдгээр жилүүдэд илүү ногоорсон.' },
+      down: { en: 'Here, summer plant cover on grassland has become browner over these years.', mn: 'Энд бэлчээрийн зуны ургамлан бүрхэвч эдгээр жилүүдэд шарласан.' },
+      none: { en: 'Summer greenness here has gone up and down from year to year without a clear direction.', mn: 'Энд зуны ногоорол жилээс жилд тодорхой чиглэлгүй хэлбэлзсэн.' },
+    },
+    caveat: { en: 'Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.', mn: 'Ногоорсон нь бэлчээр эрүүл болсон гэсэн үг биш: NDVI нь газар сансраас хэр ногоон харагдахыг хэмждэг, тэжээлийн чанар, ургамлын төрөл зүйл, хэдэн мал тэжээхийг биш.' },
     steps: [15, 30],
     nation: {
       up: { en: 'In {n} of {total} soums, summer greenness has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны ногоорол {first} оноос хойш бодитоор нэмэгдсэн.' },
@@ -49,6 +56,12 @@ const VARIABLES = [
     },
     resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
     confidence: { level: 'low', en: 'lower (rainfall from a land model is the least certain of the five, so read its trends with care)', mn: 'харьцангуй бага (загвараас гаргасан хур тунадас тавуулангаас хамгийн тодорхойгүй тул чиг хандлагыг болгоомжтой уншина уу)' },
+    means: {
+      up: { en: 'Summers here have become wetter over these years.', mn: 'Энд зун эдгээр жилүүдэд илүү чийглэг болсон.' },
+      down: { en: 'Summers here have become drier over these years.', mn: 'Энд зун эдгээр жилүүдэд хуурайшсан.' },
+      none: { en: 'Summer rain here has varied from year to year without a clear direction.', mn: 'Энд зуны хур тунадас жилээс жилд тодорхой чиглэлгүй хэлбэлзсэн.' },
+    },
+    caveat: { en: 'This rainfall comes from a land model, not rain gauges, and is the least certain of the five questions. The result also depends on the years chosen: summers were unusually dry in the early 2000s.', mn: 'Энэ хур тунадас бороо хэмжигчээс биш газрын загвараас гарсан бөгөөд тавуулангаас хамгийн тодорхойгүй нь. Үр дүн сонгосон жилүүдээс хамаарна: 2000-аад оны эхээр зун ер бусын гандуу байсан.' },
     steps: [20, 30],
     nation: {
       up: { en: 'In {n} of {total} soums, summer rainfall has really risen since {first}.', mn: '{total} сумаас {n} суманд зуны хур тунадас {first} оноос хойш бодитоор нэмэгдсэн.' },
@@ -72,6 +85,12 @@ const VARIABLES = [
     },
     resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
     confidence: { level: 'good', en: 'good (it rises and falls with ten weather stations year by year, but shows less warming than they measure, so its warming figures are cautious)', mn: 'сайн (арван цаг уурын станцтай жил бүр хамт өсч буурдаг ч тэдний хэмжсэнээс бага дулаарал харуулдаг тул дулаарлын тоо нь болгоомжтой)' },
+    means: {
+      up: { en: 'Summers here have become hotter over these years.', mn: 'Энд зун эдгээр жилүүдэд халуун болсон.' },
+      down: { en: 'Summers here have become cooler over these years.', mn: 'Энд зун эдгээр жилүүдэд сэрүүн болсон.' },
+      none: { en: 'Summer temperatures here have varied without a clear direction.', mn: 'Энд зуны температур тодорхой чиглэлгүй хэлбэлзсэн.' },
+    },
+    caveat: { en: 'Hotter summers can dry soil and pasture even when rain does not change. At ten weather stations this model shows less warming than measured, so the real warming may be larger.', mn: 'Халуун зун бороо өөрчлөгдөөгүй ч хөрс, бэлчээрийг хатааж болно. Арван цаг уурын станцад энэ загвар хэмжсэнээс бага дулаарал харуулсан тул бодит дулаарал илүү их байж болно.' },
     steps: [1, 2],
     nation: {
       up: { en: 'In {n} of {total} soums, summers have really warmed since {first}.', mn: '{total} сумаас {n} суманд зун {first} оноос хойш бодитоор дулаарсан.' },
@@ -95,6 +114,12 @@ const VARIABLES = [
     },
     resolution: { en: 'Land-model cells of 0.1° (about 11 × 8 km, NASA FLDAS); neighbouring soums often share values.', mn: 'Газрын загварын 0.1° нүд (ойролцоогоор 11 × 8 км, НАСА FLDAS); хөрш сумд ихэвчлэн ижил утгатай.' },
     confidence: { level: 'medium', en: 'medium (the model misses the winter inversions of cold basins, so it reads milder than weather stations, by up to 13 °C in the Uvs basin; like most stations, it shows no clear winter trend)', mn: 'дунд (загвар хүйтэн хотгорын өвлийн инверсийг алгасдаг тул цаг уурын станцаас дулаан гардаг, Увсын хотгорт 13 °C хүртэл; ихэнх станцын адил өвлийн тодорхой чиг хандлага харуулдаггүй)' },
+    means: {
+      up: { en: 'Winters here have become milder over these years.', mn: 'Энд өвөл эдгээр жилүүдэд зөөлөрсөн.' },
+      down: { en: 'Winters here have become colder over these years.', mn: 'Энд өвөл эдгээр жилүүдэд хүйтэрсэн.' },
+      none: { en: 'Winter temperatures here have swung a lot from year to year without a clear direction.', mn: 'Энд өвлийн температур жилээс жилд их хэлбэлзсэн ч тодорхой чиглэлгүй.' },
+    },
+    caveat: { en: 'In cold basins this model reads winters milder than weather stations do, so trust the direction more than the exact temperatures.', mn: 'Хүйтэн хотгорт энэ загвар өвлийг цаг уурын станцаас дулаан гэж үздэг тул яг температураас илүү чиглэлд нь итгэнэ үү.' },
     steps: [0.5, 1],
     nation: {
       up: { en: 'In {n} of {total} soums, winters have really become milder since {first}.', mn: '{total} сумаас {n} суманд өвөл {first} оноос хойш бодитоор зөөлөрсөн.' },
@@ -118,6 +143,12 @@ const VARIABLES = [
     },
     resolution: { en: 'One NASA POWER grid cell (0.5° × 0.625°, about 55 × 47 km) at the soum centre; neighbouring soums often share it.', mn: 'Сумын төв дээрх НАСА POWER-ийн нэг нүд (0.5° × 0.625°, ойролцоогоор 55 × 47 км); хөрш сумд ихэвчлэн хуваалцана.' },
     confidence: { level: 'medium', en: 'medium (one coarse cell and a daily minimum below 0 °C give the general timing, not the exact frost day in one valley)', mn: 'дунд (нэг том нүд болон 0 °C-аас доош хамгийн бага температур ерөнхий хугацааг харуулна, нэг хөндийн яг хяруу орох өдрийг биш)' },
+    means: {
+      up: { en: 'The first autumn frost here now comes later, so the frost-free season ends later.', mn: 'Энд намрын анхны хяруу одоо хожуу орж, хяруугүй улирал хожуу дуусдаг болсон.' },
+      down: { en: 'The first autumn frost here now comes earlier, so the frost-free season ends earlier.', mn: 'Энд намрын анхны хяруу одоо эрт орж, хяруугүй улирал эрт дуусдаг болсон.' },
+      none: { en: 'The date of the first autumn frost here has varied without a clear direction.', mn: 'Энд намрын анхны хяруу орох өдөр тодорхой чиглэлгүй хэлбэлзсэн.' },
+    },
+    caveat: { en: 'Frost dates come from one coarse grid cell at the soum centre, which neighbouring soums may share, not from this soum\'s own valleys.', mn: 'Хяруу орох өдрийг сумын төв дээрх нэг том нүднээс авдаг (хөрш сумд хуваалцаж болно), энэ сумын хөндий бүрээс биш.' },
     steps: [7, 14],
     nation: {
       up: { en: 'In {n} of {total} soums, the first autumn frost has really moved later since {first}.', mn: '{total} сумаас {n} суманд намрын анхны хяруу {first} оноос хойш бодитоор хойшилсон.' },

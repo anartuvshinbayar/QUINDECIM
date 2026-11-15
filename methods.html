@@ -81,6 +81,7 @@
         <li>No soum shows a real change in winter temperature since 1983.</li>
         <li>No soum shows a real change in the date of the first autumn frost since 1981.</li>
         <li>Every result comes from a Mann-Kendall test corrected for year-to-year correlation and a check for chance across all 337 areas (false discovery rate), and is said in one plain sentence.</li>
+        <li>Greener is not always healthier pasture: the greening since 2001 mostly follows wetter summers after the dry early 2000s (summer rain really rose in 173 soums over the same years).</li>
         <li>The statistics match independent Python code to within 0.0000001, and the summer temperature data follow ten weather stations closely.</li>
       </ul>
 <!-- static:brief:end -->
@@ -137,6 +138,15 @@
     <p>In 117 of 333 soums, summer greenness has really risen since 2001. In 11 of 337 soums, summer rainfall has really fallen since 1982. In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one. No soum shows a real change in winter temperature since 1983. No soum shows a real change in the date of the first autumn frost since 1981.</p>
     <p class="note">Counts are for the 337 soums and districts (333 for greenness: four have too little grassland). Every number here is in <a href="data/results.csv"><code>data/results.csv</code></a>, and the map on the site shows them place by place.</p>
 <!-- static:findings:end -->
+
+    <h3 id="greening">Is the greening real, and what does it mean?</h3>
+<!-- static:greening:start -->
+    <p>Greenness rises and falls with rain: the yearly correlation between them is positive in 332 of 333 soums (median 0.52), so the greenness record behaves as it should.</p>
+    <p>Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +44%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.</p>
+    <p>So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.</p>
+    <p>Results depend on the period. Over 2001–2026 alone, 0 soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.</p>
+    <p>Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from 293 distinct NASA POWER cells for 337 soums: soums in the same cell share one series.</p>
+<!-- static:greening:end -->
 
     <h2 id="stations">Checked against weather stations</h2>
 <!-- static:stations:start -->

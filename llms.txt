@@ -16,6 +16,12 @@
 - Winter temperature: 0 milder, 0 colder (real trends of 337 areas, 1983–2026); 2 possible, 335 not proven.
 - First autumn frost: 0 later, 0 earlier (real trends of 337 areas, 1981–2026); 56 possible, 281 not proven.
 
+- Greenness rises and falls with rain: the yearly correlation between them is positive in 332 of 333 soums (median 0.52), so the greenness record behaves as it should.
+- Over the same years as the greenness record, 2001–2026, summer rain really rose in 173 soums (median change +44%) and fell in 8. The early 2000s were dry: 131 mm of summer rain on average in 2001–2008, against 156 mm in 1982–1999 and 169 mm in 2019–2026. Average summer NDVI rose from 0.336 to 0.380 between the same periods.
+- So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.
+- Results depend on the period. Over 2001–2026 alone, 0 soums show real summer warming; the warming found in 197 soums is a change since the early 1980s, beneath large year-to-year swings. This is why every result states its years, and the years can be changed on the map.
+- Shared cells: FLDAS values are averaged over each soum's own area, so every soum has its own series, but neighbours are strongly alike. First-frost dates come from 293 distinct NASA POWER cells for 337 soums: soums in the same cell share one series.
+
 ## How a verdict is made
 
 - One value per year per area (season mean or total), complete seasons only, at least 20 years.

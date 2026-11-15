@@ -27,9 +27,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=202611151202">
+  <link rel="stylesheet" href="css/site.css?v=202611151251">
   <!-- The data (0.84 MB, about 250 KB compressed) loads in parallel and never holds up the page: js/data.js waits for it. -->
-  <script id="data-js" src="data/data.js?v=202611151202" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
+  <script id="data-js" src="data/data.js?v=202611151251" async onerror="window.QUINDECIM_DATA_ERROR=true"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -125,7 +125,17 @@
           </h1>
         </div>
         <div class="hero-side">
-          <p class="hero-sub" data-i18n="heroSub" data-reveal>Climate trends for every soum</p>
+          <p class="hero-sub" data-i18n="heroSub" data-reveal>Mongolia is changing. Where, how and by how much?</p>
+          <!-- Three headline findings (full record, after the check for chance), written by tools/static_pages.js.
+               Each opens its question on the map. -->
+          <div id="hero-stats" class="hero-stats" data-reveal>
+<!-- static:stats:start -->
+            <a class="hero-stat" href="#tool" data-var="temp_summer" style="--c: #B9431C"><strong>197</strong><span data-i18n="statWarm">soums with real summer warming since 1982</span></a>
+            <a class="hero-stat" href="#tool" data-var="ndvi_summer" style="--c: #2E7A57"><strong>117</strong><span data-i18n="statGreen">soums really greener since 2001</span></a>
+            <a class="hero-stat" href="#tool" data-var="rain_summer" style="--c: #B5561A"><strong>11</strong><span data-i18n="statDry">soums really drier in summer since 1982</span></a>
+<!-- static:stats:end -->
+          </div>
+          <p class="hero-note" data-i18n="statNote" data-reveal>Greener is not always healthier pasture.</p>
         </div>
       </div>
       <div class="hero-art">
@@ -203,6 +213,11 @@
           <div id="too-short" class="too-short" hidden></div>
           <div id="result-body">
             <p id="plain-line" class="plain-line"></p>
+            <!-- The five questions for this place: one picture of how it is changing. -->
+            <div id="glance" class="glance">
+              <h4 class="glance-title" data-i18n="glanceTitle">This place at a glance</h4>
+              <ul id="glance-list" class="glance-list"></ul>
+            </div>
             <figure class="chart">
               <div id="chart"></div>
               <figcaption class="chart-legend">
@@ -215,6 +230,11 @@
               <div><dt data-i18n="isReal">Verdict</dt><dd id="v-real"></dd></div>
               <div class="wide"><dt data-i18n="meaning">What that means</dt><dd id="v-meaning"></dd></div>
             </dl>
+            <!-- What the result says about the place in words, and what it does not say. -->
+            <div class="here">
+              <h4 class="here-title" data-i18n="hereTitle">What this means for this place</h4>
+              <ul id="here-list" class="here-list"></ul>
+            </div>
             <p id="source-line" class="source-line"></p>
             <p id="disagree-note" class="note" data-i18n="disagree" hidden>The two tests disagree. One extreme year can pull a straight line; Mann-Kendall is not moved by extremes, so the verdict follows it.</p>
             <p class="source-link"><a id="result-methods" href="methods.html" data-i18n="methodsLink">How we test, and all the data</a></p>
@@ -223,6 +243,7 @@
           <div id="nation-body" class="nation-body" hidden>
             <p id="nation-sub" class="nation-sub"></p>
             <p id="nation-line" class="plain-line"></p>
+            <p id="nation-means" class="nation-means"></p>
             <div id="nation-bar" class="nation-bar" aria-hidden="true"></div>
             <ul id="nation-counts" class="nation-counts"></ul>
             <h4 id="nation-top-title" class="nation-top-title" data-i18n="nationTop">Largest real changes</h4>
@@ -268,6 +289,17 @@
       </dialog>
     </section>
 
+    <!-- The simple layer: what we measured, what we found, why it matters (methods.html is the technical layer). -->
+    <section id="short" class="short" aria-labelledby="h-short">
+      <h2 id="h-short" class="short-title" data-i18n="shortTitle">In short</h2>
+      <div class="short-grid">
+        <div class="short-card"><h3 data-i18n="shortMeasuredTitle">What we measured</h3><p data-i18n="shortMeasured">Five things that shape life on the steppe: summer greenness, summer rain, summer and winter temperature, and the first autumn frost. For each of 337 soums, we tested 25 to 45 years of NASA satellite and model data.</p></div>
+        <div class="short-card"><h3 data-i18n="shortFoundTitle">What we found</h3><p id="short-found"><!-- static:found:start -->Summers have really warmed in 197 of 337 soums since 1982, by about 2.0 °C in a typical one. Summer greenness has risen in 117 of 333 soums since 2001, mostly with wetter summers after the dry early 2000s. Summer rain has fallen in 11 soums and risen in 7; winters and the first frost show no clear trend yet.<!-- static:found:end --></p></div>
+        <div class="short-card"><h3 data-i18n="shortWhyTitle">Why it matters</h3><p data-i18n="shortWhy">Herders, schools and soum offices plan around pasture, water and frost. Knowing what is really changing in their own soum, and what is still just year-to-year noise, helps them plan. Each result says what it can and cannot tell: greener is not always healthier pasture, and a trend does not show its cause.</p></div>
+      </div>
+      <p class="short-more"><a href="methods.html" data-i18n="methodsLink">How we test, and all the data</a></p>
+    </section>
+
     <section id="glossary" class="glossary" aria-labelledby="h-glossary">
       <h2 id="h-glossary" class="glossary-title" data-i18n="glossaryTitle">Glossary</h2>
       <div id="glossary-terms" class="glossary-terms" role="tablist" aria-labelledby="h-glossary"></div>
@@ -288,6 +320,7 @@
         <li>In 197 of 337 soums, summers have really warmed since 1982, by about 2.0 °C in a typical one.</li>
         <li>No soum shows a real change in winter temperature since 1983.</li>
         <li>No soum shows a real change in the date of the first autumn frost since 1981.</li>
+        <li>So most of the greening since 2001 is the land recovering after a dry start, with wetter summers. Greener does not necessarily mean healthier pasture: NDVI measures how green the land looks from space, not forage quality, plant species or how many animals it can feed.</li>
       </ul>
       <h3>How each verdict is made</h3>
       <ul>
@@ -357,14 +390,14 @@
   <div id="travel-logo" class="travel-logo" aria-hidden="true"><div class="travel-disc"><img src="assets/brand/quindecim-mark.svg" alt=""></div></div>
 
   <!-- Plain scripts in this order. No modules and no fetch, so opening index.html as a file works too. -->
-  <script src="js/stats.js?v=202611151202"></script>
-  <script src="js/variables.js?v=202611151202"></script>
-  <script src="js/i18n.js?v=202611151202"></script>
-  <script src="js/data.js?v=202611151202"></script>
-  <script src="js/map.js?v=202611151202"></script>
-  <script src="js/chart.js?v=202611151202"></script>
-  <script src="js/motion.js?v=202611151202"></script>
-  <script src="js/share.js?v=202611151202"></script>
-  <script src="js/app.js?v=202611151202"></script>
+  <script src="js/stats.js?v=202611151251"></script>
+  <script src="js/variables.js?v=202611151251"></script>
+  <script src="js/i18n.js?v=202611151251"></script>
+  <script src="js/data.js?v=202611151251"></script>
+  <script src="js/map.js?v=202611151251"></script>
+  <script src="js/chart.js?v=202611151251"></script>
+  <script src="js/motion.js?v=202611151251"></script>
+  <script src="js/share.js?v=202611151251"></script>
+  <script src="js/app.js?v=202611151251"></script>
 </body>
 </html>

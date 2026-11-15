@@ -149,18 +149,80 @@ function checkAll(results) {
   const q = fdr(ok.map(r => r.mk.p));
   ok.forEach((r, i) => { r.q = q[i]; r.tested = ok.length; r.level = verdictLevel(r.mk.p, r.q); });
 }
-function nation() {
-  const v = state.varId, key = [v, state.from, state.to].join('|');
+// Any question and years (the overview of a place shows all five questions; greenness looks at rain over its years).
+function nationFor(v, from, to) {
+  const key = [v, from, to].join('|');
   if (!nationCache.has(key)) {
     if (nationCache.size > 40) nationCache.clear();
+    const test = s => { const part = slice(s, from, to); return analyze(part.years, part.values); };
     const soums = {}, aimags = {};
-    for (const s of DATA.soums) soums[s.id] = resultFor(DATA.series[v][s.id]);
-    for (const a of DATA.aimags) aimags[a.name] = resultFor(DATA.aimagSeries(v, a.name));
+    for (const s of DATA.soums) soums[s.id] = test(DATA.series[v][s.id]);
+    for (const a of DATA.aimags) aimags[a.name] = test(DATA.aimagSeries(v, a.name));
     checkAll(soums);
     checkAll(aimags);
     nationCache.set(key, { soums, aimags });
   }
   return nationCache.get(key);
+}
+const nation = () => nationFor(state.varId, state.from, state.to);
+const fullRecord = v => nationFor(v, ...DATA.yearRange[v]);
+const cap = w => w.charAt(0).toLocaleUpperCase() + w.slice(1);
+
+// ---------- the simple layer (In short): what we found, over each question's full record ----------
+function headline() {
+  const count = (v, k) => Object.values(fullRecord(v).soums).filter(r => verdictKey(r) === k).length;
+  const tested = v => Object.values(fullRecord(v).soums).filter(r => r.ok).length;
+  const warm = Object.values(fullRecord('temp_summer').soums).filter(r => verdictKey(r) === 'real-up')
+    .map(r => changeOf(byId.temp_summer, r)).sort((a, b) => a - b);
+  return { warm: warm.length, total: tested('temp_summer'), median: warm.length ? warm[warm.length >> 1].toFixed(1) : '–',
+    green: count('ndvi_summer', 'real-up'), greenTotal: tested('ndvi_summer'),
+    dry: count('rain_summer', 'real-down'), wet: count('rain_summer', 'real-up') };
+}
+function renderShort(L) {
+  if (!DATA) return;   // before the data: the English text written into the page by tools/static_pages.js
+  const h = headline();
+  $('short-found').textContent = STRINGS[L].shortFound.replace(/\{(\w+)\}/g, (_, k) => h[k]);
+  document.querySelectorAll('#short [data-i18n]').forEach(el => { el.textContent = STRINGS[L][el.dataset.i18n]; });
+}
+
+// ---------- one place: all five questions at a glance, and what the result means in words ----------
+function renderGlance(v, place, L) {
+  const S = STRINGS[L];
+  $('glance-list').replaceChildren(...VARIABLES.filter(q => DATA.series[q.id]).map(q => {
+    const [from, to] = q.id === v.id ? [state.from, state.to] : DATA.yearRange[q.id];   // the shown question keeps its years
+    const all = nationFor(q.id, from, to), r = place.soum ? all.soums[place.soum.id] : all.aimags[place.aimag];
+    const vk = verdictKey(r), dir = vk.endsWith('-up') ? 'up' : 'down';
+    const status = vk === 'no-data' ? S.glanceNoData : vk === 'not-proven' ? S.glanceNone
+      : vk.startsWith('real') ? cap(q[dir][L]) : `${S.glanceMaybe} ${q[dir][L]}`;
+    const b = make('button', { type: 'button', className: 'glance-item' + (q.id === v.id ? ' is-current' : '') });
+    b.dataset.var = q.id;
+    const ic = make('span', { className: 'q-icon' });
+    paint(ic, SHAPES[q.id]);
+    ic.innerHTML = iconSvg(SHAPES[q.id].icon);
+    const st = make('strong', { className: 'glance-status', textContent: status });
+    if (vk.startsWith('real')) st.style.color = SHAPES[q.id].fg;
+    b.append(ic, make('span', { className: 'glance-name', textContent: q.short[L] }), st,
+      make('span', { className: 'glance-years', textContent: r && r.ok ? `${r.first}–${r.last}` : '' }));
+    if (q.id === v.id) b.setAttribute('aria-current', 'true');
+    else b.addEventListener('click', () => selectVariable(q.id));
+    const li = make('li');
+    li.append(b);
+    return li;
+  }));
+}
+function renderHere(v, r, place, L) {
+  const S = STRINGS[L], vk = verdictKey(r), dir = vk.endsWith('-up') ? 'up' : 'down';
+  const items = [vk === 'not-proven' ? v.means.none[L] : vk.startsWith('possible') ? `${v.means[dir][L]} ${S.herePossible}` : v.means[dir][L]];
+  if (v.id === 'ndvi_summer') {   // greenness follows rain: show what rain did over the same years
+    const all = nationFor('rain_summer', r.first, r.last), rr = place.soum ? all.soums[place.soum.id] : all.aimags[place.aimag];
+    if (rr && rr.ok) {
+      const rk = verdictKey(rr), word = { real: S.real, possible: S.possibleShort, 'not-proven': S.notProven }[rr.level].toLocaleLowerCase();
+      const x = Math.abs(changeOf(byId.rain_summer, rr)).toFixed(0);
+      items.push((rk === 'not-proven' ? S.hereRainNone : rk.endsWith('-up') ? S.hereRainUp : S.hereRainDown).replace('{x}', x).replace('{verdict}', word));
+    }
+  }
+  items.push(v.caveat[L], S.hereCause);
+  $('here-list').replaceChildren(...items.map(text => make('li', { textContent: text })));
 }
 
 // ---------- the result in plain words ----------
@@ -278,6 +340,13 @@ function lockSizes() {
   add($('map-legend'), 'height', legendSet);
   // The country summary in the panel: as tall as its taller language (on phones it sits in the page flow).
   add($('nation-body'), 'height', l => renderNation(byId[state.varId], l));
+  // Hero numbers: each as wide as its longer label, the row and the note as tall as their taller language.
+  const statsSet = l => document.querySelectorAll('#hero-stats [data-i18n], .hero-note').forEach(el => { el.textContent = STRINGS[l][el.dataset.i18n]; });
+  document.querySelectorAll('.hero-stat').forEach(b => add(b, 'width', statsSet));
+  add($('hero-stats'), 'height', statsSet);
+  add(document.querySelector('.hero-note'), 'width', statsSet);
+  add(document.querySelector('.hero-note'), 'height', statsSet);
+  document.querySelectorAll('.short-card').forEach(card => add(card, 'height', l => renderShort(l)));   // stacked on phones
   document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
   // Widths first (they decide how text wraps), then heights. Each item ends back in the current language.
@@ -445,6 +514,7 @@ function render() {
 
   legendSet(state.lang);
   paintLegend(v, pal);
+  renderShort(state.lang);
 
   renderResult(v);
   holdPanel(false);
@@ -515,6 +585,8 @@ function renderResult(v) {
   drawChart($('chart'), r, { decimals: v.decimals, unit, labels: { title: `${tr(v.name)}, ${$('result-title').textContent}` } });
 
   $('plain-line').textContent = plainSentence(v, r, Boolean(soum));
+  renderGlance(v, { soum, aimag: state.aimag }, state.lang);
+  renderHere(v, r, { soum, aimag: state.aimag }, state.lang);
   const levelText = { real: t('real'), possible: t('possible'), 'not-proven': t('notProven') }[r.level];
   const many = { n: r.tested, places: t(soum ? 'soumsTested' : 'aimagsTested') };
   const levelP = r.level === 'real' ? tf('realP', many)
@@ -578,6 +650,13 @@ function renderNation(v, L) {
   $('result-panel').dataset.dir = c.dir;
   $('nation-sub').textContent = `${v.name[L]}, ${state.from}–${state.to}`;
   $('nation-line').textContent = c.sentence;
+  // What the country result does not say, and for greenness what rain did over the same years.
+  let means = v.caveat[L];
+  if (v.id === 'ndvi_summer') {
+    const rain = Object.values(nationFor('rain_summer', state.from, state.to).soums).map(verdictKey);
+    means = `${S.nationRain.replace('{n}', rain.filter(k => k === 'real-up').length).replace('{m}', rain.filter(k => k === 'real-down').length)} ${means}`;
+  }
+  $('nation-means').textContent = means;
   // One bar of all soums (browner ... greener, as on the key), then the counts.
   const look = { 'real-down': pal.down[1], 'possible-down': stripeBg(pal.down[1]), 'not-proven': pal.notProven,
     'possible-up': stripeBg(pal.up[1]), 'real-up': pal.up[1] };
@@ -772,6 +851,10 @@ function wire() {
   // Links to the tool: glide to where it rests (while it rises in on scroll it is drawn a little lower).
   document.querySelectorAll('a[href="#tool"]').forEach(link => link.addEventListener('click', e => {
     e.preventDefault();
+    if (link.dataset.var) {   // a hero number: its question, the whole country
+      state.aimag = null; state.soumId = null;
+      selectVariable(link.dataset.var);
+    }
     motion.toTool();   // the same quick glide as after the logo vanishes, ending with the tool's bar under the header
     const tab = document.querySelector('.q-tab[aria-checked="true"]');
     if (tab) tab.focus({ preventScroll: true });
