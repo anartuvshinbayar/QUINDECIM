@@ -974,6 +974,8 @@ function wire() {
       selectVariable(link.dataset.var);
     }
     motion.toTool();   // the same quick glide as after the logo vanishes, ending with the tool's bar under the header
+    // "Find my soum" on the hero lands in the search box, ready to type; other links land on the chosen question.
+    if (link.id === 'hero-find') { setTimeout(() => $('soum-search').focus({ preventScroll: true }), 800); return; }
     const tab = document.querySelector('.q-tab[aria-checked="true"]');
     if (tab) tab.focus({ preventScroll: true });
   }));

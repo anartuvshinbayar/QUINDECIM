@@ -148,6 +148,10 @@ main > section { position: relative; z-index: 1; }
 .hero-art { position: relative; width: calc(var(--tile) * 11); margin: 0 auto; }
 .hero-tiles { display: grid; grid-template-columns: repeat(11, var(--tile)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
 .hero-tiles > .corner { z-index: 2; }
+/* Find my soum: laid over the bottom-centre of the tiles (under the logo's cell), so the hero keeps its height. */
+.hero-find { position: absolute; left: 50%; bottom: 16px; z-index: 3; transform: translateX(-50%); white-space: nowrap; box-shadow: 0 12px 30px -10px rgba(21, 33, 59, .55); }
+.hero-find svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+@media (max-width: 760px) { .hero-find { bottom: 8px; padding: 8px 14px; font-size: .88rem; gap: 7px; } .hero-find svg { width: 15px; height: 15px; } }
 .tile { aspect-ratio: 1; position: relative; }
 /* Intro: each block grows from small to full out of one of its corners, in a diagonal wave. */
 .tile-face { position: absolute; inset: 0; transform: scale(.08); opacity: 0; transform-origin: var(--ox, 50%) var(--oy, 50%);
