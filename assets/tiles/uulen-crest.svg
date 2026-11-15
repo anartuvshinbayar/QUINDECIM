@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" xmlns:c2pa="http://c2pa.org/manifest">
   <title>Үүлэн угалз, cloud scroll crest</title>
   <g id="tile">
-    <rect width="120" height="120" fill="#1D4FA8"/>
+    <rect width="120" height="120" fill="#6A8BDD"/>
   </g>
   <g id="crest">
     <path d="M40 70A7 7 0 0 1 54 70A14 14 0 0 1 26 70A34 34 0 0 1 94 70A14 14 0 0 1 66 70A7 7 0 0 1 80 70M51.87 51.73A20 20 0 0 1 68.13 51.73" fill="none" stroke="#F6F1E7" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>

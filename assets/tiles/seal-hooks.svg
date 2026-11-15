@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
   <title>Дугуй хээ, round seal with mirrored hooks</title>
-  <circle cx="60" cy="60" r="57" fill="#3A68BD"/>
+  <circle cx="60" cy="60" r="57" fill="#6A8BDD"/>
   <path d="M51 12V45H24V29H38M51 108V75H24V91H38M69 12V45H96V29H82M69 108V75H96V91H82" fill="none" stroke="#F6F1E7" stroke-width="7" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="4"/>
   <circle cx="60" cy="60" r="7" fill="#F6F1E7"/>
 </svg>

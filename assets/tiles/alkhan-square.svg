@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
   <title>Алхан хээ, meander square</title>
-  <rect width="120" height="120" fill="#15213B"/>
+  <rect width="120" height="120" fill="#28365C"/>
   <path d="M55.5 55.5h9v18h-27v-36h45v54h-63v-72h81v90" fill="none" stroke="#F6F1E7" stroke-width="9" stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="4"/>
 </svg>

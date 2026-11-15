@@ -33,12 +33,12 @@ const S = c => ({ solid: c });
 const F = (c, fig, fc) => ({ solid: c, fig, fc });
 const CREAM = '#F6F1E7';
 const POOL = {
-  twinPink: F('#EDD3C6', 'twin', '#B9431C'), sunGrey: F('#D7DAE0', 'sun', '#3A68BD'), cloudSage: F('#D2DBCF', 'cloud', '#2E7A57'),
-  windClay: F('#B9431C', 'wind', CREAM), swirlBlue: F('#3A68BD', 'swirl', CREAM), aaruulSage: F('#D2DBCF', 'aaruul', '#2E7A57'),
-  sunPink: F('#EDD3C6', 'sun', '#B9431C'), aaruulInk: F('#15213B', 'aaruul', CREAM), windSage: F('#D2DBCF', 'wind', '#2E7A57'),
+  twinPink: F('#EAD8C8', 'twin', '#C0663F'), sunGrey: F('#C9D5EE', 'sun', '#6A8BDD'), cloudSage: F('#D5DFCB', 'cloud', '#5E9E52'),
+  windClay: F('#C0663F', 'wind', CREAM), swirlBlue: F('#6A8BDD', 'swirl', CREAM), aaruulSage: F('#D5DFCB', 'aaruul', '#5E9E52'),
+  sunPink: F('#EAD8C8', 'sun', '#C0663F'), aaruulInk: F('#28365C', 'aaruul', CREAM), windSage: F('#D5DFCB', 'wind', '#5E9E52'),
   crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'),
   meander: T('alkhan-square'), keyband: T('alkhan-band'),
-  blue: S('#3A68BD'), ink: S('#15213B'), green: S('#2E7A57'), clay: S('#B9431C'), sage: S('#D2DBCF'), grey: S('#D7DAE0'), pink: S('#EDD3C6'),
+  blue: S('#6A8BDD'), ink: S('#28365C'), green: S('#5E9E52'), clay: S('#C0663F'), sage: S('#D5DFCB'), grey: S('#C9D5EE'), pink: S('#EAD8C8'),
 };
 // 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
 const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
