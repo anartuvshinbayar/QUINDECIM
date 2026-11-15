@@ -224,19 +224,15 @@ main > .tool { z-index: 5; }
 .map-world { transform-origin: 0 0; transition: transform 1s var(--ease); }
 .map-world.no-anim { transition: none; }
 .aimag, .soum { vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; cursor: pointer; transition: fill .5s var(--ease), stroke .2s, opacity .6s var(--ease); }
-.aimag { fill: var(--milk); stroke: none; }   /* under the soums: only a keyboard target (its outline is .ring) */
+.aimag { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: 1.6; }   /* fill: set by js/map.js */
 .aimag:focus, .soum:focus, .map-svg:focus { outline: none; }   /* the keyboard focus style is the dark outline below */
 .aimag.is-away { opacity: 0; pointer-events: none; }
 /* Under its soums, the open aimag takes the border colour, so the soft corners leave no coloured specks. */
 .aimag.is-open { pointer-events: none; fill: var(--milk); stroke: var(--milk); transition-delay: .45s; }
-/* Every soum shows on the overview; zoomed in, only the open aimag's soums stay. Their fill is set by js/map.js. */
-.soum-group { transition: opacity .5s var(--ease); }
-.stage.is-zoomed .soum-group:not(.is-active) { opacity: 0; pointer-events: none; }
-.soum { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: .6; }
-.stage.is-zoomed .soum { stroke-width: 1; }
-/* Aimag borders over the soums, dark enough to read on the pale soums too. */
-.aimag-border { fill: none; stroke: rgba(21, 33, 59, .34); stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-linejoin: round; pointer-events: none; transition: opacity .6s var(--ease); }
-.aimag-border.is-away { opacity: 0; }
+/* Soums show only for the open aimag. Their fill is set by js/map.js. */
+.soum-group { opacity: 0; pointer-events: none; transition: opacity .5s var(--ease); }
+.soum-group.is-active { opacity: 1; pointer-events: auto; transition-delay: .45s; }
+.soum { fill: var(--verdict-no-data); stroke: var(--milk); stroke-width: 1; }
 .layer-rings { pointer-events: none; }
 /* Hover and selection outlines: separate lines above all shapes (js/map.js), so neighbours never cover half of them. */
 .ring { fill: none; stroke: var(--ink); vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; pointer-events: none; opacity: 0; transition: opacity .15s; }
@@ -245,8 +241,7 @@ main > .tool { z-index: 5; }
 .ring-selected { stroke-width: 3; }
 .layer-labels { pointer-events: none; transition: opacity .4s; }
 .aimag-label.is-tiny, .aimag-label.is-cramped, .soum-label.is-hidden { display: none; }
-.soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; transition: opacity .4s .55s; }
-.stage:not(.is-zoomed) .soum-label { opacity: 0; transition-delay: 0s; }   /* soum names only once zoomed in */
+.soum-label { fill: var(--ink); font-family: var(--font); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(251, 248, 242, .8); stroke-width: .28em; stroke-linejoin: round; }
 .aimag-label { fill: var(--ink); font-family: var(--font); font-weight: 600; paint-order: stroke; stroke: rgba(251, 248, 242, .85); stroke-width: .25em; stroke-linejoin: round; }
 .stage.is-zoomed .layer-labels { opacity: 0; }
 [data-verdict="real-up"] { --v: var(--verdict-real-up); }

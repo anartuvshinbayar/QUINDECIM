@@ -10,8 +10,8 @@ const motion = Q.motion;
 
 const $ = id => document.getElementById(id);
 
-// Flow: the country (every soum on the map, the country's summary in the panel) -> tap a soum (zoom to its aimag, its
-// result in the panel). The aimag's own result is one step back (breadcrumb, search, or Tab + Enter on the overview).
+// Flow: the country (the aimags on the map, the country's summary in the panel) -> click an aimag (zoom, its soums
+// appear, its result in the panel) -> click a soum.
 const DEFAULT_VAR = 'ndvi_summer';
 const state = { lang: 'mn', varId: DEFAULT_VAR, aimag: null, soumId: null, from: null, to: null };
 let DATA, map, lastResultKey = '';
@@ -407,11 +407,14 @@ function render() {
     b.disabled = which === 'from' ? next < lo || next > state.to : next < state.from || next > hi;
   });
 
-  // Map colours: every soum, by the direction and size of its trend, after the nationwide check (same verdicts as the panel).
+  // Map colours: the aimags (average of their soums) and the soums, by the direction and size of their trend, after the
+  // nationwide check (same verdicts as the panel).
   $('tool').dataset.var = v.id;   // the map, legend and badge take this question's colours (css: .tool[data-var])
-  const all = nation(), fills = {}, pal = palette();
-  for (const s of DATA.soums) { const r = all.soums[s.id]; fills[s.id] = { verdict: verdictKey(r), shade: shadeOf(v, r) }; }
-  map.update({ aimag: state.aimag, soumId: state.soumId, panel: true, fills, palette: pal });
+  const all = nation(), aimagFills = {}, fills = {}, pal = palette();
+  const fillOf = r => ({ verdict: verdictKey(r), shade: shadeOf(v, r) });
+  for (const a of DATA.aimags) aimagFills[a.name] = fillOf(all.aimags[a.name]);
+  for (const s of DATA.soums) fills[s.id] = fillOf(all.soums[s.id]);
+  map.update({ aimag: state.aimag, soumId: state.soumId, panel: true, aimagFills, fills, palette: pal });
   $('stage').classList.add('has-panel');   // the panel is always there: the country, an aimag or a soum
   $('map-back').hidden = false;
   $('map-legend').hidden = false;
@@ -621,16 +624,17 @@ function cardDraw(L) {
   const common = { question: v.question[L], years: `${state.from}–${state.to}`, url: siteAddress(),
     source: `${S.cardSource}: ${v.source}. ${v.season[L]}.` };
   if (!state.aimag) {
+    // The map on the card is the one on the site: the aimags, shaded by their own trend.
     const c = countrySummary(v, L), fills = {};
-    for (const s of DATA.soums) {
-      const r = c.all.soums[s.id], shade = shadeOf(v, r);
+    for (const a of DATA.aimags) {
+      const r = c.all.aimags[a.name], shade = shadeOf(v, r);
       const [dir, step] = shade ? shade.split('-') : [];
-      fills[s.id] = { color: !r.ok ? pal.noData : dir ? pal[dir][step - 1] : pal.notProven, striped: r.level === 'possible' };
+      fills[a.name] = { color: !r.ok ? pal.noData : dir ? pal[dir][step - 1] : pal.notProven, striped: r.level === 'possible' };
     }
     const unit = v.display === 'percent' ? '%' : v.unitName ? v.unitName[L] : v.unit;
     const [a, b] = v.steps;
     const o = { ...common, place: S.countryCard, sentence: c.sentence, trendColor: c.dir === 'down' ? pal.downDeep : c.dir ? pal.up[2] : '#15213B',
-      soums: DATA.soums, aimags: DATA.aimags, fills, noData: pal.noData,
+      aimags: DATA.aimags, fills, noData: pal.noData,
       legend: { title: S.legendTitle.replace('{a}', state.from).replace('{b}', state.to).replace('{unit}', unit),
         down: pal.down, up: pal.up, ticks: [-b, -a, 0, a, b].map(tick), downWord: v.down[L], upWord: v.up[L],
         sure: [S.legReal, S.legPossible, S.legNotProven], notProven: pal.notProven },

@@ -1,8 +1,8 @@
 // Plain script (no modules) so the site also works when index.html is opened as a file.
 (function (Q) {
-// Two-level SVG map. Overview: every soum of Mongolia, coloured by the direction and size of its trend, with the aimag
-// borders on top; on wide screens it takes the left side of the stage and the result panel the right side. Tapping a
-// soum zooms to its aimag and opens the soum. (The aimags stay keyboard targets: Tab + Enter opens one.)
+// Two-level SVG map. Overview: the 22 aimags, coloured by the direction and size of their trend; on wide screens the map
+// takes the left side of the stage and the result panel the right side. Clicking an aimag zooms to it and shows its
+// soums, coloured the same way.
 // The zoom is a CSS transform on one group, so it animates smoothly; strokes keep their width.
 // Shapes never move or grow on hover or click: only colour and outline change.
 
@@ -81,14 +81,13 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
   const g = el('g', { class: 'map-world' });
   const gAimags = el('g', { class: 'layer-aimags' });
   const gSoums = el('g', { class: 'layer-soums' });
-  const gBorders = el('g', { class: 'layer-borders', 'aria-hidden': 'true' });
   const gRings = el('g', { class: 'layer-rings', 'aria-hidden': 'true' });
   const gLabels = el('g', { class: 'layer-labels', 'aria-hidden': 'true' });
-  g.append(gAimags, gSoums, gBorders, gRings, gLabels);
+  g.append(gAimags, gSoums, gRings, gLabels);
   svg.appendChild(g);
   stage.prepend(svg);
 
-  const aPaths = {}, aBoxes = {}, aGroups = {}, aBorders = {}, sPaths = {}, labels = {}, sLabels = {};
+  const aPaths = {}, aBoxes = {}, aGroups = {}, sPaths = {}, labels = {}, sLabels = {};
   const keyActivate = fn => e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
 
   // Hover and selection outlines are separate lines drawn above all shapes (below the names). Drawn on the
@@ -115,8 +114,6 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     const sg = el('g', { class: 'soum-group', 'data-aimag': a.name });
     gSoums.appendChild(sg);
     aGroups[a.name] = sg;
-    // The aimag's border, drawn over its soums.
-    aBorders[a.name] = gBorders.appendChild(el('path', { d: p.getAttribute('d'), class: 'aimag-border' }));
 
     // Label at the point deepest inside the aimag. Tiny aimags (cities) get no label; their name shows on hover.
     const lp = labelPoint(worldRings(a.geometry));
@@ -143,7 +140,7 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     (aGroups[s.aimag] || gSoums).appendChild(sLabels[s.id].el);
     if (!firstLabel[s.aimag]) firstLabel[s.aimag] = sLabels[s.id].el;
   }
-  // Overview: the outlines go above every soum and border (below the aimag names). Zoomed: see update().
+  // Overview: the outlines go above every shape (below the aimag names). Zoomed: see update().
   gRings.append(aHover, sHover, sSel);
 
   let current = { aimag: null, panel: false };
@@ -190,30 +187,34 @@ function createMap(stage, { soums, aimags, onAimag, onSoum, aimagLabel, soumLabe
     if (!animate) setTimeout(() => g.classList.remove("no-anim"), 50);
   }
 
-  // fills: { soumId: { verdict, shade } } for every soum, where shade is 'up-2' (direction and step 1-3) or ''.
-  // palette: { up: [3 colours], down: [3 colours], notProven, noData }. Real trends are filled with their shade, possible
-  // ones striped with it, the rest pale.
-  function update({ aimag, soumId, panel, fills, palette }) {
+  // aimagFills: { name: { verdict, shade } }, fills: { soumId: { verdict, shade } }, where shade is 'up-2' (direction and
+  // step 1-3) or ''. palette: { up: [3 colours], down: [3 colours], notProven, noData }. Real trends are filled with their
+  // shade, possible ones striped with it, the rest pale.
+  function update({ aimag, soumId, panel, aimagFills, fills, palette }) {
     const changed = aimag !== current.aimag || panel !== current.panel;
     current = { aimag, panel };
     stage.classList.toggle('is-zoomed', Boolean(aimag));
     for (const [key, h] of Object.entries(hatches)) { const [dir, step] = key.split('-'); h.base.setAttribute('fill', palette[dir][step - 1]); }
+    const paint = f => {
+      const [dir, step] = f && f.shade ? f.shade.split('-') : [];
+      return !f || f.verdict === 'no-data' ? palette.noData : !dir ? palette.notProven
+        : f.verdict.startsWith('possible') ? `url(#q-hatch-${f.shade})` : palette[dir][step - 1];
+    };
     for (const a of aimags) {
       const p = aPaths[a.name];
+      p.setAttribute('data-verdict', (aimagFills[a.name] || {}).verdict || 'no-data');
+      p.style.fill = a.name === aimag ? '' : paint(aimagFills[a.name]);   // the open aimag takes the border colour (css)
       p.classList.toggle('is-open', a.name === aimag);
       p.classList.toggle('is-away', Boolean(aimag) && a.name !== aimag);
-      aBorders[a.name].classList.toggle('is-away', Boolean(aimag) && a.name !== aimag);
       p.setAttribute('tabindex', aimag ? '-1' : '0');
       p.firstChild.textContent = aimagLabel(a.name);
       labels[a.name].textContent = aimagLabel(a.name);
       aGroups[a.name].classList.toggle('is-active', a.name === aimag);
     }
     for (const s of soums) {
-      const p = sPaths[s.id], f = fills[s.id] || { verdict: 'no-data', shade: '' };
-      const [dir, step] = f.shade ? f.shade.split('-') : [];
-      p.setAttribute('data-verdict', f.verdict);
-      p.style.fill = f.verdict === 'no-data' ? palette.noData : !dir ? palette.notProven
-        : f.verdict.startsWith('possible') ? `url(#q-hatch-${f.shade})` : palette[dir][step - 1];
+      const p = sPaths[s.id], f = fills[s.id];
+      p.setAttribute('data-verdict', f ? f.verdict : 'no-data');
+      p.style.fill = paint(f);
       p.classList.toggle('is-selected', s.id === soumId);
       p.setAttribute('tabindex', s.aimag === aimag ? '0' : '-1');
       p.firstChild.textContent = soumTitle(s.id);

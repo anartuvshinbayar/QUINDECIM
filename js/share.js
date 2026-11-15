@@ -183,8 +183,8 @@ function placeCard(o, images = true) {
   return canvas;
 }
 
-// The whole country: question, the sentence for all soums, the map of every soum, its key and the counts.
-// o: { question, place, years, sentence, trendColor, soums, aimags, fills: { id: { color, striped } }, noData,
+// The whole country: question, the sentence for all soums, the map of the aimags, its key and the counts.
+// o: { question, place, years, sentence, trendColor, aimags, fills: { name: { color, striped } }, noData,
 //      legend: { title, down: [3], up: [3], ticks: [5 strings], downWord, upWord, sure: [3 labels], notProven }, counts, source, url }
 function nationCard(o, images = true) {
   const { canvas, ctx } = start(images);
@@ -213,15 +213,13 @@ function nationCard(o, images = true) {
   };
   const patterns = {};
   ctx.lineJoin = 'round';
-  for (const soum of o.soums) {
-    const f = o.fills[soum.id] || { color: o.noData };
-    path(soum.geometry);
+  for (const a of o.aimags) {
+    const f = o.fills[a.name] || { color: o.noData };
+    path(a.geometry);
     ctx.fillStyle = f.striped ? (patterns[f.color] = patterns[f.color] || stripes(ctx, f.color)) : f.color;
     ctx.fill('evenodd');
-    ctx.strokeStyle = C.milk; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = C.milk; ctx.lineWidth = 3; ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(21, 33, 59, .4)'; ctx.lineWidth = 2;
-  for (const a of o.aimags) { path(a.geometry); ctx.stroke(); }
 
   // Key: the six shades with the change at their edges, then filled / striped / pale.
   const g = o.legend, ky = mapBottom + 20, sw = 70, sh = 26;
