@@ -815,8 +815,7 @@ async function openCard() {
   }
 }
 
-// ---------- stories from herders (TRIAL: placeholder text, shown only with ?stories=1) ----------
-const STORIES_ON = new URLSearchParams(location.search).has('stories');
+// ---------- Discover: stories from the steppe (tips with articles on discover.html, and data cards) ----------
 function storyFacts(st, L) {   // the place's name and its real number for the story's question (full record)
   const v = byId[st.variable], all = fullRecord(v.id);
   const soum = st.place.soum && DATA.soumById[st.place.soum];
@@ -827,43 +826,55 @@ function storyFacts(st, L) {   // the place's name and its real number for the s
   return { soum, place, number: r.ok ? fmtChange(v, changeOf(v, r), L) : '–', label };
 }
 function renderStories(L) {
-  if (!STORIES_ON || !DATA) return;
-  $('stories').hidden = false;
-  const S = STRINGS[L];
-  const card = (st, i) => {
-    const f = storyFacts(st, L), b = make('button', { type: 'button', className: `story story-${st.type}` });
-    b.style.setProperty('--g', st.colour);
-    b.innerHTML = `<span class="story-head">${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small></span><span class="story-text"><small class="story-place"></small><b></b><span class="story-more"></span></span>`;
-    b.querySelector('.story-head small').textContent = f.label;
-    b.querySelector('.story-text small').textContent = f.place;
-    b.querySelector('.story-text b').textContent = st.title[L];
-    b.querySelector('.story-more').textContent = `${S.storyRead} →`;
-    b.addEventListener('click', () => openStory(i));
-    return b;
+  if (!DATA) return;
+  const S = STRINGS[L], lang = L === 'mn' ? '&lang=mn' : '';
+  // One card: an article whose "Read" link covers the whole card (.story-more::after).
+  const shell = (cls, colour, head, text, foot, href) => {
+    const c = make('article', { className: `story ${cls}` });
+    c.style.setProperty('--g', colour);
+    c.innerHTML = `<div class="story-head">${head}</div><div class="story-text">${text}<p class="story-foot"><span class="story-src"></span><a class="story-more"></a></p></div>`;
+    c.querySelector('.story-src').textContent = foot;
+    const a = c.querySelector('.story-more');
+    a.href = href; a.textContent = `${S.storyRead} →`;
+    return c;
   };
+  const tipCard = tip => {
+    const c = shell(`story-tip story-${tip.type}`, tip.colour,
+      `${Q.figures.svg(tip.figure, 'rgba(255,255,255,.4)')}<span class="story-photo"></span><span class="story-chip"></span>`,
+      `<small class="story-place"></small><h3></h3><p class="story-teaser"></p>${tip.quote ? '<blockquote class="story-quote"></blockquote>' : ''}`,
+      tip.source[L], `discover.html${L === 'mn' ? '?lang=mn' : ''}#${tip.id}`);
+    c.querySelector('.story-photo').textContent = S.storyPhoto;
+    c.querySelector('.story-chip').textContent = tip.chip[L];
+    c.querySelector('.story-place').textContent = tip.tag[L];
+    c.querySelector('h3').textContent = tip.title[L];
+    c.querySelector('.story-teaser').textContent = tip.teaser[L];
+    if (tip.quote) c.querySelector('.story-quote').textContent = tip.quote[L];
+    c.querySelector('.story-more').setAttribute('aria-label', `${S.storyRead}: ${tip.title[L]}`);
+    return c;
+  };
+  const dataCard = st => {   // "Read" opens this place and question in the tool
+    const f = storyFacts(st, L), where = f.soum ? `s=${f.soum.id}` : `a=${encodeURIComponent(st.place.aimag)}`;
+    const c = shell(`story-${st.type}`, st.colour, `${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small>`,
+      '<small class="story-place"></small><h3></h3>', '', `#v=${st.variable}&${where}${lang}`);
+    c.querySelector('.story-head small').textContent = f.label;
+    c.querySelector('.story-place').textContent = f.place;
+    c.querySelector('h3').textContent = st.title[L];
+    const a = c.querySelector('.story-more');
+    a.setAttribute('aria-label', `${S.storyRead}: ${st.title[L]}, ${f.place}`);
+    a.addEventListener('click', e => {   // pick the place and question, glide to the map
+      e.preventDefault();
+      state.aimag = f.soum ? f.soum.aimag : st.place.aimag; state.soumId = f.soum ? f.soum.id : null;
+      selectVariable(st.variable);
+      motion.toTool();
+    });
+    return c;
+  };
+  const card = key => (key[0] === 't' ? tipCard(Q.tips[+key.slice(1)]) : dataCard(Q.stories[+key.slice(1)]));
   // Each row twice, so the slow loop is seamless; the copy is hidden from screen readers and keyboards.
-  [[0, 4, 'stories-track-1'], [4, 8, 'stories-track-2']].forEach(([a, z, id]) => {
-    const cards = Q.stories.slice(a, z).map((st, k) => card(st, a + k));
-    const copies = Q.stories.slice(a, z).map((st, k) => { const c = card(st, a + k); c.tabIndex = -1; c.setAttribute('aria-hidden', 'true'); return c; });
-    $(id).replaceChildren(...cards, ...copies);
+  Q.storyRows.forEach((row, i) => {
+    const copies = row.map(k => { const c = card(k); c.setAttribute('aria-hidden', 'true'); c.querySelector('a').tabIndex = -1; return c; });
+    $(`stories-track-${i + 1}`).replaceChildren(...row.map(card), ...copies);
   });
-}
-function openStory(i) {
-  const st = Q.stories[i], L = state.lang, f = storyFacts(st, L), S = STRINGS[L];
-  $('story-top').style.setProperty('--g', st.colour);
-  $('story-top').innerHTML = `${Q.figures.svg(st.figure, 'rgba(255,255,255,.55)')}<strong>${f.number}</strong><small></small>`;
-  $('story-top').querySelector('small').textContent = f.label;
-  $('story-place').textContent = f.place;
-  $('story-title').textContent = st.title[L];
-  $('story-body').textContent = S.storyBody;
-  $('story-go').textContent = `${S.storyMap} →`;
-  $('story-go').onclick = () => {   // close, pick the place and question, glide to the map
-    $('story-dialog').close();
-    state.aimag = f.soum ? f.soum.aimag : st.place.aimag; state.soumId = f.soum ? f.soum.id : null;
-    selectVariable(st.variable);
-    motion.toTool();
-  };
-  $('story-dialog').showModal();
 }
 
 function downloadCsv(v, soum, r) {
@@ -939,7 +950,7 @@ function wire() {
     if (!motion.toTop()) scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open && !$('story-dialog').open) goOverview();
+    if (e.key === 'Escape' && state.aimag && !$('card-dialog').open) goOverview();
   });
 
   // Toggles under the map: each opens its panel below the row.
@@ -948,10 +959,6 @@ function wire() {
     $(b).setAttribute('aria-expanded', open);
     $(p).hidden = !open;
   }));
-
-  // Stories (trial).
-  $('story-close').addEventListener('click', () => $('story-dialog').close());
-  $('story-dialog').addEventListener('click', e => { if (e.target === $('story-dialog')) $('story-dialog').close(); });
 
   // Share as image.
   $('share-image').addEventListener('click', openCard);

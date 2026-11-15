@@ -86,9 +86,9 @@ const STRINGS = {
     nationRain: 'Over the same years, summer rain really rose in {n} soums and fell in {m}; greenness rises and falls with rain.',
     example: 'Example',
     gRead: 'Reading results', gTest: 'Behind the verdict',
-    storiesEyebrow: 'Stories', storiesTitle: 'Through herders\' eyes', storiesIntro: 'Trial section: placeholder stories, with real numbers from the data. The real stories from herders are coming.',
-    storyRead: 'Read', storyMap: 'See this place on the map', storyClose: 'Close',
-    storyBody: 'Placeholder: the full story, a photo and the herder\'s own words will go here. Bayasakh is writing them.', storyHerder: '[placeholder] Name, herder',
+    // Discover: the section's name in the header and above its cards ("Stories from the steppe" holds tips and data cards).
+    navDiscover: 'Discover', storiesEyebrow: 'Discover', storiesTitle: 'Stories from the steppe', storiesIntro: 'What the data says, next to the people who live it.',
+    storyRead: 'Read', storyPhoto: 'Photo [placeholder]',
     glanceTitle: 'This place at a glance', glanceMaybe: 'Possibly', glanceNone: 'No clear trend', glanceNoData: 'No data',
     shortTitle: 'What is Quindecim', shortMeasuredTitle: 'What we looked at', shortFoundTitle: 'What we found', shortWhyTitle: 'Why it matters',
     // The three cards: what Quindecim does that a national average or a bare chart does not.
@@ -214,9 +214,9 @@ const STRINGS = {
     nationRain: 'Ижил жилүүдэд зуны хур тунадас {n} суманд бодитоор нэмэгдэж, {m} суманд буурсан; ногоорол хур тунадсыг дагаж өсч буурдаг.',
     example: 'Жишээ',
     gRead: 'Үр дүнг унших', gTest: 'Дүгнэлтийн цаана',
-    storiesEyebrow: 'Түүхүүд', storiesTitle: 'Малчдын нүдээр', storiesIntro: 'Туршилтын хэсэг: жишээ түүхүүд, тоо нь өгөгдлөөс. Малчдын жинхэнэ түүхүүд удахгүй.',
-    storyRead: 'Унших', storyMap: 'Газрын зураг дээр харах', storyClose: 'Хаах',
-    storyBody: 'Жишээ: бүрэн түүх, зураг, малчны өөрийн үг энд орно. Баясах бичиж байна.', storyHerder: '[жишээ] Нэр, малчин',
+    // DRAFT (MN, Discover): for Anu to check.
+    navDiscover: 'Танин мэдэх', storiesEyebrow: 'Танин мэдэх', storiesTitle: 'Тал нутгийн түүхүүд', storiesIntro: 'Өгөгдөл юу хэлж байгааг тэнд амьдардаг хүмүүсийн үгтэй хамт.',
+    storyRead: 'Унших', storyPhoto: 'Зураг [жишээ]',
     glanceTitle: 'Энэ газар товчоор', glanceMaybe: 'Магадгүй', glanceNone: 'Тодорхой чиг хандлагагүй', glanceNoData: 'Өгөгдөлгүй',
     // DRAFT (Anu to check): the Mongolian for the What is Quindecim section below.
     shortTitle: 'Quindecim гэж юу вэ?', shortMeasuredTitle: 'Юуг судалсан бэ', shortFoundTitle: 'Юу олсон бэ', shortWhyTitle: 'Яагаад чухал вэ',

@@ -8,7 +8,7 @@
 //   index.html         English text into every empty data-i18n element, and the summary in <section id="about">
 //   methods.html       the tables between the "static:" markers (questions, findings, weather stations, in brief)
 //   llms.txt           a plain-text summary for AI assistants
-//   sitemap.xml        the two pages
+//   sitemap.xml        the three pages (discover.html is written by hand: Ganaa's articles for herders)
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -322,6 +322,7 @@ ${runs.map(({ v, lo, hi }) => `        <li>${esc(v.name.en)}: ${esc(LINKS[v.id][
       <h3>Read more</h3>
       <ul>
         <li><a href="methods.html">Methods and data</a>: the full method, the findings and the station check.</li>
+        <li><a href="discover.html">Discover</a>: stories from the steppe, four short articles for herders with their sources.</li>
         <li><a href="data/results.csv">data/results.csv</a>: every area's result for every question, with its plain sentence.</li>
         <li><a href="data/data.csv">data/data.csv</a>: every yearly value.</li>
         <li><a href="llms.txt">llms.txt</a>: this summary as plain text.</li>
@@ -365,6 +366,7 @@ ${runs.map(({ v, lo, hi }) => `- ${v.name.en} (\`${v.id}\`): ${LINKS[v.id][0]} (
 - [Every yearly value as CSV](${SITE}data/data.csv): soum_id, variable, year, value.
 - [Weather station check](${SITE}data/stations.csv)
 - [Methods and data](${SITE}methods.html): the full method, findings and limits, readable without JavaScript.
+- [Discover: stories from the steppe](${SITE}discover.html): four short articles for herders (a herder who lost no animals in a dzud, selling early, the NAMEM dzud risk map, index-based livestock insurance), each with its sources.
 - A link to one place: ${SITE}#v=temp_summer&s=129615 (question \`v\`, soum id \`s\` from results.csv; \`lang=mn\` for Mongolian).
 
 ## Limits
@@ -377,6 +379,7 @@ Straight-line trends only. Neighbouring areas share model cells (FLDAS about 11 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE}</loc><lastmod>${today}</lastmod></url>
   <url><loc>${SITE}methods.html</loc><lastmod>${today}</lastmod></url>
+  <url><loc>${SITE}discover.html</loc><lastmod>${today}</lastmod></url>
 </urlset>
 `);
   if (stations) for (const s of stations) console.log(s.name.padEnd(22), 'summer r', f2(s.summer.r), 'rates', f1(s.summer.station.rate), f1(s.summer.model.rate), '| winter r', f2(s.winter.r), 'bias', f1(s.winter.bias));

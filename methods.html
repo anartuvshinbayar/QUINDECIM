@@ -86,7 +86,7 @@
     <div class="bar">
       <a href="./" data-tool><img src="assets/brand/quindecim-lockup.svg" alt="Quindecim" width="163" height="32"></a>
       <div class="bar-right">
-        <nav aria-label="Main"><a href="./#tool" data-tool><span lang="en">The tool</span><span lang="mn">Хэрэгсэл</span></a><a href="#data"><span lang="en">Data</span><span lang="mn">Өгөгдөл</span></a><a href="#findings"><span lang="en">Findings</span><span lang="mn">Олдвор</span></a></nav>
+        <nav aria-label="Main"><a href="./#tool" data-tool><span lang="en">The tool</span><span lang="mn">Хэрэгсэл</span></a><a href="discover.html" data-page><span lang="en">Discover</span><span lang="mn">Танин мэдэх</span></a><a href="#data"><span lang="en">Data</span><span lang="mn">Өгөгдөл</span></a><a href="#findings"><span lang="en">Findings</span><span lang="mn">Олдвор</span></a></nav>
         <div class="lang-switch" role="group" aria-label="Language / Хэл">
           <button type="button" class="lang-button" data-lang="mn" aria-label="Монгол" aria-pressed="false">
             <svg class="flag" viewBox="0 0 30 15" aria-hidden="true"><rect width="30" height="15" fill="#C4272F"/><rect x="10" width="10" height="15" fill="#015197"/><g fill="#F9CF02"><path d="M5 1.2c.6.8.6 1.5 0 2-.6-.5-.6-1.2 0-2z"/><circle cx="5" cy="4.6" r="0.9"/><path d="M3.6 5.6a1.4 1.4 0 0 0 2.8 0a1.6 1.6 0 0 1-2.8 0z"/><rect x="3.6" y="6.6" width="2.8" height="0.5"/><rect x="3.6" y="11.6" width="2.8" height="0.5"/><rect x="2.4" y="6.6" width="0.6" height="5.5"/><rect x="7" y="6.6" width="0.6" height="5.5"/><circle cx="5" cy="9.35" r="1.2"/></g></svg>
@@ -381,6 +381,7 @@
         document.title = TITLES[l];
         document.querySelectorAll('.lang-button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
         document.querySelectorAll('a[data-tool]').forEach(function (a) { a.setAttribute('href', l === 'mn' ? './#lang=mn' : './'); });
+        document.querySelectorAll('a[data-page]').forEach(function (a) { a.setAttribute('href', a.getAttribute('href').split('?')[0] + (l === 'mn' ? '?lang=mn' : '')); });
         if (remember) { try { var u = new URL(location.href); if (l === 'mn') u.searchParams.set('lang', 'mn'); else u.searchParams.delete('lang'); history.replaceState(null, '', u); } catch (e) {} }
       }
       document.querySelectorAll('.lang-button').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.lang, true); }); });
