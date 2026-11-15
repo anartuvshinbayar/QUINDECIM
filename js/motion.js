@@ -1,7 +1,7 @@
 // Plain script (no modules) so the site also works when index.html is opened as a file.
 (function (Q) {
 // Motion in the style of loopsii.com, with no libraries:
-// short loading screen, tile grid that reshuffles, rotating headline word, header that turns into a pill,
+// short loading screen, tile grid whose shapes slide cell to cell, rotating headline word, header that turns into a pill,
 // words rising into view, sections revealing on scroll.
 // Everything stops or shortens when the visitor has asked for reduced motion.
 
@@ -85,29 +85,112 @@ function buildTiles() {
   for (const c of ['tl', 'tr', 'bl', 'br']) { const s = document.createElement('span'); s.className = 'corner ' + c; grid.appendChild(s); }
 }
 // Called once the loading screen has gone, so the wave is seen.
-let shuffleTimer = null;
 function startTiles() {
   const grid = $('hero-tiles');
   if (!grid) return;
   grid.classList.add('is-in');
-  clearInterval(shuffleTimer);
-  if (!reduced) shuffleTimer = setInterval(() => shuffle(tileCells.filter(c => !c.classList.contains('logo-slot'))), 2400);
+  startSlides(grid);
 }
 
-// Swap a filled cell with another cell: both shrink into a corner, change places, grow back.
-function shuffle(cells) {
-  if (document.hidden) return;
-  const filled = cells.filter(c => c.firstChild);
-  const a = filled[Math.floor(Math.random() * filled.length)];
-  const b = cells[Math.floor(Math.random() * cells.length)];
-  if (!a || a === b) return;
-  const fa = a.firstChild, fb = b.firstChild;
-  [fa, fb].forEach(f => { if (f) { f.style.setProperty('--d', '0s'); f.classList.add('is-out'); } });
-  setTimeout(() => {
-    if (fa) b.appendChild(fa);
-    if (fb) a.appendChild(fb);
-    later(() => [fa, fb].forEach(f => f && f.classList.remove('is-out')));
-  }, 600);
+// ---------- tile slides (in the style of loopsii.com) ----------
+// After the intro wave the shapes keep sliding, at full size, exactly one cell up, down, left or right into an empty
+// neighbouring cell. Each step fills nearly every empty cell at once (a neighbour slides in; going up or down, the
+// tile behind it follows, up to two in a row). Up and down are picked five times as often as left and right, and a
+// tile never slides straight back where it just came from. Three steps forward, then the same three played backwards,
+// so the grid always returns to its designed layout. The logo slot (L) is never entered.
+// Timing: a slide takes 0.5s (ease-in-out), then 0.2s of rest; while the page scrolls, steps come faster.
+// It runs only while the tiles are on screen and the tab is visible.
+const SLIDE = { ms: 500, hold: 200, fastMs: 340, fastHold: 40, forward: 3, upDown: 5, run: 2, scrollMs: 250, introMs: 1600 };
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+let slides = null, slideSeen = true, lastScroll = -1e9;
+function startSlides(grid) {
+  clearTimeout(slides && slides.timer);
+  grid.classList.remove('is-live');
+  slides = null;
+  if (reduced) return;
+  const tiles = [], blocked = new Set();
+  tileCells.forEach((cell, i) => {
+    const col = i % gridCols, row = Math.floor(i / gridCols);
+    if (cell.classList.contains('logo-slot')) blocked.add(col + ':' + row);
+    else if (cell.firstChild) tiles.push({ face: cell.firstChild, col0: col, row0: row, col, row, last: null });
+  });
+  slides = { grid, tiles, blocked, rows: tileCells.length / gridCols, history: [], back: false, timer: 0 };
+  if (!startSlides.watching) {   // set up once; the grid element itself is kept when the layout is rebuilt
+    startSlides.watching = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => { slideSeen = e.isIntersecting; nextSlide(); }, { rootMargin: '120px' }).observe(grid);
+    }
+    document.addEventListener('visibilitychange', () => nextSlide());
+    addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
+  }
+  const s = slides;
+  s.timer = setTimeout(() => { if (slides !== s) return; s.timer = 0; grid.classList.add('is-live'); nextSlide(); }, SLIDE.introMs);
+}
+
+// Schedule the next step, unless one is already waiting, the tiles are off screen or the tab is hidden.
+function nextSlide(wait = 0) {
+  const s = slides;
+  if (!s || s.timer || !s.grid.classList.contains('is-live') || !slideSeen || document.hidden) return;
+  s.timer = setTimeout(() => {
+    s.timer = 0;
+    if (slides !== s || !slideSeen || document.hidden) return;
+    const fast = performance.now() - lastScroll < SLIDE.scrollMs;
+    s.grid.style.setProperty('--slide', (fast ? SLIDE.fastMs : SLIDE.ms) + 'ms');
+    moveTiles(s, slideStep(s));
+    nextSlide(fast ? SLIDE.fastMs + SLIDE.fastHold : SLIDE.ms + SLIDE.hold);
+  }, wait);
+}
+
+// The moves of the next step: forward steps are planned from where the tiles are now; backward steps undo them.
+function slideStep(s) {
+  if (!s.back && s.history.length < SLIDE.forward) {
+    const moves = planSlides(s);
+    s.history.push(moves);
+    if (s.history.length === SLIDE.forward) s.back = true;
+    return moves;
+  }
+  const moves = s.history.pop().map(m => ({ tile: m.tile, col: m.fromCol, row: m.fromRow, fromCol: m.col, fromRow: m.row }));
+  if (!s.history.length) { s.back = false; s.tiles.forEach(t => { t.last = null; }); }
+  return moves;
+}
+
+function planSlides(s) {
+  const key = (c, r) => c + ':' + r;
+  const at = new Map(s.tiles.map(t => [key(t.col, t.row), t]));
+  const inside = (c, r) => c >= 0 && c < gridCols && r >= 0 && r < s.rows;
+  const holes = [];
+  for (let r = 0; r < s.rows; r++) for (let c = 0; c < gridCols; c++) if (!at.has(key(c, r)) && !s.blocked.has(key(c, r))) holes.push([c, r]);
+  for (let i = holes.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [holes[i], holes[j]] = [holes[j], holes[i]]; }
+  const used = new Set(), moves = [];
+  for (const [c, r] of holes) {
+    // A neighbour that can slide into this hole; [dx, dy] points from the hole to it.
+    const options = DIRS.filter(([dx, dy]) => {
+      const n = at.get(key(c + dx, r + dy));
+      return n && !used.has(n) && !(n.last && n.last[0] === dx && n.last[1] === dy);   // not straight back
+    });
+    if (!options.length) continue;
+    let pick = Math.random() * options.reduce((sum, [, dy]) => sum + (dy ? SLIDE.upDown : 1), 0), dir = options[0];
+    for (const o of options) { pick -= o[1] ? SLIDE.upDown : 1; if (pick < 0) { dir = o; break; } }
+    const [dx, dy] = dir;
+    // The neighbour slides into the hole; going up or down, the tile behind it follows into its place.
+    for (let k = 0, x = c + dx, y = r + dy; k < (dy ? SLIDE.run : 1) && inside(x, y); k++, x += dx, y += dy) {
+      const t = at.get(key(x, y));
+      if (!t || used.has(t)) break;
+      used.add(t);
+      moves.push({ tile: t, fromCol: x, fromRow: y, col: x - dx, row: y - dy });
+    }
+  }
+  return moves;
+}
+
+// Each face stays in its own cell and is moved with a translate of whole cells (css: .hero-tiles.is-live .tile-face).
+function moveTiles(s, moves) {
+  for (const m of moves) {
+    const t = m.tile;
+    t.col = m.col; t.row = m.row; t.last = [m.col - m.fromCol, m.row - m.fromRow];
+    t.face.style.setProperty('--x', t.col - t.col0);
+    t.face.style.setProperty('--y', t.row - t.row0);
+  }
 }
 
 // ---------- the logo's scroll story (in the style of loopsii.com) ----------

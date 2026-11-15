@@ -155,8 +155,10 @@ main > section { position: relative; z-index: 1; }
 .tile-face img { width: 100%; height: 100%; }
 .tile-face.solid { background: var(--c); }
 .tile-face.fig svg { position: absolute; inset: 15%; width: 70%; height: 70%; }   /* a figure, 70% of the tile, centred */
-.hero-tiles.is-in .tile-face { transform: none; opacity: 1; }
-.tile-face.is-out { transform: scale(.08) !important; opacity: 0 !important; transition: transform .45s var(--ease), opacity .3s .15s; transition-delay: 0s; }
+.hero-tiles.is-in .tile-face { transform: translate3d(calc(var(--x, 0) * 100%), calc(var(--y, 0) * 100%), 0); opacity: 1; }
+/* After the wave: js/motion.js slides faces whole cells at a time (--x, --y), full size, ease-in-out (--slide: 0.5s,
+   shorter while the page scrolls). */
+.hero-tiles.is-live .tile-face { transition: transform var(--slide, .5s) cubic-bezier(.45, 0, .55, 1); }
 
 /* The travelling logo, fixed to the screen and moved by js/motion.js: it leaves the tiles, holds in the middle of the
    screen while the page scrolls (so it goes straight down the page), grows, then dissolves before the tool rises in. */
