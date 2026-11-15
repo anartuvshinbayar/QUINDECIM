@@ -212,13 +212,19 @@ function extrasSet(l) {
   document.querySelectorAll('#result-extras [data-i18n]').forEach(el => { el.textContent = STRINGS[l][el.dataset.i18n]; });
   $('download').textContent = STRINGS[l][state.aimag ? 'download' : 'downloadAll'];
 }
-// Hold one box at the height of its taller language (for boxes whose text changes with the view, not only the language).
-function holdHeight(box, set) {
-  box.style.minHeight = '';
-  let max = 0;
-  for (const l of LANGS) { set(l); max = Math.max(max, box.getBoundingClientRect().height); }
-  set(state.lang);
-  box.style.minHeight = Math.ceil(max) + 'px';
+// Each button under the result as wide as its longer language, and the row as tall as its taller language, so a
+// language switch moves no button. Run again when the view changes (the download button's label differs).
+function holdExtras() {
+  const row = $('result-extras'), buttons = [...row.querySelectorAll(':scope > .button')];
+  buttons.forEach(b => { b.style.minWidth = ''; });
+  row.style.minHeight = '';
+  const widths = buttons.map(() => 0);
+  for (const l of LANGS) { extrasSet(l); buttons.forEach((b, i) => { widths[i] = Math.max(widths[i], b.getBoundingClientRect().width); }); }
+  buttons.forEach((b, i) => { b.style.minWidth = Math.ceil(widths[i]) + 'px'; });
+  let height = 0;
+  for (const l of LANGS) { extrasSet(l); height = Math.max(height, row.getBoundingClientRect().height); }
+  extrasSet(state.lang);
+  row.style.minHeight = Math.ceil(height) + 'px';
 }
 // On phones the result card sits in the page flow: hold it at the height of its taller language, so a language switch
 // moves nothing below it. (On wide screens it is a fixed card beside the map.) It is drawn in both languages to measure.
@@ -257,7 +263,6 @@ function lockSizes() {
   add($('map-legend'), 'height', legendSet);
   // The country summary in the panel: as tall as its taller language (on phones it sits in the page flow).
   add($('nation-body'), 'height', l => renderNation(byId[state.varId], l));
-  add($('result-extras'), 'height', extrasSet);
   document.querySelectorAll('.site-footer [data-i18n]').forEach(el => add(el, 'height', i18nText(el)));
 
   // Widths first (they decide how text wraps), then heights. Each item ends back in the current language.
@@ -276,6 +281,7 @@ function lockSizes() {
       i.box.style[prop] = Math.ceil(max) + 'px';
     }
   }
+  holdExtras();
   holdPanel(true);
   // The hero title and other split headings rise word by word: split them again after measuring.
   motion.refresh();
@@ -456,7 +462,7 @@ function renderResult(v) {
   const badge = $('verdict-badge');
   $('nation-body').hidden = !country;
   $('details-extra').hidden = country;
-  holdHeight($('result-extras'), extrasSet);   // the download button's label differs between the country and a place
+  holdExtras();   // the download button's label differs between the country and a place
   $('share-image').disabled = !country && !r.ok;
   if (country) {
     badge.hidden = true;

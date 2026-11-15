@@ -358,6 +358,9 @@ main > .tool { z-index: 5; }
 .result-extras { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 10px 14px; margin-top: 12px; animation: cell-in .5s .4s var(--ease) backwards; }
 .result-extras .button { padding: 8px 14px; font-size: .85rem; }
 .result-extras .button:disabled { opacity: .45; cursor: default; }
+/* A button with an icon on its left (Share). */
+.button-icon { gap: 8px; }
+.button-icon .icon { flex: none; width: 18px; height: 18px; margin: -2px 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Share as image: the picture with Save (and Share on phones). */
 .card-dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100svh - 24px); padding: 16px 18px 18px; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--milk); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(21, 33, 59, .5); overflow-y: auto; }
@@ -444,7 +447,7 @@ main > .tool { z-index: 5; }
   .stage-bar { order: 0; } .map-hint { order: 1; } .map-back { order: 2; } .map-svg, .tool-loading { order: 3; } .map-legend { order: 4; } .result-panel { order: 5; }
   .map-back { position: relative; top: auto; left: 12px; margin: 8px 0 -46px; }
   .map-hint { position: relative; top: auto; left: auto; margin: 8px 12px 0; }
-  .result-extras { justify-content: flex-start; }
+  .result-extras { flex-direction: column; align-items: stretch; }   /* one per row: nothing rewraps when the language changes */
   .brand img { height: 30px; }
   /* Result on a phone: the verdict badge goes under the name when both do not fit, and the cells stack. */
   .result-head { flex-wrap: wrap; }

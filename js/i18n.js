@@ -105,7 +105,7 @@ const STRINGS = {
     nationNote: 'Each soum is tested on its own. A trend counts as real only if it also passes the check for chance across all {n} soums. Tap an aimag, then a soum, for its chart and tests.',
     downloadAll: 'Download all soums (CSV)',
     // Share as image.
-    shareImage: 'Share as image', cardTitle: 'Share as image',
+    shareImage: 'Share', cardTitle: 'Share as image',
     cardHint: 'Post it on Facebook or send it on Messenger.',
     cardSave: 'Save image', cardShare: 'Share', cardClose: 'Close',
     cardSource: 'Source', cardSoum: '{soum} soum, {aimag} aimag', cardAimag: '{aimag} aimag (average of its soums)',
@@ -209,7 +209,7 @@ const STRINGS = {
     nationTop: 'Хамгийн их бодит өөрчлөлт',
     nationNote: 'Сум бүрийг тус тусад нь шалгасан. Бүх {n} сумыг хамтад нь авч үзээд санамсаргүй тохиолдлын шалгуурыг давсан чиг хандлагыг л бодит гэж үзнэ. График, шалгуурыг харахын тулд аймаг, дараа нь сум дээр дарна уу.',
     downloadAll: 'Бүх сумын өгөгдөл татах (CSV)',
-    shareImage: 'Зураг болгон хуваалцах', cardTitle: 'Зураг болгон хуваалцах',
+    shareImage: 'Хуваалцах', cardTitle: 'Зураг болгон хуваалцах',
     cardHint: 'Facebook-т нийтлэх эсвэл Messenger-ээр илгээх боломжтой.',
     cardSave: 'Зураг хадгалах', cardShare: 'Хуваалцах', cardClose: 'Хаах',
     cardSource: 'Эх сурвалж', cardSoum: '{aimag} аймгийн {soum} сум', cardAimag: '{aimag} аймаг (сумдын дундаж)',
