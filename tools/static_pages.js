@@ -8,7 +8,7 @@
 //   index.html         English text into every empty data-i18n element, and the summary in <section id="about">
 //   methods.html       the tables between the "static:" markers (questions, findings, weather stations, in brief)
 //   llms.txt           a plain-text summary for AI assistants
-//   sitemap.xml        the two pages
+//   sitemap.xml        the three pages (discover.html is written by hand: Ganaa's articles for herders)
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -302,7 +302,7 @@ ${runs.map(r => `        <li>${esc(headline(r))}</li>`).join('\n')}
       <ul>
         <li>One value per year per area, complete seasons only, at least 20 years.</li>
         <li>Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation; Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.</li>
-        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if q &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
+        <li>Benjamini-Hochberg false discovery rate across all areas: a real trend if the adjusted p &lt; 0.05, possible if p &lt; 0.10, otherwise not proven.</li>
         <li>Statistics checked against SciPy and an independent Python version (agreement within 0.0000001).</li>
 ${stations ? `        <li>Checked against ten weather stations (NOAA GHCN-Daily). ${esc(stationSummary)}</li>\n` : ''}      </ul>
       <h3>Data</h3>
@@ -322,6 +322,7 @@ ${runs.map(({ v, lo, hi }) => `        <li>${esc(v.name.en)}: ${esc(LINKS[v.id][
       <h3>Read more</h3>
       <ul>
         <li><a href="methods.html">Methods and data</a>: the full method, the findings and the station check.</li>
+        <li><a href="discover.html">Discover</a>: four short articles for herders with their sources.</li>
         <li><a href="data/results.csv">data/results.csv</a>: every area's result for every question, with its plain sentence.</li>
         <li><a href="data/data.csv">data/data.csv</a>: every yearly value.</li>
         <li><a href="llms.txt">llms.txt</a>: this summary as plain text.</li>
@@ -349,7 +350,7 @@ ${greeningText.map(t => `- ${t}`).join('\n')}
 
 - One value per year per area (season mean or total), complete seasons only, at least 20 years.
 - Mann-Kendall trend test with the Hamed and Rao (1998) correction for year-to-year correlation.
-- Benjamini-Hochberg false discovery rate across all areas: real trend if q < 0.05, possible if p < 0.10, otherwise not proven.
+- Benjamini-Hochberg false discovery rate across all areas: real trend if the adjusted p < 0.05, possible if p < 0.10, otherwise not proven.
 - Sen's slope for the rate; a straight-line fit with an effective sample size (Santer et al. 2000) as a second opinion.
 - Every result is also given as one plain sentence, for example: "Summers in this soum have warmed about 1.8 °C since 1982. This is very unlikely to be chance."
 - The statistics agree with SciPy and an independent Python version to within 0.0000001.
@@ -361,10 +362,11 @@ ${runs.map(({ v, lo, hi }) => `- ${v.name.en} (\`${v.id}\`): ${LINKS[v.id][0]} (
 
 ## Look up any place
 
-- [Every result as CSV](${SITE}data/results.csv): one row per area (soum, district or aimag) and question, with the change, p, q, verdict and the plain sentence.
+- [Every result as CSV](${SITE}data/results.csv): one row per area (soum, district or aimag) and question, with the change, p, adjusted p (fdr_q), verdict and the plain sentence.
 - [Every yearly value as CSV](${SITE}data/data.csv): soum_id, variable, year, value.
 - [Weather station check](${SITE}data/stations.csv)
 - [Methods and data](${SITE}methods.html): the full method, findings and limits, readable without JavaScript.
+- [Discover](${SITE}discover.html): four short articles for herders (a herder who lost no animals in a dzud, selling early, the NAMEM dzud risk map, index-based livestock insurance), each with its sources.
 - A link to one place: ${SITE}#v=temp_summer&s=129615 (question \`v\`, soum id \`s\` from results.csv; \`lang=mn\` for Mongolian).
 
 ## Limits
@@ -377,6 +379,7 @@ Straight-line trends only. Neighbouring areas share model cells (FLDAS about 11 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE}</loc><lastmod>${today}</lastmod></url>
   <url><loc>${SITE}methods.html</loc><lastmod>${today}</lastmod></url>
+  <url><loc>${SITE}discover.html</loc><lastmod>${today}</lastmod></url>
 </urlset>
 `);
   if (stations) for (const s of stations) console.log(s.name.padEnd(22), 'summer r', f2(s.summer.r), 'rates', f1(s.summer.station.rate), f1(s.summer.model.rate), '| winter r', f2(s.winter.r), 'bias', f1(s.winter.bias));

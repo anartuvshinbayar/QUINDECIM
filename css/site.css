@@ -74,7 +74,11 @@ html.js:has(> body.is-loading), .js body.is-loading { overflow: hidden; }
 @keyframes pop { to { transform: scale(1); } }
 
 /* ---------- header ---------- */
-.site-header { position: sticky; top: 0; z-index: 50; padding: 0 var(--gutter); transition: padding .4s var(--ease); }
+/* The header keeps its full height in the page flow (min-height) while it turns into the slimmer pill, so nothing
+   under it moves when it changes; before, the page slid up 16px and scroll anchoring fought it (jitter). Only the
+   pill itself takes clicks, not the empty strip under it. */
+.site-header { position: sticky; top: 0; z-index: 50; min-height: 76px; padding: 0 var(--gutter); transition: padding .4s var(--ease); pointer-events: none; }
+.header-inner { pointer-events: auto; }
 .header-inner { max-width: var(--wrap); margin: 0 auto; display: flex; align-items: center; gap: 24px; min-height: 76px; background: var(--milk); transition: min-height .4s var(--ease), padding .4s var(--ease), border-radius .4s var(--ease), box-shadow .4s var(--ease), max-width .4s var(--ease); }
 .brand img { height: 36px; width: auto; }
 .main-nav { display: flex; gap: 28px; margin: 0 auto; font-weight: 500; }
@@ -450,77 +454,55 @@ main > .tool { z-index: 5; }
 
 /* ---------- Words: equal term cells on the left, the chosen term's meaning in a card on the right ----------
    Inset like the hero text, so the title sits inside the page rails, not on them. */
-/* Stories (trial): two rows of cards drifting in opposite directions; they stop on hover, and with reduced motion
-   they are rows you scroll by hand. */
-.stories { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) 0 0; overflow: hidden; }
-.stories > p, .stories > h2 { padding: 0 calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); }
-.stories-eyebrow { margin: 0 0 4px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.stories-intro { margin: -8px 0 18px; font-size: .9rem; color: var(--muted); }
-.stories-row { overflow: hidden; padding: 6px 0; }
-.stories-track { display: flex; gap: 16px; width: max-content; animation: drift 70s linear infinite; }
-.stories-row.is-reverse .stories-track { animation-duration: 80s; animation-direction: reverse; }
-.stories-row:hover .stories-track, .stories-row:focus-within .stories-track { animation-play-state: paused; }
-@keyframes drift { to { transform: translateX(calc(-50% - 8px)); } }
-.story { flex: none; width: 300px; height: 300px; display: grid; grid-template-rows: 150px 1fr; padding: 0; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #FBF8F2; text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, transform .2s; }
-.story-wide { width: 560px; grid-template-rows: none; grid-template-columns: 1fr 1fr; }
-.story:hover, .story:focus-visible { border-color: var(--blue); }
-.story:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.story-head, .story-top { position: relative; display: grid; align-content: end; padding: 16px 18px; background: var(--g); color: #fff; overflow: hidden; }
-.story-head svg, .story-top svg { position: absolute; right: -8px; top: -8px; width: 120px; height: 120px; }
-.story-head strong, .story-top strong { position: relative; font-size: 2.2rem; line-height: 1; font-weight: 800; letter-spacing: -.02em; }
-.story-head small, .story-top small { position: relative; margin-top: 4px; font-size: .78rem; font-weight: 600; opacity: .9; }
-.story-text { display: grid; align-content: start; gap: 6px; padding: 14px 18px; }
-.story-place { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-.story-text b { font-size: 1.05rem; line-height: 1.3; }
-.story-more { margin-top: 4px; font-size: .82rem; font-weight: 700; color: var(--blue); }
-.story-dialog { width: min(560px, calc(100vw - 24px)); padding: 0; border: 0; border-radius: 20px; background: var(--milk); color: var(--ink); overflow: hidden; box-shadow: 0 30px 80px -20px rgba(21, 33, 59, .5); }
-.story-dialog::backdrop { background: rgba(21, 33, 59, .45); }
-.story-top { min-height: 150px; }
-.story-in { padding: 18px 22px 22px; }
-.story-in h3 { margin: 4px 0 10px; font-size: 1.35rem; }
-.story-who { font-size: .82rem; color: var(--muted); }
-.story-x { position: absolute; top: 12px; right: 12px; background: rgba(246, 241, 231, .9); }
-@media (prefers-reduced-motion: reduce) { .stories-row { overflow-x: auto; } .stories-track { animation: none; } }
-@media (max-width: 760px) { .story { width: 260px; height: 290px; } .story-wide { width: 260px; grid-template-columns: none; grid-template-rows: 150px 1fr; } }
-
-/* In short: the simple layer under the tool (methods.html is the technical one). */
-.short { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)) 0; scroll-margin-top: 70px; }
-.short-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
+/* What is Quindecim: the simple layer under the tool (methods.html is the technical one). */
+.short { max-width: 1400px; margin: 0 auto; padding: clamp(28px, 4.5svh, 48px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)) 0; scroll-margin-top: 70px; }
+.short-title { margin: 0 0 14px; font-size: clamp(1.4rem, 2.5vw, 2rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
 .short-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
 .short-card { padding: 0; overflow: hidden; border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); }
-.short-card h3 { margin: 0; font-size: 1.15rem; line-height: 1.2; color: var(--ink); }
+.short-card h3 { margin: 0; font-size: 1.05rem; line-height: 1.2; color: var(--ink); }
 /* The coloured band at the top of each card, with the title and a small figure (like the glossary cards). */
-.short-head { position: relative; min-height: 96px; padding: 20px clamp(16px, 2vw, 24px) 22px; display: flex; flex-direction: column; justify-content: flex-end; background: var(--c); color: #fff; overflow: hidden; }
+.short-head { position: relative; min-height: 76px; padding: 16px clamp(14px, 1.8vw, 22px) 16px; display: flex; flex-direction: column; justify-content: flex-end; background: var(--c); color: #fff; overflow: hidden; }
 .short-head h3 { color: #fff; position: relative; z-index: 1; max-width: 80%; }
-.short-head svg { position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; }
-.short-card p { margin: 0; padding: 18px clamp(16px, 2vw, 24px) 24px; font-size: .95rem; line-height: 1.55; }
-/* What we found, in one line under the cards: the numbers come from the data (js/app.js renderShort). */
-.short-found { margin: clamp(14px, 2vw, 22px) 0 0; padding: 14px 18px; border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; background: rgba(46, 122, 87, .07); font-size: .95rem; line-height: 1.55; }
-.short-found strong { margin-right: .35em; }
+.short-head svg { position: absolute; right: -8px; top: -10px; width: 84px; height: 84px; }
+.short-card p { margin: 0; padding: 14px clamp(14px, 1.8vw, 22px) 18px; font-size: .9rem; line-height: 1.5; }
 .short-more { margin: 14px 0 0; font-weight: 600; }
+/* Discover: the same cards as What is Quindecim, four in a row, with a bigger heading and a Read link at the bottom right. */
+.discover-title { font-size: clamp(2rem, 4.4vw, 3.4rem); margin-bottom: 18px; }
+.discover-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.discover-card { display: flex; flex-direction: column; }
+.discover-card .short-head { min-height: 114px; justify-content: flex-start; }
+.discover-card .short-head small { position: relative; z-index: 1; margin-bottom: 4px; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .9; }
+.discover-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px clamp(14px, 1.8vw, 22px) 18px; }
+.discover-body p, .discover-body blockquote { margin: 0; padding: 0; font-size: .9rem; line-height: 1.5; }
+.discover-chip { padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--c) 14%, transparent); font-size: .78rem; font-weight: 600; }
+.discover-body blockquote { padding-left: 12px; border-left: 3px solid var(--green); font-style: italic; }
+.discover-body .discover-foot { margin-top: auto; align-self: stretch; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding-top: 6px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+.discover-foot a { flex: none; margin-left: auto; font-size: .86rem; font-weight: 700; color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
 .short-more a { color: var(--blue); text-underline-offset: 3px; }
 .glossary { max-width: 1400px; margin: 0 auto; padding: clamp(36px, 6svh, 64px) calc(var(--gutter) + clamp(14px, 2.2vw, 36px)); scroll-margin-top: 70px; }
 .glossary-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; font-weight: 700; color: var(--blue); letter-spacing: -.02em; }
-/* Glossary cards: all the same size, the term and the start of its meaning; a click opens the rest. */
 /* Compact cards, all the same size, so the whole glossary fits on one screen: a coloured block with the number and a
-   figure, then the term (up to two lines) and the start of its meaning. On phones only the term. */
+   figure, then the term (up to two lines). The meaning is a pop-up on hover, keyboard focus or a tap; nothing clicks. */
 .glossary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.gcard { display: grid; position: relative; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.gcard { display: grid; position: relative; grid-template-columns: 50px minmax(0, 1fr); height: 76px; padding: 0; border: 1px solid var(--glass-edge); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); text-align: left; font: inherit; color: var(--ink); transition: border-color .2s, box-shadow .2s; }
 .gcard:hover { border-color: var(--c); }
 .gcard:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .gcard-top { position: relative; display: block; background: var(--c); color: #fff; overflow: hidden; border-radius: 21px 0 0 21px; }
-/* The full meaning, on hover or focus: a small popup under the card. It takes no clicks, so it blocks nothing. */
+/* The full meaning, on hover or focus: a popup under the card. It takes no clicks, so it blocks nothing. */
 .gcard-full { position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; width: 300px; max-width: 80vw; padding: 12px 14px; border: 1px solid var(--glass-edge); border-radius: 14px; background: #FBF8F2; box-shadow: 0 16px 40px -18px rgba(21, 33, 59, .45); color: var(--ink); font-size: .85rem; font-weight: 500; line-height: 1.5; text-align: left; opacity: 0; visibility: hidden; transform: translateY(-4px); pointer-events: none; transition: opacity .18s, transform .18s, visibility 0s .18s; }
 .gcard:hover, .gcard:focus-visible { z-index: 30; }
 .gcard:hover .gcard-full, .gcard:focus-visible .gcard-full { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
-@media (max-width: 760px) { .gcard-full { display: none; } }
+/* Touch screens have no hover: a tap focuses the card and shows its meaning; a tap anywhere else hides it. */
+@media (hover: none) {
+  .gcard:focus { z-index: 30; outline: none; border-color: var(--c); }
+  .gcard:focus .gcard-full { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+}
 .gcard-top small { display: none; }
 .gcard-n { position: absolute; left: 8px; bottom: 4px; z-index: 1; font-size: 1.15rem; font-weight: 800; line-height: 1; }
 .gcard-top svg { position: absolute; right: -16px; top: -12px; width: 54px; height: 54px; }
 .gcard-body { display: grid; align-content: center; gap: 2px; padding: 8px 12px; }
 .gcard-term { font-size: .95rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .gcard-term .nobr { white-space: nowrap; }
-.gcard-text { font-size: .78rem; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 760px) {
   .glossary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .gcard { grid-template-columns: 24px minmax(0, 1fr); height: 54px; border-radius: 16px; box-shadow: none; }
@@ -529,24 +511,9 @@ main > .tool { z-index: 5; }
   .gcard-body { padding: 4px 6px 4px 8px; }
   .gcard-term .nobr { white-space: normal; }
   .gcard-term { font-size: .76rem; line-height: 1.15; -webkit-line-clamp: 3; }
-  .gcard-text { display: none; }
+  /* Two columns: the right-hand card's pop-up opens leftwards so it stays on screen. */
+  .gcard:nth-child(2n) .gcard-full { left: auto; right: 0; }
 }
-.gcard.is-open { border-color: var(--c); box-shadow: 0 0 0 2px var(--c); }
-/* The open term: a compact strip under its row, meaning left, worked example right. */
-.term-detail { grid-column: 1 / -1; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px 24px; align-items: start; padding: 14px 52px 14px 18px; border-left: 4px solid var(--c); border-radius: 22px; background: rgba(246, 241, 231, .4); box-shadow: 0 30px 80px -30px rgba(21, 33, 59, .35), inset 0 1px 0 rgba(255, 255, 255, .6); animation: term-in .25s var(--ease); }
-@keyframes term-in { from { opacity: 0; transform: translateY(-6px); } }
-.term-text strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
-.term-text p { margin: 0; font-size: .95rem; line-height: 1.5; }
-.term-detail .glossary-example { margin: 0; }
-.term-detail .glossary-example svg { max-width: 220px; margin: 6px 0; }
-.term-x { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
-.term-x svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.term-x:hover { background: var(--line-soft); }
-@media (max-width: 760px) { .term-detail { grid-template-columns: minmax(0, 1fr); padding-right: 48px; } }
-.glossary-example { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--c) 9%, #FBF8F2); font-size: .88rem; line-height: 1.45; font-weight: 500; }
-.glossary-example strong { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.glossary-example svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 8px 0; font-family: var(--font); font-size: 11px; font-weight: 600; }
-.glossary-example p { margin: 0; }
 
 /* ---------- footer ---------- */
 .site-footer { background: var(--blue); color: var(--milk); padding: 56px var(--gutter); }
@@ -570,6 +537,7 @@ main > .tool { z-index: 5; }
   .hero { --tile: min(calc((100vw - 2 * var(--gutter)) / 5), 8.5svh); min-height: calc(100svh - 84px); gap: 3svh; }
   .band { height: 24px; background-size: 40px 24px; animation-name: band-s; }
   .header-inner { min-height: 60px; }
+  .site-header { min-height: 60px; }
   .hero-copy { grid-template-columns: 1fr; padding: 0 6px; }
   .hero-title { font-size: clamp(2rem, min(12.5vw, 7.5svh), 3.6rem); }
   .hero-side { justify-items: start; text-align: left; }
@@ -579,6 +547,7 @@ main > .tool { z-index: 5; }
   .hero-stat strong { font-size: 1.6rem; }
   .hero-stat span { font-size: .68rem; max-width: none; }
   .short-grid { grid-template-columns: minmax(0, 1fr); }
+  .discover-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-art { width: calc(var(--tile) * 5); }
   .hero-tiles { grid-template-columns: repeat(5, var(--tile)); }
   .frame { padding-top: 64px; padding-bottom: 64px; }
@@ -630,3 +599,5 @@ main > .tool { z-index: 5; }
   .stage { transition: opacity .4s ease !important; }
   .stage.is-faded { opacity: 0; }
 }
+@media (max-width: 760px) { .discover-card .short-head { min-height: 0; } }
+@media (min-width: 761px) and (max-width: 1100px) { .discover-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

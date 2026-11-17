@@ -33,12 +33,12 @@ const S = c => ({ solid: c });
 const F = (c, fig, fc) => ({ solid: c, fig, fc });
 const CREAM = '#F6F1E7';
 const POOL = {
-  twinPink: F('#EDD3C6', 'twin', '#B9431C'), sunGrey: F('#D7DAE0', 'sun', '#3A68BD'), cloudSage: F('#D2DBCF', 'cloud', '#2E7A57'),
-  windClay: F('#B9431C', 'wind', CREAM), swirlBlue: F('#3A68BD', 'swirl', CREAM), aaruulSage: F('#D2DBCF', 'aaruul', '#2E7A57'),
-  sunPink: F('#EDD3C6', 'sun', '#B9431C'), aaruulInk: F('#15213B', 'aaruul', CREAM), windSage: F('#D2DBCF', 'wind', '#2E7A57'),
+  twinPink: F('#EAD8C8', 'twin', '#C0663F'), sunGrey: F('#C9D5EE', 'sun', '#6A8BDD'), cloudSage: F('#D5DFCB', 'cloud', '#5E9E52'),
+  windClay: F('#C0663F', 'wind', CREAM), swirlBlue: F('#6A8BDD', 'swirl', CREAM), aaruulSage: F('#D5DFCB', 'aaruul', '#5E9E52'),
+  sunPink: F('#EAD8C8', 'sun', '#C0663F'), aaruulInk: F('#28365C', 'aaruul', CREAM), windSage: F('#D5DFCB', 'wind', '#5E9E52'),
   crest: T('uulen-crest'), quarter: T('ever-quarter'), horns: T('ever-pair'), seal: T('seal-hooks'),
   meander: T('alkhan-square'), keyband: T('alkhan-band'),
-  blue: S('#3A68BD'), ink: S('#15213B'), green: S('#2E7A57'), clay: S('#B9431C'), sage: S('#D2DBCF'), grey: S('#D7DAE0'), pink: S('#EDD3C6'),
+  blue: S('#6A8BDD'), ink: S('#28365C'), green: S('#5E9E52'), clay: S('#C0663F'), sage: S('#D5DFCB'), grey: S('#C9D5EE'), pink: S('#EAD8C8'),
 };
 // 11 x 3, so there is a true centre cell for the logo (like loopsii). Phones use the middle 5 columns.
 const COLS = 11, PHONE_FIRST = 3, PHONE_COLS = 5;
@@ -206,16 +206,16 @@ function moveTiles(s, moves) {
 // scrolling), so fast scrolling never makes anything jump.
 function initTraveler() {
   const t = $('travel-logo'), disc = t && t.firstElementChild, tool = $('tool'), stage = $('stage') || tool;
-  const header = document.querySelector('.site-header');
   if (!t || !disc || !tool) return {};
   const clamp = v => Math.min(1, Math.max(0, v));
   const smooth = p => p * p * (3 - 2 * p);
   const easeOut = p => 1 - (1 - p) * (1 - p);
   const pageTop = el => { let y = 0; for (let e = el; e; e = e.offsetParent) y += e.offsetTop; return y; };   // ignores transforms
 
-  // Where the tool rests: the top of the map box 12px under the slim header. (The header is in the page flow and gets
-  // shorter once you scroll, so its current height is part of the sum.)
-  const toolRest = () => Math.max(0, pageTop(stage) - (header ? header.offsetHeight : 0) - 12);
+  // Where the tool rests: the top of the map box 12px under the slim header pill. The header keeps its full height in
+  // the page flow (css .site-header min-height), but the pill is only 60px tall (10px gap + 50px) on every screen.
+  const PILL = 60;
+  const toolRest = () => Math.max(0, pageTop(stage) - PILL - 12);
 
   // The reveal after the trip: the logo holds alone for a moment (at most HOLD x screen height), then the glass map panel
   // (the stage) rises over it, from its top at the bottom edge of the screen (riseStart) to its resting place (riseEnd).

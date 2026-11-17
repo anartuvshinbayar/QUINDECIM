@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Discover · Quindecim</title>
+  <meta name="description" content="Four short articles for Mongolian herders, each with its sources: a herder who lost no animals in the dzud, selling early, the dzud risk map, and index-based livestock insurance.">
+  <meta name="theme-color" content="#F6F1E7">
+  <link rel="canonical" href="https://quindecim-theta.vercel.app/discover.html">
+  <link rel="alternate" hreflang="en" href="https://quindecim-theta.vercel.app/discover.html">
+  <link rel="alternate" hreflang="mn" href="https://quindecim-theta.vercel.app/discover.html?lang=mn">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Quindecim">
+  <meta property="og:title" content="Discover · Quindecim">
+  <meta property="og:description" content="Four short articles for herders, with their sources.">
+  <meta property="og:url" content="https://quindecim-theta.vercel.app/discover.html">
+  <meta property="og:image" content="https://quindecim-theta.vercel.app/assets/brand/quindecim-og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg?v=3" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico?v=3" sizes="32x32">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+  <!-- Discover: the articles behind the tip cards in the Discover section of the home page (js/stories.js).
+       A plain page like methods.html: English and Mongolian side by side; the MN / EN switch only chooses which is shown.
+       The English text is Ganaa's, word for word; the Mongolian is a DRAFT for Anu to check. Every source is linked. -->
+  <script>document.documentElement.lang = /[?&]lang=mn/.test(location.search) ? "mn" : "en";</script>
+  <style>
+    :root { --milk: #F6F1E7; --ink: #15213B; --muted: #5B6375; --blue: #3A68BD; --line: #CFC8BA; --line-soft: #E4DED2; --green: #2E7A57; --clay: #B9431C; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--milk); color: var(--ink); font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: var(--blue); text-underline-offset: 2px; }
+    header { position: sticky; top: 0; z-index: 2; background: rgba(246, 241, 231, .92); border-bottom: 1px solid var(--line-soft); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    .bar { max-width: 960px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .bar img { height: 32px; width: auto; display: block; }
+    .bar nav { display: flex; gap: 20px; font-weight: 600; font-size: .95rem; }
+    .bar nav a { color: var(--ink); text-decoration: none; }
+    .bar nav a:hover { color: var(--blue); }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; color: var(--blue); margin: 8px 0 12px; letter-spacing: -.02em; }
+    h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 8px; border-top: 2px solid var(--line-soft); }
+    h3 { font-size: 1.05rem; margin: 24px 0 8px; }
+    .lede { font-size: 1.15rem; font-weight: 500; max-width: 46em; }
+    .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 20px 0 0; list-style: none; font-size: .9rem; font-weight: 600; }
+    .brief { margin: 24px 0 0; padding: 18px 22px; border-left: 4px solid var(--green); background: rgba(46, 122, 87, .07); border-radius: 0 12px 12px 0; }
+    .brief ul { margin: 0; padding-left: 1.1em; }
+    /* Future work: the one section that looks ahead, so it gets a larger heading inside a blue frame. */
+    .future { margin: 56px 0 0; padding: 26px 28px; border: 2px solid var(--blue); border-radius: 16px; background: rgba(58, 104, 189, .06); }
+    .future h2 { font-size: clamp(1.9rem, 4.6vw, 2.6rem); line-height: 1.12; letter-spacing: -.02em; color: var(--blue); margin: 0 0 14px; padding: 0; border: 0; }
+    .future p { font-size: 1.08rem; margin: 0; max-width: 46em; }
+    @media (max-width: 700px) { .future { padding: 20px 18px; } }
+    .table { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, .45); }
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-soft); }
+    th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: rgba(228, 222, 210, .45); }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .note { font-size: .88rem; color: var(--muted); }
+    code { font-size: .88em; background: rgba(228, 222, 210, .7); padding: 1px 5px; border-radius: 4px; }
+    footer { border-top: 1px solid var(--line-soft); padding: 24px 20px 40px; font-size: .88rem; color: var(--muted); }
+    footer div { max-width: 960px; margin: 0 auto; }
+    /* Two languages in one page: the switch sets the lang of <html>, and only that language's blocks are shown. */
+    html[lang="en"] body [lang="mn"], html[lang="mn"] body [lang="en"] { display: none; }
+    .lang-switch { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .5); }
+    .lang-button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; }
+    .lang-button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+    .lang-button .flag { width: 20px; height: 10px; border-radius: 2px; outline: 1px solid rgba(0, 0, 0, .15); }
+    .bar-right { display: flex; align-items: center; gap: 18px; }
+    /* Team: photos (or initials where there is none), a name and a role, in a grid that is two columns on phones. */
+    .team { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; margin: 16px 0 0; }
+    .member { margin: 0; }
+    .member img, .member-initials { display: grid; place-items: center; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 22%; border-radius: 16px; background: var(--line-soft); }
+    .member-initials { font-size: 2rem; font-weight: 700; color: var(--blue); }
+    .member figcaption { margin-top: 10px; display: grid; gap: 2px; }
+    .member figcaption strong { font-size: 1rem; }
+    .member figcaption span { font-size: .9rem; color: var(--muted); }
+    .team-action { margin: 32px 0 0; }
+    .button { display: inline-block; padding: 10px 20px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font-weight: 600; }
+    .button:hover { background: var(--blue); }
+    @media (max-width: 700px) { .bar-right { gap: 10px; } .bar nav { display: none; } .bar img { height: 26px; } }
+    /* Discover: one article per tip, each with its tag, its inline sources and a source list at the end. */
+    .tag { margin: 0 0 4px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
+    article { scroll-margin-top: 72px; margin: 56px 0 0; padding-top: 24px; border-top: 2px solid var(--line-soft); }
+    article h2 { margin: 0 0 14px; padding: 0; border: 0; font-size: clamp(1.5rem, 3.6vw, 2rem); line-height: 1.2; color: var(--blue); }
+    article p { max-width: 42em; }
+    .cite { font-size: .85rem; }
+    .full { font-weight: 600; }
+    .sources { margin: 16px 0 0; padding: 14px 18px; border-radius: 12px; background: rgba(228, 222, 210, .45); font-size: .85rem; max-width: 46em; }
+    .sources h3 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .sources ul { margin: 0; padding-left: 1.1em; }
+    .sources a { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a href="./" data-tool><img src="assets/brand/quindecim-lockup.svg" alt="Quindecim" width="163" height="32"></a>
+      <div class="bar-right">
+        <nav aria-label="Main"><a href="./#tool" data-tool><span lang="en">The tool</span><span lang="mn">Хэрэгсэл</span></a><a href="discover.html" aria-current="page" data-page><span lang="en">Discover</span><span lang="mn">Танин мэдэх</span></a><a href="methods.html" data-page><span lang="en">Methods</span><span lang="mn">Арга зүй</span></a></nav>
+        <div class="lang-switch" role="group" aria-label="Language / Хэл">
+          <button type="button" class="lang-button" data-lang="mn" aria-label="Монгол" aria-pressed="false">
+            <svg class="flag" viewBox="0 0 30 15" aria-hidden="true"><rect width="30" height="15" fill="#C4272F"/><rect x="10" width="10" height="15" fill="#015197"/><g fill="#F9CF02"><path d="M5 1.2c.6.8.6 1.5 0 2-.6-.5-.6-1.2 0-2z"/><circle cx="5" cy="4.6" r="0.9"/><path d="M3.6 5.6a1.4 1.4 0 0 0 2.8 0a1.6 1.6 0 0 1-2.8 0z"/><rect x="3.6" y="6.6" width="2.8" height="0.5"/><rect x="3.6" y="11.6" width="2.8" height="0.5"/><rect x="2.4" y="6.6" width="0.6" height="5.5"/><rect x="7" y="6.6" width="0.6" height="5.5"/><circle cx="5" cy="9.35" r="1.2"/></g></svg>
+            <span>MN</span>
+          </button>
+          <button type="button" class="lang-button" data-lang="en" aria-label="English" aria-pressed="true">
+            <svg class="flag" viewBox="0 0 60 30" aria-hidden="true"><clipPath id="uk-clip"><rect width="60" height="30"/></clipPath><g clip-path="url(#uk-clip)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2.4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></g></svg>
+            <span>EN</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <p class="note"><a href="./#discover" lang="en">← Back to Discover</a><a href="./#lang=mn" lang="mn">← Нүүр хуудас руу буцах</a></p>
+    <h1 lang="en">Discover</h1>
+    <h1 lang="mn">Танин мэдэх</h1>
+    <p class="lede" lang="en">Four short articles for herders. Each one ends with its sources.</p>
+    <p class="lede" lang="mn">Малчдад зориулсан дөрвөн богино нийтлэл. Нийтлэл бүрийн төгсгөлд эх сурвалж нь бий.</p>
+    <ul class="toc" lang="en"><li><a href="#amraa">Meet Amraa, the herder who lost nothing</a></li><li><a href="#sell-early">Sell in autumn, save the herd in spring</a></li><li><a href="#dzud-map">The map every herder should check</a></li><li><a href="#insurance">Insurance that pays when your soum is hit</a></li></ul>
+    <ul class="toc" lang="mn"><li><a href="#amraa">Нэг ч мал алдаагүй малчин Амраатай танилц</a></li><li><a href="#sell-early">Намар борлуулж, хавар сүргээ авар</a></li><li><a href="#dzud-map">Малчин бүрийн харах ёстой зураг</a></li><li><a href="#insurance">Сумандаа хохирол гарахад төлдөг даатгал</a></li></ul>
+
+    <article id="amraa">
+      <div lang="en">
+      <p class="tag">Meet a herder</p>
+      <h2>Meet Amraa, the herder who lost nothing</h2>
+      <p>The dzud of 2023 to 2024 was among the worst in living memory. Across Mongolia, millions of animals died. Yet some herders came through with every animal alive.</p>
+      <p>Amraa is one of them. He holds the title of “State Best Herder”, an honour given to only a few people in the country. Filmmakers who spent time with his family noticed that he was never idle: one morning sharpening tools, the next fixing the roof of his winter shelter. His own explanation is simple: “A good herder doesn’t lose his animals, even in a dzud.” <span class="cite">(<a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Pulitzer Center</a>)</span></p>
+      <p>What does year round preparation look like? Herders and livestock experts usually point to the same things: a repaired, windproof winter shelter; hay cut and stored in summer; animals fattened well in autumn; and a herd small enough to feed through a hard winter.</p>
+      <p><a href="./#tool">Check your own soum in Quindecim</a> to see how its summers and winters have changed, then plan with that in mind.</p>
+      <p class="full"><a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Full story: Pulitzer Center, “Filming a Day in the Life of a Mongolian Herder” (2025)</a>.</p>
+      <div class="sources"><h3>Sources</h3><ul><li><a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Pulitzer Center, “Filming a Day in the Life of a Mongolian Herder” (2025)</a></li></ul></div>
+      </div>
+      <!-- DRAFT (MN): translation for Anu to check. -->
+      <div lang="mn">
+      <p class="tag">Малчинтай танилц</p>
+      <h2>Нэг ч мал алдаагүй малчин Амраатай танилц</h2>
+      <p>2023–2024 оны зуд хүмүүсийн санаж буй хамгийн хүнд зудын нэг байлаа. Монгол даяар сая сая мал хорогдсон. Гэсэн ч зарим малчин бүх малаа амьд гаргасан.</p>
+      <p>Амраа тэдний нэг. Тэр улсад цөөхөн хүнд олгогддог “Улсын сайн малчин” цолтой. Түүний гэр бүлтэй хамт байсан кино бүтээгчид түүнийг хэзээ ч сул суудаггүйг анзаарчээ: нэг өглөө багаж хэрэгслээ ирлэж, дараагийн өглөө өвөлжөөнийхөө саравчны дээврийг засаж байв. Түүний өөрийн тайлбар энгийн: “Сайн малчин зудад ч малаа алддаггүй.” <span class="cite">(<a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Pulitzer Center</a>)</span></p>
+      <p>Жилийн турш бэлтгэнэ гэдэг юу вэ? Малчид болон мал аж ахуйн мэргэжилтнүүд ихэвчлэн ижил зүйлсийг нэрлэдэг: засаж янзалсан, салхинд тэсвэртэй өвөлжөөний хашаа саравч; зун хадаж хураасан өвс; намар сайн таргалуулсан мал; хүнд өвлийг давуулан тэжээж чадах хэмжээний сүрэг.</p>
+      <p><a href="./#lang=mn">Quindecim дээр өөрийн сумаа шалгаж,</a> зун, өвөл нь хэрхэн өөрчлөгдсөнийг хараад, түүнийгээ харгалзан төлөвлөөрэй.</p>
+      <p class="full"><a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Бүрэн түүх: Pulitzer Center, “Filming a Day in the Life of a Mongolian Herder” (2025)</a>.</p>
+      <div class="sources"><h3>Эх сурвалж</h3><ul><li><a href="https://pulitzercenter.org/stories/filming-day-life-mongolian-herder">Pulitzer Center, “Filming a Day in the Life of a Mongolian Herder” (2025)</a></li></ul></div>
+      </div>
+    </article>
+    <article id="sell-early">
+      <div lang="en">
+      <p class="tag">Before winter</p>
+      <h2>Sell in autumn, save the herd in spring</h2>
+      <p>When a dzud is coming, the worst time to sell animals is when everyone else is selling. Prices for meat fall, prices for hay rise, and families run out of cash exactly when they need it.</p>
+      <p>In the winter of 2017 to 2018, the warning signs were clear early. In December 2017, FAO released USD 290,000 from its early action fund. The plan had two parts: buying animals from herders for cash, and giving out livestock packages. <span class="cite">(<a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study</a>, <a href="https://digital-media.fao.org/archive/MONGOLIA-2018--FAO-s-Early-Warning-Early-Action-2A6XC5CQJND9.html">FAO</a>)</span></p>
+      <p>The results were practical. Families used the money for food and for extra hay and fodder, bought before prices spiked. The meat went to vulnerable households, who could then spend their own money on fuel, clothing and medicine. <span class="cite">(<a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study</a>, <a href="https://ap-plat.nies.go.jp/adaptation-database/list/case-study/db1337.html">NIES AP-PLAT</a>)</span></p>
+      <p>The lesson holds without any aid project: a few animals sold in autumn, while they are still fat, can pay for the feed that keeps the rest alive until spring.</p>
+      <p class="full">Full report: FAO, “Mongolia: Impact of Early Warning Early Action” (2018).</p>
+      <div class="sources"><h3>Sources</h3><ul><li><a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study: offtake in Mongolia, protecting livelihoods in a dzud (PDF)</a></li><li><a href="https://digital-media.fao.org/archive/MONGOLIA-2018--FAO-s-Early-Warning-Early-Action-2A6XC5CQJND9.html">FAO media archive: Mongolia 2018, FAO’s Early Warning Early Action</a></li><li><a href="https://ap-plat.nies.go.jp/adaptation-database/list/case-study/db1337.html">NIES Asia-Pacific Climate Change Adaptation Information Platform (AP-PLAT), case study</a></li></ul></div>
+      </div>
+      <!-- DRAFT (MN): translation for Anu to check. -->
+      <div lang="mn">
+      <p class="tag">Өвлийн өмнө</p>
+      <h2>Намар борлуулж, хавар сүргээ авар</h2>
+      <p>Зуд ойртож байхад мал зарах хамгийн муу үе бол бусад бүгд зарж байгаа үе. Махны үнэ унаж, өвсний үнэ өсөж, айлууд яг хамгийн хэрэгтэй үедээ бэлэн мөнгөгүй болдог.</p>
+      <p>2017–2018 оны өвөл анхааруулах шинж тэмдэг эртнээс тодорхой байлаа. 2017 оны 12-р сард FAO эрт арга хэмжээний сангаасаа 290,000 ам.доллар гаргасан. Төлөвлөгөө хоёр хэсэгтэй байв: малчдаас малыг бэлэн мөнгөөр худалдан авах, малын багц тараах. <span class="cite">(<a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study</a>, <a href="https://digital-media.fao.org/archive/MONGOLIA-2018--FAO-s-Early-Warning-Early-Action-2A6XC5CQJND9.html">FAO</a>)</span></p>
+      <p>Үр дүн нь бодитой байлаа. Айлууд мөнгөөрөө хоол хүнс, нэмэлт өвс тэжээлийг үнэ огцом өсөхөөс өмнө худалдаж авсан. Махыг эмзэг бүлгийн өрхүүдэд хүргэсэн тул тэд өөрсдийн мөнгөө түлш, хувцас, эмэнд зарцуулах боломжтой болсон. <span class="cite">(<a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study</a>, <a href="https://ap-plat.nies.go.jp/adaptation-database/list/case-study/db1337.html">NIES AP-PLAT</a>)</span></p>
+      <p>Энэ сургамж ямар ч тусламжийн төсөлгүйгээр хүчинтэй: намар мал тарган байхад цөөн толгойг борлуулбал үлдсэнийг нь хавар хүртэл амьд байлгах тэжээлийн мөнгө болно.</p>
+      <p class="full">Бүрэн тайлан: FAO, “Mongolia: Impact of Early Warning Early Action” (2018).</p>
+      <div class="sources"><h3>Эх сурвалж</h3><ul><li><a href="https://www.livestock-emergency.net/wp-content/uploads/2023/06/Offtake_Process_Mongolia_Protecting-livelihoods_dzud_LEGS_CaseStudy.pdf">LEGS case study: offtake in Mongolia, protecting livelihoods in a dzud (PDF)</a></li><li><a href="https://digital-media.fao.org/archive/MONGOLIA-2018--FAO-s-Early-Warning-Early-Action-2A6XC5CQJND9.html">FAO media archive: Mongolia 2018, FAO’s Early Warning Early Action</a></li><li><a href="https://ap-plat.nies.go.jp/adaptation-database/list/case-study/db1337.html">NIES Asia-Pacific Climate Change Adaptation Information Platform (AP-PLAT), case study</a></li></ul></div>
+      </div>
+    </article>
+    <article id="dzud-map">
+      <div lang="en">
+      <p class="tag">Every November</p>
+      <h2>The map every herder should check</h2>
+      <p>Every November, once solid snow cover has formed, NAMEM publishes a dzud risk map. It combines 11 measurements, including summer conditions, pasture capacity, number of grazing animals, drought, snow depth and temperature, and sorts the country into five risk levels. <span class="cite">(<a href="https://www.altinget.dk/udvikling/rssitem.aspx?id=1369688">Altinget</a>)</span></p>
+      <p>The map is more than a picture. On 26 November 2017, it showed half the country at high risk. The Mongolian Red Cross acted on it straight away: 2,000 herder households in the 40 most at-risk soums received MNT 240,000 in December and animal care kits in January. Families who got this early help were able to buy hay before prices surged. <span class="cite">(<a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Gros et al., Disasters</a>, <a href="https://de.slideshare.net/FAOoftheUN/fbf-webinar-iii-from-early-warning-to-early-action-in-mongolia-bracing-for-the-cold-to-protect-livestock-and-livelihoods">FAO webinar</a>)</span></p>
+      <p>You can use the map the same way. When it comes out, find your aimag. If your area is high risk, that is the moment to buy hay, sell extra animals, and talk to your soum office about support.</p>
+      <p class="full"><a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Full study: Gros et al., Disasters journal (2022)</a>.</p>
+      <div class="sources"><h3>Sources</h3><ul><li><a href="https://www.altinget.dk/udvikling/rssitem.aspx?id=1369688">Altinget</a></li><li><a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Gros et al., Disasters journal (2022) (PDF)</a></li><li><a href="https://de.slideshare.net/FAOoftheUN/fbf-webinar-iii-from-early-warning-to-early-action-in-mongolia-bracing-for-the-cold-to-protect-livestock-and-livelihoods">FAO, FbF webinar III: From early warning to early action in Mongolia (SlideShare)</a></li></ul></div>
+      </div>
+      <!-- DRAFT (MN): translation for Anu to check. -->
+      <div lang="mn">
+      <p class="tag">Жил бүрийн 11-р сар</p>
+      <h2>Малчин бүрийн харах ёстой зураг</h2>
+      <p>Жил бүрийн 11-р сард, тогтвортой цасан бүрхүүл тогтсоны дараа Цаг уур, орчны шинжилгээний газар (NAMEM) зудын эрсдэлийн зургийг гаргадаг. Энэ нь зуны нөхцөл, бэлчээрийн даац, бэлчээрлэж буй малын тоо, ган, цасны зузаан, температур зэрэг 11 үзүүлэлтийг нэгтгэж, улсын нутгийг эрсдэлийн таван түвшинд хуваадаг. <span class="cite">(<a href="https://www.altinget.dk/udvikling/rssitem.aspx?id=1369688">Altinget</a>)</span></p>
+      <p>Энэ зураг зүгээр нэг зураг биш. 2017 оны 11-р сарын 26-нд энэ зураг улсын нутгийн талыг өндөр эрсдэлтэй гэж харуулсан. Монголын Улаан загалмайн нийгэмлэг даруй арга хэмжээ авсан: хамгийн өндөр эрсдэлтэй 40 сумын 2,000 малчин өрх 12-р сард 240,000 төгрөг, 1-р сард малын арчилгааны багц авсан. Ийм эрт тусламж авсан айлууд үнэ огцом өсөхөөс өмнө өвс худалдаж авч чадсан. <span class="cite">(<a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Gros et al., Disasters</a>, <a href="https://de.slideshare.net/FAOoftheUN/fbf-webinar-iii-from-early-warning-to-early-action-in-mongolia-bracing-for-the-cold-to-protect-livestock-and-livelihoods">FAO webinar</a>)</span></p>
+      <p>Та ч энэ зургийг ингэж ашиглаж болно. Зураг гармагц өөрийн аймгаа олоорой. Танай нутаг өндөр эрсдэлтэй бол өвс авах, илүү малаа борлуулах, сумын захиргаатай дэмжлэгийн талаар ярилцах цаг нь яг тэр.</p>
+      <p class="full"><a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Бүрэн судалгаа: Gros et al., Disasters сэтгүүл (2022)</a>.</p>
+      <div class="sources"><h3>Эх сурвалж</h3><ul><li><a href="https://www.altinget.dk/udvikling/rssitem.aspx?id=1369688">Altinget</a></li><li><a href="https://rcastoragev2.blob.core.windows.net/242817b11496fefec8405c27ccbede5e/DISA-46-95.PMC9290448.pdf">Gros et al., Disasters journal (2022) (PDF)</a></li><li><a href="https://de.slideshare.net/FAOoftheUN/fbf-webinar-iii-from-early-warning-to-early-action-in-mongolia-bracing-for-the-cold-to-protect-livestock-and-livelihoods">FAO, FbF webinar III: From early warning to early action in Mongolia (SlideShare)</a></li></ul></div>
+      </div>
+    </article>
+    <article id="insurance">
+      <div lang="en">
+      <p class="tag">Money and risk</p>
+      <h2>Insurance that pays when your soum is hit</h2>
+      <p>After the dzuds of 2000 to 2002, the government and the World Bank looked for a way to protect herders, and created index based livestock insurance. <span class="cite">(<a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p>It works differently from normal insurance. Nobody visits your herd to count losses. Instead, payouts are based on livestock deaths across your whole soum. If the soum’s losses pass a set level, every insured herder there is paid. It is now available in every province. <span class="cite">(<a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum</a>, <a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p>Does it help? Herders who received a payout restocked more animals, and faster, than those without insurance. <span class="cite">(<a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum</a>)</span></p>
+      <p>Insurance does not replace hay, shelter, and a sensible herd size. It is one part of managing risk. Ask your bank or soum office about the cost and the deadline to sign up before winter. <span class="cite">(<a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p class="full"><a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">Background: CDKN, “Index-Based Mortality Livestock Insurance in Mongolia”</a>.</p>
+      <div class="sources"><h3>Sources</h3><ul><li><a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN, “Inside story: index-based mortality livestock insurance in Mongolia”</a></li><li><a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">CDKN, “Index-Based Mortality Livestock Insurance in Mongolia”</a></li><li><a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum, Mongolia IBLIP (PDF)</a></li></ul></div>
+      </div>
+      <!-- DRAFT (MN): translation for Anu to check. -->
+      <div lang="mn">
+      <p class="tag">Мөнгө ба эрсдэл</p>
+      <h2>Сумандаа хохирол гарахад төлдөг даатгал</h2>
+      <p>2000–2002 оны зудын дараа Засгийн газар болон Дэлхийн банк малчдыг хамгаалах арга зам хайж, индексжүүлсэн малын даатгалыг бий болгосон. <span class="cite">(<a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p>Энэ нь энгийн даатгалаас өөрөөр ажилладаг. Хэн ч таны сүрэгт ирж хорогдлыг тоолохгүй. Харин нөхөн төлбөрийг таны сумын нийт малын хорогдлоор тооцдог. Сумын хорогдол тогтоосон түвшнээс давбал тэнд даатгуулсан малчин бүр нөхөн төлбөр авна. Одоо энэ даатгал бүх аймагт байдаг. <span class="cite">(<a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum</a>, <a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p>Энэ нь тус болдог уу? Нөхөн төлбөр авсан малчид даатгалгүй малчдаас илүү олон малаа, илүү хурдан нөхөн сэргээсэн. <span class="cite">(<a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum</a>)</span></p>
+      <p>Даатгал өвс, хашаа саравч, зохистой хэмжээний сүргийг орлохгүй. Энэ бол эрсдэлээ удирдах нэг хэсэг. Өвөл болохоос өмнө даатгалын үнэ, бүртгүүлэх эцсийн хугацааг банк эсвэл сумын захиргаанаасаа асуугаарай. <span class="cite">(<a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN</a>)</span></p>
+      <p class="full"><a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">Нэмэлт мэдээлэл: CDKN, “Index-Based Mortality Livestock Insurance in Mongolia”</a>.</p>
+      <div class="sources"><h3>Эх сурвалж</h3><ul><li><a href="https://cdkn.org/story/inside-story-index-based-mortality-livestock-insurance-in-mongolia">CDKN, “Inside story: index-based mortality livestock insurance in Mongolia”</a></li><li><a href="https://cdkn.org/resource/index-based-mortality-livestock-insurance-in-mongolia">CDKN, “Index-Based Mortality Livestock Insurance in Mongolia”</a></li><li><a href="https://www.financialprotectionforum.org/sites/default/files/Mongolia%20IBLIP%20.pdf">Financial Protection Forum, Mongolia IBLIP (PDF)</a></li></ul></div>
+      </div>
+    </article>
+
+    <p class="team-action"><a class="button" href="./" data-tool><span lang="en">Check your soum in the tool</span><span lang="mn">Сумаа хэрэгслээр шалгах</span></a></p>
+  </main>
+
+  <footer>
+    <div lang="en">Team Quindecim · NASA Space Apps Challenge 2026 · Ulaanbaatar. Code under the <a href="LICENSE">MIT License</a>. <a href="https://github.com/anartuvshinbayar/QUINDECIM">GitHub repository</a>. <a href="./" data-tool>Back to the tool</a>.</div>
+    <div lang="mn">Quindecim баг · NASA Space Apps Challenge 2026 · Улаанбаатар. Код нь <a href="LICENSE">MIT лицензтэй</a>. <a href="https://github.com/anartuvshinbayar/QUINDECIM">GitHub репозитори</a>. <a href="./" data-tool>Хэрэгсэл рүү буцах</a>.</div>
+  </footer>
+
+  <script>
+    // MN / EN: show one language, keep it in the address (?lang=mn) so a shared link opens the same language, and carry it
+    // to the tool (which reads #lang=mn).
+    (function () {
+      var root = document.documentElement, TITLES = { en: 'Discover · Quindecim', mn: 'Танин мэдэх · Quindecim' };
+      function show(l, remember) {
+        root.lang = l;
+        document.title = TITLES[l];
+        document.querySelectorAll('.lang-button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
+        document.querySelectorAll('a[data-tool]').forEach(function (a) { a.setAttribute('href', l === 'mn' ? './#lang=mn' : './'); });
+        document.querySelectorAll('a[data-page]').forEach(function (a) { a.setAttribute('href', a.getAttribute('href').split('?')[0] + (l === 'mn' ? '?lang=mn' : '')); });
+        if (remember) { try { var u = new URL(location.href); if (l === 'mn') u.searchParams.set('lang', 'mn'); else u.searchParams.delete('lang'); history.replaceState(null, '', u); } catch (e) {} }
+      }
+      document.querySelectorAll('.lang-button').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.lang, true); }); });
+      show(/[?&]lang=mn/.test(location.search) ? 'mn' : 'en', false);
+    })();
+  </script>
+</body>
+</html>
